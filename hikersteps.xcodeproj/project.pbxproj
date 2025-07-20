@@ -3,14 +3,16 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D85B859F2E134939000485FE /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B859E2E134939000485FE /* HomeView.swift */; };
-		D85B85A12E13498C000485FE /* HikeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B85A02E13498C000485FE /* HikeView.swift */; };
-		D88DB5382E0CBA47009FC991 /* hikerstepsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB5372E0CBA47009FC991 /* hikerstepsApp.swift */; };
-		D88DB53C2E0CBA49009FC991 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D88DB53B2E0CBA49009FC991 /* Assets.xcassets */; };
+		D813C45C2E15E88D00264C01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */; };
+		D829B7012E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
+		D829B7022E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
+		D829B7032E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
+		D829B7172E1367080055B789 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = D829B7162E1367080055B789 /* GoogleSignIn */; };
+		D829B7192E1367080055B789 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D829B7182E1367080055B789 /* GoogleSignInSwift */; };
 		D88DB53F2E0CBA49009FC991 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D88DB53E2E0CBA49009FC991 /* Preview Assets.xcassets */; };
 		D88DB54F2E0CBA4A009FC991 /* hikerstepsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB54E2E0CBA4A009FC991 /* hikerstepsTests.swift */; };
 		D88DB5592E0CBA4A009FC991 /* hikerstepsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB5582E0CBA4A009FC991 /* hikerstepsUITests.swift */; };
@@ -19,6 +21,9 @@
 		D8C8D42A2E1293A800E6714F /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D8C8D4292E1293A800E6714F /* FirebaseCore */; };
 		D8C8D42C2E1293A800E6714F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D8C8D42B2E1293A800E6714F /* FirebaseFirestore */; };
 		D8C8D42E2E1293A800E6714F /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D8C8D42D2E1293A800E6714F /* FirebaseStorage */; };
+		D8ED7DCD2E2C3807009CC070 /* ServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8ED7DCC2E2C3807009CC070 /* ServiceTests.swift */; };
+		D8F28B8C2E16726C00A10266 /* ModelDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F28B8B2E16726C00A10266 /* ModelDecodingTests.swift */; };
+		D8FCA8A52E19C89F00736B49 /* MapboxMaps in Frameworks */ = {isa = PBXBuildFile; productRef = D8FCA8A42E19C89F00736B49 /* MapboxMaps */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,11 +44,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D85B859E2E134939000485FE /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		D85B85A02E13498C000485FE /* HikeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeView.swift; sourceTree = "<group>"; };
+		D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		D829B7002E1358E00055B789 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		D88DB5342E0CBA47009FC991 /* hikersteps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hikersteps.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D88DB5372E0CBA47009FC991 /* hikerstepsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsApp.swift; sourceTree = "<group>"; };
-		D88DB53B2E0CBA49009FC991 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D88DB53E2E0CBA49009FC991 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D88DB5452E0CBA49009FC991 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D88DB54A2E0CBA4A009FC991 /* hikerstepsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hikerstepsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,16 +54,28 @@
 		D88DB5542E0CBA4A009FC991 /* hikerstepsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hikerstepsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88DB5582E0CBA4A009FC991 /* hikerstepsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsUITests.swift; sourceTree = "<group>"; };
 		D88DB55A2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D8ED7DCC2E2C3807009CC070 /* ServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceTests.swift; sourceTree = "<group>"; };
+		D8F28B8B2E16726C00A10266 /* ModelDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDecodingTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D829B71F2E13DCE40055B789 /* Core */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Core; sourceTree = "<group>"; };
+		D829B7262E13DD190055B789 /* Features */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Features; sourceTree = "<group>"; };
+		D829B72F2E13DE9D0055B789 /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = App; sourceTree = "<group>"; };
+		D829B7312E13E0BC0055B789 /* Resources */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Resources; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		D88DB5312E0CBA47009FC991 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D829B7172E1367080055B789 /* GoogleSignIn in Frameworks */,
 				D8C8D42A2E1293A800E6714F /* FirebaseCore in Frameworks */,
 				D8C8D42E2E1293A800E6714F /* FirebaseStorage in Frameworks */,
+				D829B7192E1367080055B789 /* GoogleSignInSwift in Frameworks */,
 				D8C8D4282E1293A800E6714F /* FirebaseAuth in Frameworks */,
+				D8FCA8A52E19C89F00736B49 /* MapboxMaps in Frameworks */,
 				D8C8D42C2E1293A800E6714F /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -105,12 +120,14 @@
 		D88DB5362E0CBA47009FC991 /* hikersteps */ = {
 			isa = PBXGroup;
 			children = (
-				D8AD908F2E0F95560066C431 /* Views */,
-				D8AD908A2E0F6AC60066C431 /* Model */,
-				D88DB5372E0CBA47009FC991 /* hikerstepsApp.swift */,
-				D88DB53B2E0CBA49009FC991 /* Assets.xcassets */,
+				D829B7312E13E0BC0055B789 /* Resources */,
+				D829B72F2E13DE9D0055B789 /* App */,
+				D829B7262E13DD190055B789 /* Features */,
+				D829B71F2E13DCE40055B789 /* Core */,
+				D829B7002E1358E00055B789 /* GoogleService-Info.plist */,
 				D88DB5452E0CBA49009FC991 /* Info.plist */,
 				D88DB53D2E0CBA49009FC991 /* Preview Content */,
+				D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */,
 			);
 			path = hikersteps;
 			sourceTree = "<group>";
@@ -127,6 +144,8 @@
 			isa = PBXGroup;
 			children = (
 				D88DB54E2E0CBA4A009FC991 /* hikerstepsTests.swift */,
+				D8F28B8B2E16726C00A10266 /* ModelDecodingTests.swift */,
+				D8ED7DCC2E2C3807009CC070 /* ServiceTests.swift */,
 			);
 			path = hikerstepsTests;
 			sourceTree = "<group>";
@@ -138,22 +157,6 @@
 				D88DB55A2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift */,
 			);
 			path = hikerstepsUITests;
-			sourceTree = "<group>";
-		};
-		D8AD908A2E0F6AC60066C431 /* Model */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
-		D8AD908F2E0F95560066C431 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				D85B859E2E134939000485FE /* HomeView.swift */,
-				D85B85A02E13498C000485FE /* HikeView.swift */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -170,6 +173,12 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D829B71F2E13DCE40055B789 /* Core */,
+				D829B7262E13DD190055B789 /* Features */,
+				D829B72F2E13DE9D0055B789 /* App */,
+				D829B7312E13E0BC0055B789 /* Resources */,
 			);
 			name = hikersteps;
 			productName = hikersteps;
@@ -246,6 +255,8 @@
 			mainGroup = D88DB52B2E0CBA47009FC991;
 			packageReferences = (
 				D8C8D4262E1293A800E6714F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				D829B7152E1367080055B789 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				D8FCA8A32E19C89F00736B49 /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */,
 			);
 			productRefGroup = D88DB5352E0CBA47009FC991 /* Products */;
 			projectDirPath = "";
@@ -264,7 +275,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D88DB53F2E0CBA49009FC991 /* Preview Assets.xcassets in Resources */,
-				D88DB53C2E0CBA49009FC991 /* Assets.xcassets in Resources */,
+				D813C45C2E15E88D00264C01 /* LaunchScreen.storyboard in Resources */,
+				D829B7032E1358E00055B789 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -272,6 +284,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D829B7022E1358E00055B789 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,6 +292,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D829B7012E1358E00055B789 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,9 +303,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D85B85A12E13498C000485FE /* HikeView.swift in Sources */,
-				D88DB5382E0CBA47009FC991 /* hikerstepsApp.swift in Sources */,
-				D85B859F2E134939000485FE /* HomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,6 +310,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8F28B8C2E16726C00A10266 /* ModelDecodingTests.swift in Sources */,
+				D8ED7DCD2E2C3807009CC070 /* ServiceTests.swift in Sources */,
 				D88DB54F2E0CBA4A009FC991 /* hikerstepsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -380,6 +393,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -436,6 +451,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -457,9 +474,14 @@
 				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hikersteps/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your precise location is used to calculate turn-by-turn directions, show your location on the map, and help improve the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -487,9 +509,14 @@
 				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hikersteps/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your precise location is used to calculate turn-by-turn directions, show your location on the map, and help improve the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -513,7 +540,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -531,7 +558,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -616,6 +643,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		D829B7152E1367080055B789 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 		D8C8D4262E1293A800E6714F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -624,9 +659,27 @@
 				minimumVersion = 11.15.0;
 			};
 		};
+		D8FCA8A32E19C89F00736B49 /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mapbox/mapbox-maps-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D829B7162E1367080055B789 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D829B7152E1367080055B789 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		D829B7182E1367080055B789 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D829B7152E1367080055B789 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		D8C8D4272E1293A800E6714F /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D8C8D4262E1293A800E6714F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -646,6 +699,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D8C8D4262E1293A800E6714F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		D8FCA8A42E19C89F00736B49 /* MapboxMaps */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8FCA8A32E19C89F00736B49 /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */;
+			productName = MapboxMaps;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,0 +1,31 @@
+//
+//  ViewStyleExtensions.swift
+//  hikersteps
+//
+//  Created by Andrew Tokeley on 19/07/2025.
+//
+
+import Foundation
+import SwiftUI
+
+extension View {
+    
+    /**
+     Adds a light coloured rounded border around the view.
+     */
+    func styleBorderLight(focused: Bool = false) -> some View {
+        let colour = focused ? Color.accentColor : Color.gray
+        return self
+            .padding()
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(colour.opacity(0.4), lineWidth: 1)
+            )
+    }
+    
+    func styleForegroundPrimary() -> some View {
+        self
+            .foregroundStyle(Color("appPrimary"))
+    }
+    
+}
