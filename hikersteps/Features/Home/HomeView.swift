@@ -8,20 +8,24 @@
 import SwiftUI
 
 struct HomeView: View {
-    // app state injected from hikerstepsApp
-    @EnvironmentObject var auth: AuthViewModel
+    // Access to the authentication state, user info etc.
+    @EnvironmentObject var auth: AuthenticationManager
     
-    // ensures we get notified when the viewmodel updates any of its published properties
+    // The ViewModel for this view.
     @StateObject private var viewModel = ViewModel()
     
-    // view's own state
+    // The State managed by this view
     @State private var hasLoaded = false
     
     init() {
+        
     }
     
-    init(viewModel: ViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+    /**
+     Constructure to inject a custom view model, most likely for testing purposes
+     */
+    init(mockViewModel: ViewModel) {
+        _viewModel = StateObject(wrappedValue: mockViewModel)
     }
     
     var body: some View {
@@ -57,9 +61,18 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("My Big Hikes")
+            .navigationTitle("Home")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: SettingsView()) {
+                        Image(systemName: "gearshape")
+                            .imageScale(.large)
+                    }
+                }
+            }
         }
         .onAppear {
+            // The view can appear multiple times, we only want to reload the hikes if they haven't been loaded before.
             if (!hasLoaded) {
                 viewModel.loadHikes()
                 hasLoaded = true
@@ -69,7 +82,7 @@ struct HomeView: View {
 }
 
 #Preview {
-    let mock = AuthViewModelMock() as AuthViewModel
-    return HomeView(viewModel: HomeView.ViewModelMock())
+    let mock = AuthenticationManagerMock() as AuthenticationManager
+    return HomeView(mockViewModel: HomeView.ViewModelMock())
         .environmentObject(mock)
 }

@@ -65,8 +65,11 @@ struct AppListSelector: View {
                 ForEach(itemsInternal) { item in
                     if let name = item.name, let id = item.id {
                         HStack {
-                            Image(systemName: item.sfSymbolName)
-                                .frame(width: 25)
+                            if let image = item.sfSymbolName {
+                                Image(systemName: image)
+                                    .frame(width: 25)
+                            }
+                            
                             Text(name)
 
                             Spacer()

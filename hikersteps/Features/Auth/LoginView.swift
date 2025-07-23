@@ -9,7 +9,8 @@ import SwiftUI
 import GoogleSignInSwift
 
 struct LoginView: View {
-    @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var auth: AuthenticationManager
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         VStack(spacing: 30) {
@@ -19,6 +20,7 @@ struct LoginView: View {
             GoogleSignInButton {
                 Task {
                     await auth.handleSignIn()
+                    appState.phase = .authenticated
                 }
             }
             .frame(height: 50)

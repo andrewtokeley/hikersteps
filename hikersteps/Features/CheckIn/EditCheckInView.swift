@@ -7,43 +7,54 @@
 
 import SwiftUI
 
-struct ScrollOffsetKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
+//struct ScrollOffsetKey: PreferenceKey {
+//    static var defaultValue: CGFloat = 0
+//    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+//        value = nextValue()
+//    }
+//}
 
 struct EditCheckInView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @State private var lastScrollOffset: CGFloat = 0
+//    @State private var lastScrollOffset: CGFloat = 0
     
     /**
         A copy of the checkIn being edited
      */
     let checkIn: CheckIn
-    
+
+    /// Properties that can be updated
     @State private var isCreating: Bool = false
     @State private var accommodationList: [LookupItem]
     @State private var showAccommodationSelect = false
     @State private var showDateSelector = false
-    
-    /// Properties that can be updated
+    @State private var showDistanceSelector = false
+    @State private var showZeroDaysSelector = false
     @State private var title: String
     @State private var notes: String
     @State private var date: Date
+    @State private var dateDescription: String?
     @State private var distanceWalked: Int
+    @State private var distanceUnit: Unit
     @State private var numberOfRestDays: Int
     @State private var numberOfOffTrailDays: Int
     @State private var accommodation: LookupItem?
     @State private var notesCharacterCount: Int = 0
     @State private var resupplied: Bool = false
     @State private var resupplyNotes: String
+    @State private var imageURL: String?
+    private var image: Image? {
+        if let imageURL = imageURL {
+            return Image(imageURL)
+        }
+        return nil
+    }
     
     enum FocusableViews: Hashable {
         case title
         case accommodation
+        case image
         case notes
         case resupplyNotes
     }
@@ -65,12 +76,13 @@ struct EditCheckInView: View {
         self.notes = checkInToEdit.notes ?? ""
         self.date = checkInToEdit.date
         self.distanceWalked = checkInToEdit.distanceWalked
+        self.distanceUnit = .km
         self.numberOfRestDays = checkInToEdit.numberOfRestDays
         self.numberOfOffTrailDays = checkInToEdit.numberOfOffTrailDays
         self.accommodation = LookupItem(id: "2", name: "Hotel", imageRotation: nil, imageName: "hotel") //checkInToEdit.accommodation
         self.resupplied = checkInToEdit.resupply ?? false
         self.resupplyNotes = checkInToEdit.resupplyNotes ?? ""
-        
+        self.imageURL = checkInToEdit.images.first?.storageUrl
         self.accommodationList = []
     }
     
@@ -80,10 +92,10 @@ struct EditCheckInView: View {
                 
                 VStack (alignment: .leading) {
                     TextField("Name of where you stayed", text: $title)
+                        .padding()
                         .styleBorderLight(focused: focusedView == .title)
                         .focused($focusedView, equals: .title)
-                        .padding(.vertical)
-                    
+                        .padding(.bottom)
                     Button {
                         showAccommodationSelect = true
                     } label: {
@@ -93,6 +105,7 @@ struct EditCheckInView: View {
                             Spacer()
                             Image(systemName: "chevron.down")
                         }
+                        .padding()
                         .styleBorderLight()
                         .styleForegroundPrimary()
                     }
@@ -107,11 +120,60 @@ struct EditCheckInView: View {
                             Spacer()
                             Image(systemName: "chevron.down")
                         }
+                        .padding()
                         .styleBorderLight()
                         .styleForegroundPrimary()
                     }
-                    .padding(.bottom)
+                    if let dateDescription = dateDescription {
+                        Text("\(dateDescription)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom)
+                    }
                     
+                    HStack {
+                        Button {
+                            showDistanceSelector = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "figure.walk")
+                                Text("\(distanceWalked) \(distanceUnit.rawValue)")
+                                    .foregroundStyle(distanceWalked > 0 ? .primary : .secondary )
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                            }
+                            .padding()
+                            .styleBorderLight()
+                            .styleForegroundPrimary()
+                        }
+                        Button {
+                            showZeroDaysSelector = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "zzz")
+                                Text("\(numberOfRestDays) days")
+                                    .foregroundStyle(numberOfRestDays > 0 ? .primary : .secondary )
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                            }
+                            .padding()
+                            .styleBorderLight()
+                            .styleForegroundPrimary()
+                        }
+                    }
+                    .padding(.bottom)
+                    .onChange(of: numberOfRestDays) { oldValue, newValue in
+                        // update the date range this checkin covers
+                        if newValue > 0 {
+                            dateDescription = "date span changed"
+                        }
+                        else {
+                            dateDescription = nil
+                        }
+                    }
+                    
+                    AppImagePicker(image: image)
+                        .padding(.bottom)
                     
                     AppTextEditor(text: $notes, placeholder: "Write something about your day :)")
                         .frame(height: 300)
@@ -152,6 +214,7 @@ struct EditCheckInView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.immediately)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -179,6 +242,19 @@ struct EditCheckInView: View {
                     .presentationDetents([.medium])
             }
             .presentationDetents([.medium])
+            
+            .sheet(isPresented: $showDistanceSelector) {
+                AppNumberPicker(title: "Distance Walked", number: $distanceWalked, units: [.km, .mi], unit: $distanceUnit)
+                    .presentationDragIndicator(.visible)
+                    .presentationDetents([.height(350)])
+            }
+            
+            .sheet(isPresented: $showZeroDaysSelector) {
+                AppNumberPicker(title: "Zero Days", number: $numberOfRestDays, units: [.days])
+                    .presentationDragIndicator(.visible)
+                    .presentationDetents([.height(350)])
+            }
+            
             
             .onAppear {
                 // get accommodation looks

@@ -59,15 +59,30 @@ struct CheckInView: View {
                                 image
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
+                                    .frame(height: 200)
+                                    .cornerRadius(10)
+                                    .clipped()
                             } placeholder: {
-                                Color.gray
+                                ProgressView()
+                                    .scaleEffect(1.2)
+                                    .frame(height: 200)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .background(Color.gray.opacity(0.1))
+                                    .tint(.accentColor)
+                                    .styleBorderLight(focused: true)
+                                
                             }
-                            .padding(.top)
                         }
                     }
-                    Text(checkIn?.notes ?? "-")
-                        .padding(.top)
+                    
+                    if let notes = checkIn?.notes {
+                        Text(notes)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top)
+                    }
+//                    Color(.blue)
                 }
+                
                 Spacer()
             }
             .padding()

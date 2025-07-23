@@ -17,13 +17,13 @@ struct AuthenticatedUser {
     var email: String?
 }
 
-protocol AuthViewModelProtocol: ObservableObject {
+protocol AuthenticationManagerProtocol: ObservableObject {
     var isLoggedIn: Bool { get }
     var loggedInUser: AuthenticatedUser?  { get }
     func handleSignIn() async
 }
 
-class AuthViewModel: AuthViewModelProtocol {
+class AuthenticationManager: AuthenticationManagerProtocol {
     @Published var isLoggedIn: Bool = false
     @Published var loggedInUser: AuthenticatedUser?
     
@@ -73,7 +73,7 @@ class AuthViewModel: AuthViewModelProtocol {
     }
 }
 
-class AuthViewModelMock: AuthViewModel {
+class AuthenticationManagerMock: AuthenticationManager {
     
     override init() {
         super.init()

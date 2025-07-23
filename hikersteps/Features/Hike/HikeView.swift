@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HikeView: View {
     // Defined and created in hikerstepsApp
-    @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var auth: AuthenticationManager
     
     // State owned by this view only
     @State private var showCheckInDetails = false
@@ -53,7 +53,7 @@ struct HikeView: View {
 }
 
 #Preview {
-    let mock = AuthViewModelMock() as AuthViewModel
+    let mock = AuthenticationManagerMock() as AuthenticationManager
     HikeView(
         viewModel: HikeView.ViewModelMock(),
         hike: Hike(description: "Walking the length of Aotearoa", name: "Te Araroa 2021/22", uid: "1"))

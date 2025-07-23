@@ -16,7 +16,6 @@ extension View {
     func styleBorderLight(focused: Bool = false) -> some View {
         let colour = focused ? Color.accentColor : Color.gray
         return self
-            .padding()
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .strokeBorder(colour.opacity(0.4), lineWidth: 1)

@@ -10,10 +10,10 @@ import CoreLocation
 import MapboxMaps
 
 struct MapView: View {
-    // View will be notified of any changes to published properties
-    // within the StateObject ViewModel, like the checkInAnnotations
-    @StateObject private var viewModel = ViewModel()
+    @Environment(\.dismiss) private var dismiss
     
+    // State controlled (and mutated) by this view
+    @StateObject private var viewModel = ViewModel()
     @State private var mapTapInfo: String? = ""
     @State private var showDetail: Bool = false
     @State private var showNewCheckInView: Bool = false
@@ -69,6 +69,21 @@ struct MapView: View {
                 .presentationCornerRadius(20)
                 .edgesIgnoringSafeArea(.top)
                 .presentationDragIndicator(.hidden)
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {  // 2. Custom back button
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.backward.circle.fill")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.black, .white)
+                        .font(.title2)
+                        
+                        //.background(.gray)
+                }
+            }
         }
     }
     

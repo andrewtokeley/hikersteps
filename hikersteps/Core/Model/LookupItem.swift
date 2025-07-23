@@ -23,7 +23,7 @@ struct LookupItem:Codable, Identifiable, Hashable {
     var order: Double?
     var imageName: String?
     
-    var sfSymbolName: String {
+    var sfSymbolName: String? {
         if let imageName = imageName {
             switch imageName {
             case "send": return "tent"
@@ -37,10 +37,10 @@ struct LookupItem:Codable, Identifiable, Hashable {
             case "carpenter": return "tent"
             case "face_retouching_natural": return "face.smiling"
             default:
-                return "house"
+                return nil
             }
         }
-        return "house"
+        return nil
     }
     
     enum CodingKeys: String, CodingKey {
