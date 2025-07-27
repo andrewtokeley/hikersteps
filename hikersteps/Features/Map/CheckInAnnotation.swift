@@ -6,9 +6,20 @@
 //
 
 import Foundation
-import MapKit
+import CoreLocation
 
-class CheckInAnnotation: NSObject, MKAnnotation {
+/**
+ A CheckInAnnotation contains information about where and how to display a CheckIn indicator on a map.
+ 
+ It is defined as an ObservableObject so that changes to it's properties can be monitored by views to update accordingly
+ */
+struct CheckInAnnotation: Identifiable, Equatable {
+    
+    /**
+     Guaranteed unique id for the annotation
+     */
+    var id: String
+    
     /**
      Annotation's location on a map
      */
@@ -20,12 +31,13 @@ class CheckInAnnotation: NSObject, MKAnnotation {
     var title: String?
     
     /**
-     Tag that can be used to link the annotation to another entity, for example, a CheckIn.id
+     checkInId to link the annotation with it's underlying CheckIn
      */
-    var tag: String?
+    var checkInId: String?
     
     /**
-     Flag to indicate whether the annotation should display in selected state
+     Flag to indicate whether the annotation should display in selected state.
+     This property is published as it can impact the way annotations are displayed
      */
     var selected: Bool = false
     
@@ -37,10 +49,33 @@ class CheckInAnnotation: NSObject, MKAnnotation {
     /**
      Construct a new CheckInAnnotation
      */
-    init(coordinate: CLLocationCoordinate2D, title: String? = nil, subtitle: String? = nil, tag: String? = nil, isNew: Bool = false) {
+    init(coordinate: CLLocationCoordinate2D, title: String? = nil, subtitle: String? = nil, checkInId: String? = nil, isNew: Bool = false) {
+        self.id = UUID().uuidString
         self.coordinate = coordinate
         self.title = title
-        self.tag = tag
         self.isNew = isNew
+        self.checkInId = checkInId
+    }
+    
+    init(id: String, coordinate: CLLocationCoordinate2D, title: String? = nil, subtitle: String? = nil, checkInId: String? = nil, isNew: Bool = false) {
+        self.init(coordinate: coordinate, title: title, subtitle: subtitle, checkInId: checkInId, isNew: isNew)
+        self.id = id
+    }
+    
+    /**
+     Initialise the annotation from a CheckIn
+     */
+    init(checkIn: CheckIn) {
+        self.id = UUID().uuidString
+        self.coordinate = checkIn.location.toCLLLocationCoordinate2D()
+        self.title = checkIn.title
+        self.checkInId = checkIn.id
+        self.selected = false
+        self.isNew = false
+        
+    }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
     }
 }

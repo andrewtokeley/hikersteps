@@ -39,6 +39,7 @@ struct CheckIn: Codable, Identifiable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id
         case uid
+        case date
         case locationAsGeoPoint = "location"
         case title
         case address
@@ -56,10 +57,17 @@ struct CheckIn: Codable, Identifiable, Equatable {
         case resupplyNotes
 
     }
+    
     static var newWithDefaults: CheckIn {
         return CheckIn(id: "0", uid: UUID().uuidString, locationAsGeoPoint: Coordinate(latitude: 0, longitude: 0).toGeoPoint())
     }
     
+    static func new(location: CLLocationCoordinate2D) -> CheckIn {
+        var new = newWithDefaults
+        new.title = "Dropped Pin"
+        new.locationAsGeoPoint = Coordinate(from: location).toGeoPoint()
+        return new
+    }
     static var sample: CheckIn {
         return CheckIn(id: "12", uid: UUID().uuidString, locationAsGeoPoint: Coordinate(latitude: -41.29, longitude: 174.7787).toGeoPoint(), title: "Hotel High Five", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distanceWalked: 123, numberOfRestDays: 1, numberOfOffTrailDays: 2)
     }
@@ -68,6 +76,15 @@ struct CheckIn: Codable, Identifiable, Equatable {
 struct Coordinate: Codable {
     let latitude: Double
     let longitude: Double
+    
+    init(latitude: Double, longitude: Double) {
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+    
+    init(from: CLLocationCoordinate2D) {
+        self.init(latitude: from.latitude, longitude: from.longitude)
+    }
     
     func toGeoPoint() -> GeoPoint {
         GeoPoint(latitude: latitude, longitude: longitude)

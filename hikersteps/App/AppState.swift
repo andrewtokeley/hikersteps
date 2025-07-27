@@ -9,6 +9,8 @@ import SwiftUI
 import FirebaseAuth
 
 enum AppPhase {
+    /// phase is entered whenever a user logs out
+    case unauthenticated
     /// phase is entered whenever a user successfully signs in
     case authenticated
     // Show LoadingView straight after LaunchScreen and load application data
@@ -20,4 +22,12 @@ enum AppPhase {
 @MainActor
 class AppState: ObservableObject {
     @Published var phase: AppPhase = .loading
+    
+    init() {
+        let _ = Auth.auth().addStateDidChangeListener { auth, user in
+            if user == nil {
+                self.phase = .unauthenticated
+            }
+        }
+    }
 }

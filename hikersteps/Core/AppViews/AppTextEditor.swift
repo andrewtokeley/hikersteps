@@ -18,8 +18,8 @@ struct AppTextEditor: View {
             ZStack(alignment: .topLeading) {
                 TextEditor(text: $text)
                     .focused($isFocused)
+                    .padding()
                     .styleBorderLight(focused: isFocused)
-                 
                 if text.isEmpty {
                     Text(placeholder)
                         .foregroundStyle(.gray).opacity(0.5)

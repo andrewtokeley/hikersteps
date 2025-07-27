@@ -36,14 +36,20 @@ struct AppNumberPicker: View {
     var title: String
     
     /**
+    Optional text to place under the main title
+     */
+    var subTitle: String?
+    
+    /**
      Optional array of units to select from. Can be a single item array, if no selection required but the unit should still be displayed.
      */
     var units: [Unit] = []
     
-    init (title: String, number: Binding<Int>, units: [Unit] = [], unit: Binding<Unit>? = nil ) {
+    init (title: String, number: Binding<Int>, subTitle: String? = nil, units: [Unit] = [], unit: Binding<Unit>? = nil ) {
         self._number = number
         self.unit = unit
         self.title = title
+        self.subTitle = subTitle
         self.units = units
         self.editNumber = number.wrappedValue
         self.editUnit = unit?.wrappedValue
@@ -64,6 +70,13 @@ struct AppNumberPicker: View {
                 }
             }
             .padding()
+            
+            if let subTitle = subTitle {
+                Text(subTitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             
             Divider()
             
@@ -101,7 +114,7 @@ struct AppNumberPicker: View {
                     dismiss()
                 }
                 .padding(.horizontal, 16)
-                .styleForegroundPrimary()
+                .buttonStyle(.plain)
                 
                 Spacer()
                 
@@ -123,5 +136,5 @@ struct AppNumberPicker: View {
 #Preview {
     @Previewable @State var number: Int = 4
     @Previewable @State var unit: Unit = .weeks
-    AppNumberPicker(title: "Zero Days", number: $number, units:[.days, .weeks], unit: $unit)
+    AppNumberPicker(title: "Zero Days", number: $number, subTitle: "Somethin to say about the numbers...", units:[.days, .weeks], unit: $unit)
 }

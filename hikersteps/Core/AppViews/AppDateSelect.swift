@@ -54,7 +54,7 @@ struct AppDateSelect: View {
                     dismiss()
                 }
                 .padding(.horizontal, 16)
-                .styleForegroundPrimary()
+                .buttonStyle(.plain)
 
                 Spacer()
 

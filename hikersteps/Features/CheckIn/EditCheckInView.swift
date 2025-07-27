@@ -7,24 +7,18 @@
 
 import SwiftUI
 
-//struct ScrollOffsetKey: PreferenceKey {
-//    static var defaultValue: CGFloat = 0
-//    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-//        value = nextValue()
-//    }
-//}
-
 struct EditCheckInView: View {
     @Environment(\.dismiss) private var dismiss
-    
-//    @State private var lastScrollOffset: CGFloat = 0
     
     /**
         A copy of the checkIn being edited
      */
     let checkIn: CheckIn
 
+    var onDeleteRequest: (()-> Void)? = nil
+    
     /// Properties that can be updated
+    /// TODO: can i just use the checkIn object itself?
     @State private var isCreating: Bool = false
     @State private var accommodationList: [LookupItem]
     @State private var showAccommodationSelect = false
@@ -44,6 +38,7 @@ struct EditCheckInView: View {
     @State private var resupplied: Bool = false
     @State private var resupplyNotes: String
     @State private var imageURL: String?
+    
     private var image: Image? {
         if let imageURL = imageURL {
             return Image(imageURL)
@@ -60,8 +55,9 @@ struct EditCheckInView: View {
     }
     @FocusState private var focusedView: FocusableViews?
     
-    
-    init(checkIn: CheckIn?) {
+    init(checkIn: CheckIn?, onDeleteRequest: (() -> Void)? = nil) {
+        
+        self.onDeleteRequest = onDeleteRequest
         
         let checkInToEdit: CheckIn
         if let checkIn {
@@ -91,11 +87,13 @@ struct EditCheckInView: View {
             ScrollView {
                 
                 VStack (alignment: .leading) {
+                    
                     TextField("Name of where you stayed", text: $title)
                         .padding()
                         .styleBorderLight(focused: focusedView == .title)
                         .focused($focusedView, equals: .title)
                         .padding(.bottom)
+                    
                     Button {
                         showAccommodationSelect = true
                     } label: {
@@ -107,7 +105,7 @@ struct EditCheckInView: View {
                         }
                         .padding()
                         .styleBorderLight()
-                        .styleForegroundPrimary()
+                        .foregroundStyle(Color(.appText))
                     }
                     .padding(.bottom)
                     
@@ -122,14 +120,9 @@ struct EditCheckInView: View {
                         }
                         .padding()
                         .styleBorderLight()
-                        .styleForegroundPrimary()
+                        .foregroundStyle(Color(.appText))
                     }
-                    if let dateDescription = dateDescription {
-                        Text("\(dateDescription)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom)
-                    }
+                    .padding(.bottom)
                     
                     HStack {
                         Button {
@@ -144,7 +137,7 @@ struct EditCheckInView: View {
                             }
                             .padding()
                             .styleBorderLight()
-                            .styleForegroundPrimary()
+                            .foregroundStyle(Color(.appText))
                         }
                         Button {
                             showZeroDaysSelector = true
@@ -158,7 +151,7 @@ struct EditCheckInView: View {
                             }
                             .padding()
                             .styleBorderLight()
-                            .styleForegroundPrimary()
+                            .foregroundStyle(Color(.appText))
                         }
                     }
                     .padding(.bottom)
@@ -179,23 +172,17 @@ struct EditCheckInView: View {
                         .frame(height: 300)
                         .padding(.bottom)
                     
-                    Section {
-                        AppStepperManual(value: $distanceWalked, label: "Distance", minimumValue: 0, maximumValue: 100, unit: "km", systemImage: "figure.walk")
-                        AppStepperManual(value: $numberOfRestDays, label: "Zero Days", maximumValue: 10, unit: "days", systemImage: "zzz")
-                        AppStepperManual(value: $numberOfOffTrailDays, label: "Off Trail", maximumValue: 500, unit: "days", systemImage: "timer")
-                    }
-                    
                     Text("Resupply")
                         .font(.title)
                     
-                    
                     Toggle(isOn: $resupplied) {
                         HStack {
-                            Image(systemName: "shop")
+                            Image(systemName: "cart")
                                 .foregroundColor(.orange)
                             Text("Did you resupply here?")
                         }
                     }
+                    .tint(.accentColor)
                     .onChange(of: resupplied) { oldValue, newValue in
                         if newValue {
                             focusedView = .resupplyNotes
@@ -206,10 +193,24 @@ struct EditCheckInView: View {
                     
                     
                     if resupplied {
-                        TextEditor(text: $resupplyNotes)
+                        AppTextEditor(text: $resupplyNotes, placeholder: "How was it?")
                             .frame(height: 200)
                             .focused($focusedView, equals: .resupplyNotes)
-                            .styleBorderLight(focused: focusedView == .resupplyNotes)
+                            .padding(.bottom)
+                    }
+                    
+                    Divider()
+                        .padding()
+                    
+                    HStack {
+                        Spacer()
+                        Button("Delete") {
+                            onDeleteRequest?()
+                            dismiss()
+                        }
+                        .capsuleStyled(background: .red, foreground: .white)
+                        .padding()
+                        Spacer()
                     }
                 }
             }
@@ -221,7 +222,7 @@ struct EditCheckInView: View {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .styleForegroundPrimary()
+                    .buttonStyle(.plain)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
@@ -250,7 +251,7 @@ struct EditCheckInView: View {
             }
             
             .sheet(isPresented: $showZeroDaysSelector) {
-                AppNumberPicker(title: "Zero Days", number: $numberOfRestDays, units: [.days])
+                AppNumberPicker(title: "Zero Days", number: $numberOfRestDays, subTitle: dateDescription, units: [.days])
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.height(350)])
             }
@@ -272,6 +273,7 @@ struct EditCheckInView: View {
 }
 
 #Preview {
-    EditCheckInView(checkIn: CheckIn.newWithDefaults)
-    //EditCheckInView(checkIn: CheckIn.sample)
+    EditCheckInView(checkIn: CheckIn.newWithDefaults, onDeleteRequest: {
+        print("hi")
+    })
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var auth: AuthenticationManager
+    @EnvironmentObject var appState: AppState
     
     @State private var showDistanceSelector: Bool = false
     @State private var userSettings: UserSettings = UserSettings.sample()
@@ -38,6 +39,7 @@ struct SettingsView: View {
                     }
                 }
                 Divider()
+                    .padding(.bottom)
                 
                 HStack {
                     Button {
@@ -45,18 +47,58 @@ struct SettingsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "figure.walk")
-                            Text("Preferred Distance Unit")
+                                .frame(width: 30)
+                            Text("Preferred distance unit")
                             Spacer()
                             Text("\(selectedDistanceUnit()?.properName ?? "not selected" )").foregroundStyle(.secondary)
                             Image(systemName: "chevron.down")
                         }
-                        .padding()
-                        .styleBorderLight()
+                        .padding(.vertical)
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                HStack {
+                    NavigationLink {
+                        EmptyView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "icloud.and.arrow.down")
+                                .frame(width: 30)
+                            Text("Downloads")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                        }
+                        .padding(.vertical)
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                HStack {
+                    Button {
+                        // logout - this will change the app's phase to unautenticated and redirect to Home
+                        auth.logout()
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.left.square")
+                                .frame(width: 30)
+                            Text("Log out")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                        }
+                        .padding(.vertical)
                     }
                     .buttonStyle(.plain)
                 }
                 
                 Spacer()
+                
+                HStack {
+                    Spacer()
+                    Text("version 1.3")
+                    Spacer()
+                }
             }
         }
         .navigationTitle("Settings")

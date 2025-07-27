@@ -20,7 +20,9 @@ struct LoginView: View {
             GoogleSignInButton {
                 Task {
                     await auth.handleSignIn()
-                    appState.phase = .authenticated
+                    await MainActor.run {
+                        appState.phase = .authenticated
+                    }
                 }
             }
             .frame(height: 50)

@@ -8,18 +8,22 @@
 import SwiftUI
 
 struct CheckInView: View {
-    @Binding var checkIn: CheckIn?
+    var checkIn: CheckIn
     @Environment(\.dismiss) private var dismiss
     @State var isPresentingEdit = false
     @State var showEditCheckIn = false
+    
+    private var onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil
+    
+    init(checkIn: CheckIn, onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil) {
+        self.checkIn = checkIn
+        self.onNavigate = onNavigate
+    }
     
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
                 HStack {
-                    Text(checkIn?.title ?? "Check In")
-                        .font(.title2)
-                        .fontWeight(.bold)
                     
                     Spacer()
                     
@@ -42,7 +46,25 @@ struct CheckInView: View {
                             .foregroundColor(Color(.lightGray))
                     }
                 }
-                Text("Day 12 ").bold() + Text(checkIn!.date.formatted(.dateTime.day().month().year())).foregroundColor(.gray)
+                .padding(.top)
+                
+                Text("Day 1")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                Text(checkIn.title ?? "Check In")
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                
+                
+                NavigationStripView {
+                    Text(checkIn.date.formatted(.dateTime.day().month().year()))
+                }
+                .onNavigate { direction in
+                    // pass on to parent view
+                    onNavigate?(direction)
+                }
                 
                 // Stats
                 HStack {
@@ -53,8 +75,8 @@ struct CheckInView: View {
                 .padding(.top)
                 
                 ScrollView {
-                    if checkIn!.images.count > 0 {
-                        if let imageUrl = checkIn?.images[0].storageUrl {
+                    if checkIn.images.count > 0 {
+                        if let imageUrl = checkIn.images[0].storageUrl {
                             AsyncImage(url: URL(string: imageUrl)) { image in
                                 image
                                     .resizable()
@@ -75,7 +97,7 @@ struct CheckInView: View {
                         }
                     }
                     
-                    if let notes = checkIn?.notes {
+                    if let notes = checkIn.notes {
                         Text(notes)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top)
@@ -88,7 +110,7 @@ struct CheckInView: View {
             .padding()
             .sheet(isPresented: $isPresentingEdit) {
                 NavigationStack {
-                    EditCheckInView(checkIn: checkIn)
+                    EditCheckInView(checkIn: checkIn, onDeleteRequest: delete)
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
                         .interactiveDismissDisabled(true)
@@ -98,9 +120,18 @@ struct CheckInView: View {
         .navigationTitle("CheckIn")
         
     }
+    func delete() {
+        print("delete")
+    }
+    
+    func onNavigate(_ handler: @escaping (_ direction: NavigationDirection) -> Void) -> CheckInView {
+        var copy = self
+        copy.onNavigate = handler
+        return copy
+    }
 }
 
 #Preview {
-    @Previewable @State var checkIn: CheckIn? = CheckIn(uid: "123", locationAsGeoPoint: Coordinate.wellington.toGeoPoint(), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
-    CheckInView(checkIn: $checkIn)
+    @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", locationAsGeoPoint: Coordinate.wellington.toGeoPoint(), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
+    CheckInView(checkIn: checkIn)
 }

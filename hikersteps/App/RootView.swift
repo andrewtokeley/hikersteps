@@ -15,7 +15,7 @@ struct RootView: View {
             switch appState.phase {
             case .loading:
                 LoadingView()
-            case .authenticated, .loadingComplete:
+            case .authenticated, .loadingComplete, .unauthenticated:
                 HomeView()
             }
         }

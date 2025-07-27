@@ -7,21 +7,27 @@
 
 import SwiftUI
 
+/**
+ The HikeView is the root view that shows the users checkins on a map with their trail.
+ */
 struct HikeView: View {
-    // Defined and created in hikerstepsApp
     @EnvironmentObject var auth: AuthenticationManager
     
-    // State owned by this view only
+    /// ViewModel to enable the view to access and persist model data.
+    @StateObject var viewModel: ViewModel = ViewModel()
+    
+    /// In-memory structure to manage checkins and navigation.
+    @StateObject var checkInManager: CheckInManager = CheckInManager(checkIns: [])
+    
+    /// Private flag to control when to show checkin sheet
     @State private var showCheckInDetails = false
-    @State private var selectedCheckIn: CheckIn?
     
-    // StateOBject ensures this view us updated when Published properties change within the ViewModel
-    @StateObject var viewModel = ViewModel()
-    
-    
-    // Passed in from HomeView
+    /// The hike this view is representing
     var hike: Hike
 
+    /**
+     Constructs a new HikeView from hike instance
+     */
     init(hike: Hike) {
         self.hike = hike
     }
@@ -30,23 +36,71 @@ struct HikeView: View {
      Used by the Preview to inject a mock ViewModel and Hike instances
      */
     init(viewModel: ViewModel, hike: Hike) {
-        self.hike = hike
+        self.init(hike: hike)
         _viewModel = StateObject(wrappedValue: viewModel)
-        _viewModel.wrappedValue.loadCheckIns(uid: "123", hike: hike)
-    
     }
     
     /**
      Main View body
      */
     var body: some View {
-        NavigationStack {
-                MapView(checkIns: $viewModel.checkIns)
+        GeometryReader { geometry in
+            let height = geometry.size.height
+            let width = geometry.size.width
+            
+            NavigationStack {
+                ZStack {
+                    MapView(
+                        annotations: $checkInManager.annotations,
+                        selectedAnnotationIndex: $checkInManager.selectedIndex,
+                        annotationSafeArea: CGRect(origin: CGPoint.zero, size: CGSize(width: width, height: 0.7 * height) )
+                    )
+                    .onMapTap { location in
+                        self.showCheckInDetails = false
+                    }
+                    .onMapLongPress({ location in
+                        print("long map tap")
+                    })
+                    .onDidSelectAnnotation({ annotation in
+                        if let checkInId = annotation.checkInId {
+                            self.checkInManager.move(.to(id: checkInId))
+                            self.showCheckInDetails = true
+                        }
+                    })
                     .edgesIgnoringSafeArea(.all)
-            .onAppear {
-                if let uid = auth.loggedInUser?.uid {
-                    viewModel.loadCheckIns(uid: uid, hike: hike)
+                    .onAppear {
+                        if let uid = auth.loggedInUser?.uid {
+                            viewModel.loadCheckIns(uid: uid, hike: hike) { checkIns in
+                                self.checkInManager.checkIns = checkIns
+                                self.checkInManager.move(.start)
+                            }
+                        }
+                    }
                 }
+            }
+        }
+        // Show CheckIn Detail Sheet
+        .sheet(isPresented: $showCheckInDetails) {
+            if let checkIn = checkInManager.selectedCheckIn {
+                
+                CheckInView(checkIn: checkIn)
+                    .onNavigate({ direction in
+                        self.checkInManager.move(direction)
+                    })
+                    .presentationDetents([.fraction(0.3), .large])
+                    .presentationDragIndicator(.visible)
+                    .interactiveDismissDisabled(true)
+                    .presentationBackgroundInteraction(.enabled)
+            }
+        }
+        
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                AppBackButton()
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                AppCircleButton(imageSystemName: "add.circle")
             }
         }
     }

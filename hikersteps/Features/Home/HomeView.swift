@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     // Access to the authentication state, user info etc.
     @EnvironmentObject var auth: AuthenticationManager
+    @EnvironmentObject var appState: AppState
     
     // The ViewModel for this view.
     @StateObject private var viewModel = ViewModel()
@@ -56,6 +57,7 @@ struct HomeView: View {
                 } else {
                     NavigationLink {
                         LoginView()
+                            .environmentObject(appState)
                     } label: {
                         Text("Login...")
                     }

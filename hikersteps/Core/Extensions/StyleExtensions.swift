@@ -22,9 +22,9 @@ extension View {
             )
     }
     
-    func styleForegroundPrimary() -> some View {
-        self
-            .foregroundStyle(Color("appPrimary"))
-    }
+//    func styleForegroundPrimary() -> some View {
+//        self
+//            .foregroundStyle(Color("appPrimary"))
+//    }
     
 }

@@ -10,15 +10,24 @@ import SwiftUI
 struct NewCheckInDialog: View {
     @Environment(\.dismiss) private var dismiss
     
+    var onCancel: (() -> Void)?
+    var onConfirm: (() -> Void)?
     var info: String?
+    
+    init(info: String? = nil, onCancel: (() -> Void)? = nil, onConfirm: (() -> Void)? = nil) {
+        self.info = info
+        self.onCancel = onCancel
+        self.onConfirm = onConfirm
+    }
     
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
-                Text("New CheckIn?")
+                Text("Dropped Pin")
                     .font(.title)
                 Spacer()
                 Button(action: {
+                    onCancel?()
                     dismiss()
                 }) {
                     Image(systemName: "xmark.circle.fill")
@@ -34,22 +43,23 @@ struct NewCheckInDialog: View {
             }
             HStack {
                 Button(action: {
+                    onCancel?()
                     dismiss()
                 }) {
-                    Text("Cancel")
+                    Text("Remove")
                 }
                 .capsuleStyled(background: .gray, foreground: .white)
                 Button(action: {
+                    onConfirm?()
                     dismiss()
                 }) {
-                    Text("I Stayed Here")
+                    Text("Check-In Here...")
                 }
                 .capsuleStyled(background: .blue, foreground: .white)
             }
             .padding(.top)
             Spacer()
         }
-
         .padding()
     }
 }
