@@ -13,7 +13,7 @@ struct AppListSelector: View {
     /**
      Bound item that is selected - this item will always appear at the top of the list regardless of the order of the items the view is instantiated with
      */
-    @Binding var selectedItem: LookupItem?
+    @Binding var selectedItem: LookupItem
     
     /**
      Items to be displayed for the user to select from. Set by the caller when constructing the view
@@ -26,18 +26,32 @@ struct AppListSelector: View {
     var title: String = ""
     
     /**
+     Flag to determine whether the user can select "No Selection"
+     */
+    var noSelection: Bool = false
+    
+    /**
      Returns a reordered list with the selectedItem at the top of the list. The remaining items are in the order as specified by the order property
      */
     private var itemsInternal: [LookupItem] {
-        guard let selectedItem = selectedItem, let index = items.firstIndex(of: selectedItem) else {
-            return items  // If not found, return the array unchanged
+        var reordered = items.sorted { $0.order < $1.order }
+        if let selectedIndex = items.firstIndex(of: selectedItem) {
+            let element = reordered.remove(at: selectedIndex)
+            reordered.insert(element, at: 0)
         }
         
-        var reordered = items
-        let element = reordered.remove(at: index)
-        reordered.insert(element, at: 0)
+        if noSelection {
+            reordered.insert(LookupItem.noSelection(), at: 0)
+        }
         
         return reordered
+    }
+    
+    init(items: [LookupItem], selectedItem: Binding<LookupItem>, title: String = "", noSelection: Bool = false) {
+        self.items = items
+        self.title = title
+        self.noSelection = noSelection
+        _selectedItem = selectedItem
     }
     
     /**
@@ -63,22 +77,22 @@ struct AppListSelector: View {
             
             ScrollView {
                 ForEach(itemsInternal) { item in
-                    if let name = item.name, let id = item.id {
+                    if let id = item.id {
                         HStack {
-                            if let image = item.sfSymbolName {
-                                Image(systemName: image)
-                                    .frame(width: 25)
-                            }
                             
-                            Text(name)
+                            Image(systemName: item.imageName)
+                                .frame(width: 25)
+                        
+                            
+                            Text(item.name)
 
                             Spacer()
                             
-                            if id == selectedItem?.id {
+                            if id == selectedItem.id {
                                 Image(systemName: "checkmark")
                             }
                         }
-                        .foregroundStyle(id == selectedItem?.id ? .orange : .primary)
+                        .foregroundStyle(id == selectedItem.id ? .orange : .primary)
                         .padding(.horizontal)
                         .padding(.bottom)
                         .contentShape(Rectangle())
@@ -97,11 +111,14 @@ struct AppListSelector: View {
 }
 
 #Preview {
-    @Previewable @State var selectedItem: LookupItem? = LookupItem(id: "2", name: "Hotel", imageRotation: nil, imageName: "HOTL")
+    @Previewable @State var selectedItem: LookupItem = LookupItem.noSelection()
     
-    AppListSelector(selectedItem: $selectedItem, items: [
-        LookupItem(id: "1", name: "Tent", imageRotation: nil, imageName: "carpenter"),
-        LookupItem(id: "2", name: "Hotel", imageRotation: nil, imageName: "cabin"),
-        LookupItem(id: "3", name: "Trail Angel", imageRotation: nil, imageName: "airline-seat-flat")
-    ], title: "Where did you stay?")
+    AppListSelector(
+        items: [
+            LookupItem(id: "1", name: "Tent", imageName: "carpenter"),
+            LookupItem(id: "2", name: "Hotel", imageName: "cabin"),
+            LookupItem(id: "3", name: "Trail Angel", imageName: "airline-seat-flat")],
+        selectedItem: $selectedItem,
+        title: "Where did you stay",
+        noSelection: true)
 }

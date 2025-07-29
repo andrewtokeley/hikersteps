@@ -10,34 +10,38 @@ import FirebaseFirestore
 import CoreLocation
 
 struct CheckIn: Codable, Identifiable, Equatable {
+    internal var _isNilValue: Bool = false
+    
     static func == (lhs: CheckIn, rhs: CheckIn) -> Bool {
         lhs.id == rhs.id
     }
     
     @DocumentID var id: String?
-    var uid: String
-    var locationAsGeoPoint: GeoPoint
+    
+    // All properties are marked as non-optional even if they are optionally set by user. This allows us to bind directly to these properties from views (can't bind to optionals)
+    var uid: String = ""
+    var locationAsGeoPoint: GeoPoint = GeoPoint(latitude: 0, longitude: 0)
     var location: Coordinate {
         locationAsGeoPoint.toCoordinate()
     }
-    var title: String?
-    var address: String?
-    var accommodation: LookupItem?
-    var notes: String?
+    var title: String = ""
+    var address: String = ""
+    var accommodation: LookupItem = LookupItem.noSelection()
+    var notes: String = ""
     var date = Date.now
-    var type: String?
+    var type: String = "day"
     var nearestTrailMarker: Double = 0
     var distanceWalked: Int = 0
     var images: [StorageImage] = []
     var numberOfRestDays: Int = 0
     var numberOfOffTrailDays: Int = 0
-    var adventureId: String?
+    var adventureId: String = ""
     var customLinks: [CustomLink] = []
-    var resupply: Bool? = false
-    var resupplyNotes: String?
+    var resupply: Bool = false
+    var resupplyNotes: String = ""
     
     enum CodingKeys: String, CodingKey {
-        case id
+        //case id
         case uid
         case date
         case locationAsGeoPoint = "location"
@@ -58,8 +62,44 @@ struct CheckIn: Codable, Identifiable, Equatable {
 
     }
     
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.uid = try container.decodeIfPresent(String.self, forKey: .uid) ?? ""
+        self.date = try container.decodeIfPresent(Date.self, forKey: .date) ?? Date()
+        self.locationAsGeoPoint = try container.decodeIfPresent(GeoPoint.self, forKey: .locationAsGeoPoint) ?? GeoPoint.init(latitude: 0, longitude: 0 )
+        self.title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        self.address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
+        self.accommodation = try container.decodeIfPresent(LookupItem.self, forKey: .accommodation) ?? LookupItem.noSelection()
+        self.notes = try container.decodeIfPresent(String.self, forKey: .notes) ?? ""
+        self.type = try container.decodeIfPresent(String.self, forKey: .type) ?? ""
+        self.nearestTrailMarker = try container.decodeIfPresent(Double.self, forKey: .nearestTrailMarker) ?? 0
+        self.distanceWalked = try container.decodeIfPresent(Int.self, forKey: .distanceWalked) ?? 0
+        self.images = try container.decodeIfPresent(Array.self, forKey: .images) ?? []
+        self.numberOfRestDays = try container.decodeIfPresent(Int.self, forKey: .numberOfRestDays) ?? 0
+        self.numberOfOffTrailDays = try container.decodeIfPresent(Int.self, forKey: .numberOfOffTrailDays) ?? 0
+        self.adventureId = try container.decodeIfPresent(String.self, forKey: .adventureId) ?? ""
+        self.customLinks = try container.decodeIfPresent(Array.self, forKey: .customLinks) ?? []
+        self.resupply = try container.decodeIfPresent(Bool.self, forKey: .resupply) ?? false
+        self.resupplyNotes = try container.decodeIfPresent(String.self, forKey: .resupplyNotes) ?? ""
+    
+    }
+        
+    init(id: String = "", uid: String = "", location: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0 ), title: String = "", notes: String = "", distanceWalked: Int = 0, numberOfRestDays: Int = 0, numberOfOffTrailDays: Int = 0, date: Date = Date(), images: [StorageImage] = [], accommodation: LookupItem = LookupItem.noSelection()) {
+        self.id = id
+        self.uid = uid
+        self.locationAsGeoPoint = GeoPoint(latitude: location.latitude, longitude: location.longitude)
+        self.title = title
+        self.notes = notes
+        self.distanceWalked = distanceWalked
+        self.numberOfRestDays = numberOfRestDays
+        self.numberOfOffTrailDays = numberOfOffTrailDays
+        self.date = date
+        self.images = images
+        self.accommodation = accommodation
+    }
+    
     static var newWithDefaults: CheckIn {
-        return CheckIn(id: "0", uid: UUID().uuidString, locationAsGeoPoint: Coordinate(latitude: 0, longitude: 0).toGeoPoint())
+        return CheckIn()
     }
     
     static func new(location: CLLocationCoordinate2D) -> CheckIn {
@@ -69,7 +109,17 @@ struct CheckIn: Codable, Identifiable, Equatable {
         return new
     }
     static var sample: CheckIn {
-        return CheckIn(id: "12", uid: UUID().uuidString, locationAsGeoPoint: Coordinate(latitude: -41.29, longitude: 174.7787).toGeoPoint(), title: "Hotel High Five", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distanceWalked: 123, numberOfRestDays: 1, numberOfOffTrailDays: 2)
+        return CheckIn(id: "12", uid: UUID().uuidString, location: CLLocationCoordinate2D(latitude: -41.29, longitude: 174.7787), title: "Hotel High Five", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distanceWalked: 123, numberOfRestDays: 1, numberOfOffTrailDays: 2)
+    }
+    
+    static var nilValue: CheckIn {
+        var nilCheckIn = CheckIn()
+        nilCheckIn._isNilValue = true
+        return nilCheckIn
+    }
+    
+    var isNil: Bool {
+        return _isNilValue
     }
 }
 

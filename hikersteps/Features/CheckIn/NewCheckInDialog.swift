@@ -10,8 +10,8 @@ import SwiftUI
 struct NewCheckInDialog: View {
     @Environment(\.dismiss) private var dismiss
     
-    var onCancel: (() -> Void)?
-    var onConfirm: (() -> Void)?
+    private var onCancel: (() -> Void)?
+    private var onConfirm: (() -> Void)?
     var info: String?
     
     init(info: String? = nil, onCancel: (() -> Void)? = nil, onConfirm: (() -> Void)? = nil) {
@@ -23,7 +23,7 @@ struct NewCheckInDialog: View {
     var body: some View {
         VStack (alignment: .leading) {
             HStack {
-                Text("Dropped Pin")
+                Text("New Check-In")
                     .font(.title)
                 Spacer()
                 Button(action: {
@@ -46,14 +46,15 @@ struct NewCheckInDialog: View {
                     onCancel?()
                     dismiss()
                 }) {
-                    Text("Remove")
+                    Text("Cancel")
                 }
                 .capsuleStyled(background: .gray, foreground: .white)
+                Spacer()
                 Button(action: {
                     onConfirm?()
                     dismiss()
                 }) {
-                    Text("Check-In Here...")
+                    Text("Create...")
                 }
                 .capsuleStyled(background: .blue, foreground: .white)
             }
@@ -61,6 +62,18 @@ struct NewCheckInDialog: View {
             Spacer()
         }
         .padding()
+    }
+    
+    func onCancel(_ handler: @escaping (() -> Void)) -> NewCheckInDialog {
+        var copy = self
+        copy.onCancel = handler
+        return copy
+    }
+    
+    func onConfirm(_ handler: @escaping (() -> Void)) -> NewCheckInDialog {
+        var copy = self
+        copy.onConfirm = handler
+        return copy
     }
 }
 

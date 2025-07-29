@@ -29,10 +29,9 @@ struct LookupService {
                 }
                 do {
                     let lookUps = try snapshot?.documents.compactMap { doc in
-//                        var item = try doc.data(as: LookupItem.self)
-//                        item.id = doc.documentID
-//                        return item
-                        return try doc.data(as: LookupItem.self)
+                        var item = try doc.data(as: LookupItem.self)
+                        item.id = doc.documentID
+                        return item
                     }
                     completion(lookUps, nil)
                     

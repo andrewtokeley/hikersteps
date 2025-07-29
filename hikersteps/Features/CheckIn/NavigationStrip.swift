@@ -17,20 +17,22 @@ struct NavigationStripView<Content: View>: View {
     }
     
     var body: some View {
-        HStack {
-            AppCircleButton(imageSystemName: "arrow.left.to.line")
-                .style(foreground: Color(.appButtonForeground), background: .white, border: false)
-                .onClick { onNavigate?(.start) }
-            AppCircleButton(size: 40, imageSystemName: "arrow.left")
-                .onClick { onNavigate?(.previous) }
-            Spacer()
+        ZStack {
+            HStack {
+                AppCircleButton(imageSystemName: "arrow.left.to.line")
+                    .style(foreground: Color(.appButtonForeground), background: .white, border: false)
+                    .onClick { onNavigate?(.start) }
+                AppCircleButton(size: 40, imageSystemName: "arrow.left")
+                    .onClick { onNavigate?(.previous) }
+                Spacer()
+                AppCircleButton(size: 40, imageSystemName: "arrow.right")
+                    .onClick { onNavigate?(.next) }
+                AppCircleButton(imageSystemName: "arrow.right.to.line")
+                    .style(foreground: Color(.appButtonForeground), background: .white, border: false)
+                    .onClick { onNavigate?(.end) }
+            }
+            // centred
             content
-            Spacer()
-            AppCircleButton(size: 40, imageSystemName: "arrow.right")
-                .onClick { onNavigate?(.next) }
-            AppCircleButton(imageSystemName: "arrow.right.to.line")
-                .style(foreground: Color(.appButtonForeground), background: .white, border: false)
-                .onClick { onNavigate?(.end) }
         }
     }
     

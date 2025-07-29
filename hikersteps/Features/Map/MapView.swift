@@ -44,19 +44,18 @@ struct MapView: View {
     }
     
     var body: some View {
-            MapReader { proxy in
+        MapReader { proxy in
                 Map(viewport: $viewport) {
                      
                     // Display checkins
                     ForEvery(Array(annotations.enumerated()), id: \.element.id) { index, annotation in
                         MapViewAnnotation(coordinate: annotation.coordinate) {
-                            PinView(label: annotation.title ?? "", isSelected: index == selectedAnnotationIndex)
+                            PinView(label: annotation.title ?? "", state: (index == selectedAnnotationIndex) ? .selected : .normal)
                                 .onTapGesture {
                                     isTapNavigation = true
-                                    if let map = proxy.map {
-                                        print("on tap annotation index")
-                                        ensureAnnotationVisible(map: map, annotation: annotation)
-                                    }
+                                    
+                                    ensureAnnotationVisible(proxy: proxy, annotation: annotation)
+                                
                                     selectedAnnotationIndex = (selectedAnnotationIndex == index) ? -1 : index
                                     onDidSelectAnnotation?(annotation)
                                 }
@@ -66,7 +65,7 @@ struct MapView: View {
                     // Display dropped pin
                     if let drop = droppedPinAnnotation {
                         MapViewAnnotation(coordinate: drop.coordinate) {
-                            PinView(label: drop.title ?? "f", fillColour: .red)
+                            PinView(label: drop.title ?? "f", state: .dropped)
                         }
                     }
                     
@@ -85,54 +84,20 @@ struct MapView: View {
                 .onChange(of: self.selectedAnnotationIndex, { oldValue, newValue in
                     guard !self.annotations.isEmpty else { return }
                     if !isTapNavigation {
-                        print("centre on navigate")
                         let annotation = self.annotations[newValue]
-                        animateToAnnotation(annotation)
+                        
+                        animateToAnnotation(proxy, annotation)
+                        
+                        
                     }
                     isTapNavigation = false
                 })
                 .onChange(of: self.annotations) { oldValue, newValue in
                     if let first = self.annotations.first {
-                        animateToAnnotation(first)
+                        animateToAnnotation(proxy, first)
                         onDidSelectAnnotation?(first)
                     }
                 }
-                
-                //
-                //            // Show the Edit (Add) CheckIn sheet when a new checkin is dropped
-                //            .sheet(isPresented: $showEditCheckIn) {
-                //                EditCheckInView(checkIn: self.selectedCheckIn)
-                //                    .presentationDetents([.large])
-                //                    .interactiveDismissDisabled(true)
-                //                    .presentationCornerRadius(20)
-                //                    .edgesIgnoringSafeArea(.top)
-                //                    .presentationDragIndicator(.hidden)
-                //            }
-                //
-                //            // Show the confirmation sheet when a pin is dropped
-                //            .sheet(isPresented: $showNewCheckInView) {
-                //                let mapTapInfo = "Check in here?"
-                //                NewCheckInDialog(info: mapTapInfo, onCancel: { self.newCheckIn = nil }, onConfirm: { addNewCheckIn() })
-                //                    .presentationDetents([.fraction(0.2)])
-                //                    .interactiveDismissDisabled(true)
-                //                    .presentationBackgroundInteraction(.enabled)
-                //                    .presentationCornerRadius(20)
-                //                    .edgesIgnoringSafeArea(.top)
-                //                    .presentationDragIndicator(.hidden)
-                //            }
-                
-                //            .ignoresSafeArea()
-                
-            
-        }
-    }
-    
-    /**
-     Animates the viewport to centre on the annotation
-     */
-    func animateToAnnotation(_ annotation: CheckInAnnotation) {
-        withViewportAnimation(.easeInOut(duration: 0.3)) {
-            viewport = .camera(center: annotation.coordinate)
         }
     }
     
@@ -154,11 +119,29 @@ struct MapView: View {
         return copy
     }
     
-    func ensureAnnotationVisible(map: MapboxMap, annotation: CheckInAnnotation) {
-        let point = map.point(for: annotation.coordinate)
-        if !annotationSafeArea.contains(point) {
-            animateToAnnotation(annotation)
+    /**
+     Positions the annotation in the centre of the top half of the view, away from any sheets that might be there.
+     */
+    func ensureAnnotationVisible(proxy: MapProxy, annotation: CheckInAnnotation) {
+        if let map = proxy.map {
+            let point = map.point(for: annotation.coordinate)
+            if !annotationSafeArea.contains(point) {
+                animateToAnnotation(proxy, annotation)
+            }
         }
+    }
+    
+    /**
+     Animates the viewport to centre on the annotation
+     */
+    func animateToAnnotation(_ proxy: MapProxy, _ annotation: CheckInAnnotation) {
+        print("animate")
+        
+        let cameraOptions = CameraOptions(
+            center: annotation.coordinate,
+            padding: UIEdgeInsets(top: 0, left: 0, bottom: 300, right: 0)
+            )
+        proxy.camera?.ease(to: cameraOptions, duration: 0.5)
     }
 }
 

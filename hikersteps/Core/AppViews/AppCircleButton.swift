@@ -14,7 +14,7 @@ struct AppCircleButton: View {
     private var style: ( foreground: Color, background: Color, border: Bool )
     private var onClick: (() -> Void)?
     
-    init(size: Double = 30, imageSystemName: String = "arrow.left.to.line", style: ( foreground: Color, background: Color, border: Bool ) = (foreground: Color(.appButtonForeground), background: Color(.appButtonBackground), border: true),  onClick: (() -> Void)? = nil) {
+    init(size: Double = 30, imageSystemName: String = "arrow.left.to.line", style: ( foreground: Color, background: Color, border: Bool ) = (foreground: Color(.appButtonForeground), background: Color(.appButtonBackground), border: false),  onClick: (() -> Void)? = nil) {
         
         self.size = size
         self.imageSystemName = imageSystemName

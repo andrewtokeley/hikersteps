@@ -8,71 +8,84 @@
 import SwiftUI
 
 struct CheckInView: View {
-    var checkIn: CheckIn
     @Environment(\.dismiss) private var dismiss
+    
     @State var isPresentingEdit = false
     @State var showEditCheckIn = false
-    
+        
     private var onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil
     
-    init(checkIn: CheckIn, onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil) {
-        self.checkIn = checkIn
-        self.onNavigate = onNavigate
+    @Binding var checkIn: CheckIn
+    var dayDescription: String
+    
+    init(checkIn: Binding<CheckIn>, dayDescription: String) {
+        _checkIn = checkIn
+        self.dayDescription = dayDescription
     }
     
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading) {
-                HStack {
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        isPresentingEdit = true
-                    }) {
-                        Image(systemName: "square.and.pencil")
-                            .imageScale(.medium)
-                            .font(.system(size: 20, weight: .regular))
-                            .foregroundColor(Color(.lightGray))
-                            .padding(.trailing)
-                    }
-                    
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .imageScale(.medium)
-                            .font(.system(size: 20, weight: .regular))
-                            .foregroundColor(Color(.lightGray))
-                    }
-                }
-                .padding(.top)
+            VStack(alignment: .center) {
                 
-                Text("Day 1")
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    ZStack {
+                        HStack {
+                            Spacer()
+                            
+                            Button(action: {
+                                isPresentingEdit = true
+                            }) {
+                                Image(systemName: "square.and.pencil")
+                                    .imageScale(.medium)
+                                    .font(.system(size: 20, weight: .regular))
+                                    .foregroundColor(Color(.lightGray))
+                                    .padding(.trailing)
+                            }
+                            
+                            Button(action: {
+                                dismiss()
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .imageScale(.medium)
+                                    .font(.system(size: 20, weight: .regular))
+                                    .foregroundColor(Color(.lightGray))
+                            }
+                        }
+                        Text(dayDescription)
+                            .font(.title2)
+                    
+                    }.padding(.top)
                 
-                Text(checkIn.title ?? "Check In")
+                Text(checkIn.title)
                     .font(.title)
                     .fontWeight(.bold)
                 
-                
-                
                 NavigationStripView {
-                    Text(checkIn.date.formatted(.dateTime.day().month().year()))
+                    Text(checkIn.date.formatted(.dateTime.weekday().day().month().year()))
                 }
                 .onNavigate { direction in
                     // pass on to parent view
-                    onNavigate?(direction)
+                    self.onNavigate?(direction)
                 }
                 
+                Divider()
+                
                 // Stats
-                HStack {
-                    Text("26km").bold() + Text(" hike").foregroundColor(.gray)
-                    Spacer()
-                    Text("total ").foregroundColor(.gray) + Text("3226km").bold()
+                ZStack {
+                    HStack {
+                        Text("\(checkIn.distanceWalked)km").bold() + Text(" hike").foregroundColor(.gray)
+                        Spacer()
+                        Text("total ").foregroundColor(.gray) + Text("3226km").bold()
+                    }
+                    if checkIn.accommodation != LookupItem.noSelection() {
+                        VStack {
+                            Image(systemName: checkIn.accommodation.imageName)
+                            Text(checkIn.accommodation.name)
+                        }
+                    }
+                        
                 }
                 .padding(.top)
+                .frame(height: 30)
                 
                 ScrollView {
                     if checkIn.images.count > 0 {
@@ -97,28 +110,26 @@ struct CheckInView: View {
                         }
                     }
                     
-                    if let notes = checkIn.notes {
-                        Text(notes)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top)
-                    }
-//                    Color(.blue)
+                    Text(checkIn.notes)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top)
+                    
+                    
+                    Spacer()
                 }
-                
-                Spacer()
+                .padding(.top)
+                .sheet(isPresented: $isPresentingEdit) {
+                    NavigationStack {
+                        EditCheckInView(checkIn: $checkIn)
+                            .presentationDetents([.large])
+                            .presentationDragIndicator(.visible)
+                            .interactiveDismissDisabled(true)
+                    }
+                }
             }
             .padding()
-            .sheet(isPresented: $isPresentingEdit) {
-                NavigationStack {
-                    EditCheckInView(checkIn: checkIn, onDeleteRequest: delete)
-                        .presentationDetents([.large])
-                        .presentationDragIndicator(.visible)
-                        .interactiveDismissDisabled(true)
-                }
-            }
+//            .navigationTitle("CheckIn")
         }
-        .navigationTitle("CheckIn")
-        
     }
     func delete() {
         print("delete")
@@ -131,7 +142,8 @@ struct CheckInView: View {
     }
 }
 
+
 #Preview {
-    @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", locationAsGeoPoint: Coordinate.wellington.toGeoPoint(), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
-    CheckInView(checkIn: checkIn)
+    @Previewable @State var checkIn: CheckIn = CheckIn(id: "1", uid: "123", location: Coordinate.wellington.toCLLLocationCoordinate2D(), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
+    CheckInView(checkIn: $checkIn, dayDescription: "Day 12")
 }

@@ -10,38 +10,24 @@ import SwiftUI
 struct EditCheckInView: View {
     @Environment(\.dismiss) private var dismiss
     
-    /**
-        A copy of the checkIn being edited
-     */
-    let checkIn: CheckIn
-
-    var onDeleteRequest: (()-> Void)? = nil
+    @Binding var checkIn: CheckIn
     
-    /// Properties that can be updated
-    /// TODO: can i just use the checkIn object itself?
-    @State private var isCreating: Bool = false
-    @State private var accommodationList: [LookupItem]
+    @StateObject var viewModel: ViewModel
+    
     @State private var showAccommodationSelect = false
     @State private var showDateSelector = false
     @State private var showDistanceSelector = false
     @State private var showZeroDaysSelector = false
-    @State private var title: String
-    @State private var notes: String
-    @State private var date: Date
-    @State private var dateDescription: String?
-    @State private var distanceWalked: Int
-    @State private var distanceUnit: Unit
-    @State private var numberOfRestDays: Int
-    @State private var numberOfOffTrailDays: Int
-    @State private var accommodation: LookupItem?
-    @State private var notesCharacterCount: Int = 0
-    @State private var resupplied: Bool = false
-    @State private var resupplyNotes: String
-    @State private var imageURL: String?
+    @State private var dateDescription: String? = nil
+    
+    @FocusState private var focusedView: FocusableViews?
+    
+    private var onDelete: (()-> Void)? = nil
+    private var onSaved: ((CheckIn) -> Void)? = nil
     
     private var image: Image? {
-        if let imageURL = imageURL {
-            return Image(imageURL)
+        if let url = viewModel.checkIn.images.first?.storageUrl {
+            return Image(url)
         }
         return nil
     }
@@ -53,33 +39,15 @@ struct EditCheckInView: View {
         case notes
         case resupplyNotes
     }
-    @FocusState private var focusedView: FocusableViews?
     
-    init(checkIn: CheckIn?, onDeleteRequest: (() -> Void)? = nil) {
-        
-        self.onDeleteRequest = onDeleteRequest
-        
-        let checkInToEdit: CheckIn
-        if let checkIn {
-            checkInToEdit = checkIn
-            isCreating = false
-        } else {
-            checkInToEdit = CheckIn.newWithDefaults
-            isCreating = true
-        }
-        self.checkIn = checkInToEdit
-        self.title = checkInToEdit.title ?? ""
-        self.notes = checkInToEdit.notes ?? ""
-        self.date = checkInToEdit.date
-        self.distanceWalked = checkInToEdit.distanceWalked
-        self.distanceUnit = .km
-        self.numberOfRestDays = checkInToEdit.numberOfRestDays
-        self.numberOfOffTrailDays = checkInToEdit.numberOfOffTrailDays
-        self.accommodation = LookupItem(id: "2", name: "Hotel", imageRotation: nil, imageName: "hotel") //checkInToEdit.accommodation
-        self.resupplied = checkInToEdit.resupply ?? false
-        self.resupplyNotes = checkInToEdit.resupplyNotes ?? ""
-        self.imageURL = checkInToEdit.images.first?.storageUrl
-        self.accommodationList = []
+    init(checkIn: Binding<CheckIn>) {
+        // pass a copy of the checkin that we can edit before committing to the bound checkIn
+        self.init(checkIn: checkIn, viewModel: ViewModel(checkIn: checkIn.wrappedValue))
+    }
+    
+    init(checkIn: Binding<CheckIn>, viewModel: ViewModel) {
+        _checkIn = checkIn
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
@@ -88,18 +56,18 @@ struct EditCheckInView: View {
                 
                 VStack (alignment: .leading) {
                     
-                    TextField("Name of where you stayed", text: $title)
+                    TextField("Name of where you stayed", text: $viewModel.checkIn.title)
                         .padding()
                         .styleBorderLight(focused: focusedView == .title)
                         .focused($focusedView, equals: .title)
                         .padding(.bottom)
-                    
+
                     Button {
                         showAccommodationSelect = true
                     } label: {
                         HStack {
-                            Image(systemName: accommodation?.sfSymbolName ?? "tent")
-                            Text(accommodation?.name ?? "Tent")
+                            Image(systemName: viewModel.checkIn.accommodation.imageName)
+                            Text(viewModel.checkIn.accommodation.name)
                             Spacer()
                             Image(systemName: "chevron.down")
                         }
@@ -114,7 +82,7 @@ struct EditCheckInView: View {
                     } label: {
                         HStack {
                             Image(systemName: "calendar")
-                            Text(date.asDateString())
+                            Text(viewModel.checkIn.date.asDateString())
                             Spacer()
                             Image(systemName: "chevron.down")
                         }
@@ -130,8 +98,8 @@ struct EditCheckInView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "figure.walk")
-                                Text("\(distanceWalked) \(distanceUnit.rawValue)")
-                                    .foregroundStyle(distanceWalked > 0 ? .primary : .secondary )
+                                Text("\(viewModel.checkIn.distanceWalked) km")
+                                    .foregroundStyle(viewModel.checkIn.distanceWalked > 0 ? .primary : .secondary )
                                 Spacer()
                                 Image(systemName: "chevron.down")
                             }
@@ -144,8 +112,8 @@ struct EditCheckInView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "zzz")
-                                Text("\(numberOfRestDays) days")
-                                    .foregroundStyle(numberOfRestDays > 0 ? .primary : .secondary )
+                                Text("\(viewModel.checkIn.numberOfRestDays) days")
+                                    .foregroundStyle(viewModel.checkIn.numberOfRestDays > 0 ? .primary : .secondary )
                                 Spacer()
                                 Image(systemName: "chevron.down")
                             }
@@ -155,7 +123,7 @@ struct EditCheckInView: View {
                         }
                     }
                     .padding(.bottom)
-                    .onChange(of: numberOfRestDays) { oldValue, newValue in
+                    .onChange(of: viewModel.checkIn.numberOfRestDays) { oldValue, newValue in
                         // update the date range this checkin covers
                         if newValue > 0 {
                             dateDescription = "date span changed"
@@ -168,14 +136,14 @@ struct EditCheckInView: View {
                     AppImagePicker(image: image)
                         .padding(.bottom)
                     
-                    AppTextEditor(text: $notes, placeholder: "Write something about your day :)")
+                    AppTextEditor(text: $viewModel.checkIn.notes, placeholder: "Write something about your day :)")
                         .frame(height: 300)
                         .padding(.bottom)
                     
                     Text("Resupply")
                         .font(.title)
                     
-                    Toggle(isOn: $resupplied) {
+                    Toggle(isOn: $viewModel.checkIn.resupply) {
                         HStack {
                             Image(systemName: "cart")
                                 .foregroundColor(.orange)
@@ -183,7 +151,7 @@ struct EditCheckInView: View {
                         }
                     }
                     .tint(.accentColor)
-                    .onChange(of: resupplied) { oldValue, newValue in
+                    .onChange(of: viewModel.checkIn.resupply) { oldValue, newValue in
                         if newValue {
                             focusedView = .resupplyNotes
                         } else {
@@ -192,8 +160,8 @@ struct EditCheckInView: View {
                     }
                     
                     
-                    if resupplied {
-                        AppTextEditor(text: $resupplyNotes, placeholder: "How was it?")
+                    if viewModel.checkIn.resupply {
+                        AppTextEditor(text: $viewModel.checkIn.resupplyNotes, placeholder: "How was it?")
                             .frame(height: 200)
                             .focused($focusedView, equals: .resupplyNotes)
                             .padding(.bottom)
@@ -205,7 +173,7 @@ struct EditCheckInView: View {
                     HStack {
                         Spacer()
                         Button("Delete") {
-                            onDeleteRequest?()
+                            self.onDelete?()
                             dismiss()
                         }
                         .capsuleStyled(background: .red, foreground: .white)
@@ -226,32 +194,45 @@ struct EditCheckInView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        dismiss()
+                        // Save to firestore
+                        viewModel.save { checkIn, error in
+                            // copy the saved checkin to the bound checkIn
+                            print("saved")
+                            self.checkIn = checkIn
+                            dismiss()
+                            //...
+                        }
+                            
+                        
                     }
                 }
             }
             .sheet(isPresented: $showAccommodationSelect) {
                 NavigationStack {
-                    AppListSelector(selectedItem: $accommodation, items: accommodationList, title: "Where did you sleep?")
+                    AppListSelector(
+                        items: viewModel.accommodationLookups,
+                        selectedItem: $viewModel.checkIn.accommodation,
+                        title: "Where did you sleep?", noSelection: true)
                         .presentationDragIndicator(.visible)
                         .presentationDetents([.medium])
                 }
             }
             .sheet(isPresented: $showDateSelector) {
-                AppDateSelect(selectedDate: $date, title: "Check-In Date")
+                AppDateSelect(selectedDate: $viewModel.checkIn.date, title: "Check-In Date")
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.medium])
             }
             .presentationDetents([.medium])
             
             .sheet(isPresented: $showDistanceSelector) {
-                AppNumberPicker(title: "Distance Walked", number: $distanceWalked, units: [.km, .mi], unit: $distanceUnit)
+                // Need to handle units
+                AppNumberPicker(title: "Distance Walked", number: $viewModel.checkIn.distanceWalked, units: [.km, .mi])
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.height(350)])
             }
             
             .sheet(isPresented: $showZeroDaysSelector) {
-                AppNumberPicker(title: "Zero Days", number: $numberOfRestDays, subTitle: dateDescription, units: [.days])
+                AppNumberPicker(title: "Zero Days", number: $viewModel.checkIn.numberOfRestDays, subTitle: dateDescription, units: [.days])
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.height(350)])
             }
@@ -259,21 +240,19 @@ struct EditCheckInView: View {
             
             .onAppear {
                 // get accommodation looks
-                LookupService.getAccommodationLookups { items, error in
-                    if let items = items {
-                        self.accommodationList = items
-                    }
-                    if let error = error {
-                        print(error)
-                    }
-                }
+                viewModel.loadAccommodationLookups()
             }
         }
     }
+    func onDelete(_ handler: @escaping (() -> Void)) -> EditCheckInView {
+        var copy = self
+        copy.onDelete = handler
+        return copy
+    }
+
 }
 
 #Preview {
-    EditCheckInView(checkIn: CheckIn.newWithDefaults, onDeleteRequest: {
-        print("hi")
-    })
+    @Previewable @State var checkIn = CheckIn.sample
+    EditCheckInView(checkIn: $checkIn, viewModel: EditCheckInView.ViewModelMock(checkIn: CheckIn.sample))
 }

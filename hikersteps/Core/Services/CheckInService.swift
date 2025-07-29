@@ -30,7 +30,9 @@ struct CheckInService {
                 }
                 do {
                     let checkins = try snapshot?.documents.compactMap { doc in
-                        return try doc.data(as: CheckIn.self)
+                        var item = try doc.data(as: CheckIn.self)
+                        item.id = doc.documentID
+                        return item
                     }
                     completion(checkins, nil)
                     

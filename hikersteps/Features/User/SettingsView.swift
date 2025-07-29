@@ -16,15 +16,15 @@ struct SettingsView: View {
     @State private var userSettings: UserSettings = UserSettings.sample()
     
     // Set when the user selects a preferred distance unit
-    @State private var selectedDistanceUnitLookup: LookupItem?
+    @State private var selectedDistanceUnitLookup: LookupItem = LookupItem.noSelection()
     
     // Conversion of lookup item into Unit
     private func selectedDistanceUnit() -> Unit? {
-        return Unit(rawValue: selectedDistanceUnitLookup?.id ?? "mi")
+        return Unit(rawValue: selectedDistanceUnitLookup.id ?? "mi")
     }
     
     init() {
-        _selectedDistanceUnitLookup = State(initialValue: LookupItem(id: userSettings.preferredDistanceUnit.rawValue, name: userSettings.preferredDistanceUnit.properName))
+        _selectedDistanceUnitLookup = State(initialValue: LookupItem(id: userSettings.preferredDistanceUnit.rawValue, name: userSettings.preferredDistanceUnit.properName, imageName: ""))
     }
     
     var body: some View {
@@ -118,10 +118,13 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showDistanceSelector) {
-            AppListSelector(selectedItem: $selectedDistanceUnitLookup, items: [
-                LookupItem(id: Unit.mi.rawValue, name: Unit.mi.properName),
-                LookupItem(id: Unit.km.rawValue, name: Unit.km.properName)
-            ], title: "Distance Unit")
+            AppListSelector(
+                items: [
+                LookupItem(id: Unit.mi.rawValue, name: Unit.mi.properName, imageName: ""),
+                LookupItem(id: Unit.km.rawValue, name: Unit.km.properName, imageName: "")
+                ],
+                selectedItem: $selectedDistanceUnitLookup,
+                title: "Distance Unit")
                 .presentationDetents([.height(200)])
         }
         

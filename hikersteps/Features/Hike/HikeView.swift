@@ -19,8 +19,12 @@ struct HikeView: View {
     /// In-memory structure to manage checkins and navigation.
     @StateObject var checkInManager: CheckInManager = CheckInManager(checkIns: [])
     
+    /// Created when a pin is dropped and user requests to create a new checkin
+    @State var newCheckIn: CheckIn?
+    
     /// Private flag to control when to show checkin sheet
     @State private var showCheckInDetails = false
+    @State private var showAddCheckInSheet = false
     
     /// The hike this view is representing
     var hike: Hike
@@ -44,25 +48,30 @@ struct HikeView: View {
      Main View body
      */
     var body: some View {
-        GeometryReader { geometry in
-            let height = geometry.size.height
-            let width = geometry.size.width
+        
+        NavigationStack {
+            GeometryReader { geometry in
+                let height = geometry.size.height
+                let width = geometry.size.width
             
-            NavigationStack {
                 ZStack {
                     MapView(
                         annotations: $checkInManager.annotations,
                         selectedAnnotationIndex: $checkInManager.selectedIndex,
-                        annotationSafeArea: CGRect(origin: CGPoint.zero, size: CGSize(width: width, height: 0.7 * height) )
+                        annotationSafeArea: CGRect(origin: CGPoint.zero, size: CGSize(width: width, height: 0.7 * height) ),
+                        droppedPinAnnotation: $checkInManager.droppedPinAnnotation
                     )
                     .onMapTap { location in
                         self.showCheckInDetails = false
                     }
                     .onMapLongPress({ location in
-                        print("long map tap")
+                        self.checkInManager.addDropInAnnotation(location: location)
+                        showAddCheckInSheet = true
+                        showCheckInDetails = false
                     })
                     .onDidSelectAnnotation({ annotation in
                         if let checkInId = annotation.checkInId {
+                            print("move: onDidSelectAnnotation")
                             self.checkInManager.move(.to(id: checkInId))
                             self.showCheckInDetails = true
                         }
@@ -71,7 +80,9 @@ struct HikeView: View {
                     .onAppear {
                         if let uid = auth.loggedInUser?.uid {
                             viewModel.loadCheckIns(uid: uid, hike: hike) { checkIns in
-                                self.checkInManager.checkIns = checkIns
+                                // initialise the checkInMananger
+                                self.checkInManager.initialise(checkIns: checkIns)
+                                print("move: onAppear")
                                 self.checkInManager.move(.start)
                             }
                         }
@@ -79,28 +90,48 @@ struct HikeView: View {
                 }
             }
         }
+        .sheet(item: $newCheckIn) { checkIn in
+            EditCheckInView(checkIn: Binding(get: {newCheckIn!}, set: {newCheckIn = $0}))
+                .presentationDetents([.fraction(0.2)])
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled(true)
+                .presentationBackgroundInteraction(.enabled)
+        }
+        .sheet(isPresented: $showAddCheckInSheet) {
+            NewCheckInDialog()
+                .onCancel {
+                    self.checkInManager.removeDropInAnnotation()
+                }
+                .onConfirm {
+                    if let uid = auth.loggedInUser?.uid, let location = checkInManager.droppedPinAnnotation?.coordinate {
+                        let new = self.checkInManager.addCheckIn(uid: uid, location: location , date: Date())
+                        self.newCheckIn = new
+                    }
+                    self.checkInManager.removeDropInAnnotation()
+                }
+                .presentationDetents([.fraction(0.2)])
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled(true)
+                .presentationBackgroundInteraction(.enabled)
+        }
         // Show CheckIn Detail Sheet
         .sheet(isPresented: $showCheckInDetails) {
-            if let checkIn = checkInManager.selectedCheckIn {
                 
-                CheckInView(checkIn: checkIn)
-                    .onNavigate({ direction in
-                        self.checkInManager.move(direction)
-                    })
-                    .presentationDetents([.fraction(0.3), .large])
-                    .presentationDragIndicator(.visible)
-                    .interactiveDismissDisabled(true)
-                    .presentationBackgroundInteraction(.enabled)
-            }
-        }
+            CheckInView(checkIn: $checkInManager.selectedCheckIn, dayDescription: checkInManager.dayDescription(checkInManager.selectedCheckIn))
+                .onNavigate({ direction in
+                    print("move: onNavigate")
+                    self.checkInManager.move(direction)
+                })
+                .presentationDetents([.fraction(0.5), .large])
+                .presentationDragIndicator(.visible)
+                .interactiveDismissDisabled(true)
+                .presentationBackgroundInteraction(.enabled)
         
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 AppBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                AppCircleButton(imageSystemName: "add.circle")
             }
         }
     }
@@ -110,6 +141,6 @@ struct HikeView: View {
     let mock = AuthenticationManagerMock() as AuthenticationManager
     HikeView(
         viewModel: HikeView.ViewModelMock(),
-        hike: Hike(description: "Walking the length of Aotearoa", name: "Te Araroa 2021/22", uid: "1"))
+        hike: Hike(description: "fWalking the length of Aotearoa", name: "Te Araroa 2021/22", uid: "1"))
         .environmentObject(mock)
 }

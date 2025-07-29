@@ -2,26 +2,28 @@ import SwiftUI
 import Foundation
 import Darwin
 
+enum PinViewState {
+    case selected
+    case normal
+    case dropped
+}
+
 struct PinView: View {
     var label: String
-    var fillColour: Color = .red
-    var isSelected: Bool = false
+    var state: PinViewState = .normal
+    
+//    var fillColour: Color = .red
+//    var isSelected: Bool = false
     
     @State private var scale: CGFloat = 0.0
-    
-//    init(label: String, isSelected: Bool = false, fillColor: Color = .blue) {
-//        self.label = label
-//        self.isSelected = isSelected
-//        self.fillColour = fillColor
-//    }
-    
+        
     var body: some View {
         let size = 20.0
         VStack {
             ZStack {
 
                 PinShape()
-                    .fill(isSelected ? .orange : .blue)
+                    .fill(state == .normal ? .blue : (state == .selected ? .orange : .red))
                 PinShape()
                     .stroke(Color.white.opacity(0.4), lineWidth: 1)
             }

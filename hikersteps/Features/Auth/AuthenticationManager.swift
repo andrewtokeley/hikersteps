@@ -52,7 +52,7 @@ class AuthenticationManager: AuthenticationManagerProtocol {
                 accessToken: result.user.accessToken.tokenString
             )
             
-            let authResult = try await Auth.auth().signIn(with: credential)
+            let _ = try await Auth.auth().signIn(with: credential)
             
             await MainActor.run {
                 self.isLoggedIn = true

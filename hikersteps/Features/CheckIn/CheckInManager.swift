@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 enum NavigationDirection {
     case next
@@ -19,31 +20,78 @@ enum NavigationDirection {
 let nilIndex: Int = -1
 
 class CheckInManager: ObservableObject {
-    @Published var checkIns: [CheckIn] {
+    @Published var checkIns: [CheckIn] = []
+    @Published var annotations: [CheckInAnnotation] = []
+    @Published var droppedPinAnnotation: CheckInAnnotation?
+    
+    @Published var selectedIndex: Int = nilIndex {
         didSet {
-            // initialise the annotations
-            self.annotations = checkIns.map { CheckInAnnotation(checkIn: $0 )}
+            // Update selectedCheckIn when selectedIndex changes
+            if selectedIndex != nilIndex && selectedIndex < checkIns.count {
+                selectedCheckIn = checkIns[selectedIndex]
+            } else {
+                selectedCheckIn = CheckIn.nilValue
+            }
         }
     }
-    @Published var selectedIndex: Int
-    @Published var annotations: [CheckInAnnotation] = []
-    
-    var selectedCheckIn: CheckIn? {
-        guard selectedIndex >= 0 else { return nil }
-        return checkIns[selectedIndex]
+
+    @Published var selectedCheckIn: CheckIn = CheckIn.nilValue {
+        didSet {
+            // Update the array when selectedCheckIn is modified
+            if selectedIndex != nilIndex && selectedIndex < checkIns.count {
+                checkIns[selectedIndex] = selectedCheckIn
+                // the only thing that can be updated that affects annotations is the title
+                annotations[selectedIndex].title = selectedCheckIn.title
+            }
+        }
     }
     
     init(checkIns: [CheckIn] = []) {
-        self.checkIns = checkIns.sorted { $0.date > $1.date }
-        self.selectedIndex = nilIndex
+        self.initialise(checkIns: checkIns)
     }
     
     var isEmpty: Bool {
         return checkIns.isEmpty
     }
     
+    /**
+    Ensures the checkins and annotations are in sync and puts the selected state back to nothing
+     */
+    func initialise(checkIns: [CheckIn]) {
+        self.checkIns = checkIns.sorted { $0.date < $1.date }
+        self.annotations = checkIns.map { CheckInAnnotation(checkIn: $0 )}
+        self.selectedIndex = nilIndex
+    }
+    
+    /**
+     Adds a new instance of a CheckIn at the appropriate location in the array of all check-ins based on it's date.
+     */
+    func addCheckIn(uid: String, location: CLLocationCoordinate2D, date: Date) -> CheckIn {
+        let new = CheckIn(uid: uid, location: location, date: date)
+        
+        // insert the new checkin at the right location
+        if let index = checkIns.firstIndex(where: { $0.date > date }) {
+            checkIns.insert(new, at: index)
+        } else {
+            checkIns.append(new)
+        }
+        return new
+    }
+    
+    func dayDescription(_ checkIn: CheckIn) -> String {
+        if let index = checkIns.firstIndex(where: { $0 == checkIn }) {
+            return "Day \(index)"
+        }
+        return ""
+    }
+    
     func move(_ direction: NavigationDirection) {
+        
         guard !checkIns.isEmpty else { selectedIndex = nilIndex; return }
+        
+        print("move \(direction)")
+        
+        // before moving make sure we copy any changes that were made to the selectedCheckIn back into the (value!) array.
         switch direction {
         case .start: moveStart()
         case .end: moveEnd()
@@ -62,7 +110,7 @@ class CheckInManager: ObservableObject {
         
         // select new one
         if let index = self.annotations.firstIndex(where: {
-            $0.checkInId == self.selectedCheckIn?.id }) {
+            $0.checkInId == self.selectedCheckIn.id }) {
             self.annotations[index].selected = true
         }
     }
@@ -110,4 +158,10 @@ class CheckInManager: ObservableObject {
         }
     }
     
+    func addDropInAnnotation(location: CLLocationCoordinate2D) {
+        self.droppedPinAnnotation = CheckInAnnotation(coordinate: location, title: "Drop In")
+    }
+    func removeDropInAnnotation() {
+        self.droppedPinAnnotation = nil
+    }
 }
