@@ -6,14 +6,24 @@ enum PinViewState {
     case selected
     case normal
     case dropped
+    case start
+    case end
+    
+    var colour: Color {
+        switch self {
+        case .selected: return .orange
+        case .normal: return .blue
+        case .dropped: return .red
+        case .start: return .green
+        case .end: return .red
+        }
+    }
 }
 
 struct PinView: View {
     var label: String
     var state: PinViewState = .normal
-    
-//    var fillColour: Color = .red
-//    var isSelected: Bool = false
+    var showLabel: Bool = false
     
     @State private var scale: CGFloat = 0.0
         
@@ -21,9 +31,8 @@ struct PinView: View {
         let size = 20.0
         VStack {
             ZStack {
-
                 PinShape()
-                    .fill(state == .normal ? .blue : (state == .selected ? .orange : .red))
+                    .fill(state.colour)
                 PinShape()
                     .stroke(Color.white.opacity(0.4), lineWidth: 1)
             }
@@ -36,15 +45,18 @@ struct PinView: View {
             }
             .frame(width: size, height: size * 3 / 2)
             .padding(.bottom, 3)
-            Text(label)
-                .foregroundColor(Color.red)
-                .font(.system(size: 13.5).bold())
-                .shadow(color: .white, radius: 0, x: 0.5, y: 0.5)
-                .shadow(color: .white, radius: 0, x: -0.5, y: 0.5)
-                .shadow(color: .white, radius: 0, x: 0.5, y: -0.5)
-                .shadow(color: .white, radius: 0, x: -0.5, y: -0.5)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 130)
+            
+            if showLabel {
+                Text(label)
+                    .foregroundColor(Color.red)
+                    .font(.system(size: 13.5).bold())
+                    .shadow(color: .white, radius: 0, x: 0.5, y: 0.5)
+                    .shadow(color: .white, radius: 0, x: -0.5, y: 0.5)
+                    .shadow(color: .white, radius: 0, x: 0.5, y: -0.5)
+                    .shadow(color: .white, radius: 0, x: -0.5, y: -0.5)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 130)
+            }
         }
     }
     

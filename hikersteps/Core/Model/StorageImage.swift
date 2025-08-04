@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct StorageImage:Codable {
+struct StorageImage:Codable, Equatable, FirestoreEncodable  {
     var name: String?
     var caption: String?
     var storagePath: String?

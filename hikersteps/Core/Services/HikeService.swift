@@ -9,37 +9,61 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 
-struct HikerService {
+protocol HikerServiceProtocol {
+    func updateStatistics(hikeId: String, statistics: HikeStatistics) async throws
+    func fetchHikes() async throws -> [Hike]
+}
+
+class HikerService: HikerServiceProtocol {
     
-    enum HikerServiceError: Error {
-        case unauthenticateUser
-        case unknownError
+    func updateStatistics(hikeId: String, statistics: HikeStatistics) async throws {
+        guard let _ = Auth.auth().currentUser?.uid else {
+            throw ServiceError.unauthenticateUser
+        }
+        
+        let db = Firestore.firestore()
+        let docRef = db.collection("adventures").document(hikeId)
+        
+        try await docRef.setData ([
+            "statistics": statistics.toDictionary()],
+                                  merge: true)
     }
     
-    static func fetchHikes(completion: @escaping ([Hike]?, Error?) -> Void) {
-        let db = Firestore.firestore()
-        
-        if let uid = Auth.auth().currentUser?.uid {
-            
-            db.collection("adventures")
-                .whereField("uid", isEqualTo: uid)
-                .getDocuments { snapshot, error in
-                    if let error = error {
-                        completion(nil, error)
-                        return
-                    }
-                    do {
-                        let hikes = try snapshot?.documents.compactMap { doc in
-                            return try doc.data(as: Hike.self)
-                        }
-                        completion(hikes, nil)
-
-                    } catch {
-                        completion(nil, HikerServiceError.unknownError)
-                    }
-                }
-        } else {
-            completion(nil, HikerServiceError.unauthenticateUser)
+    func fetchHikes() async throws -> [Hike] {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            throw ServiceError.unauthenticateUser
         }
+        
+        let db = Firestore.firestore()
+        let snapshot = try await db.collection("adventures")
+            .whereField("uid", isEqualTo: uid)
+            .getDocuments()
+        
+        do {
+            let hikes = try snapshot.documents.compactMap { doc -> Hike? in
+                var item = try doc.data(as: Hike.self)
+                item.id = doc.documentID
+                return item
+            }
+            return hikes
+        } catch {
+            throw error
+        }
+    }
+}
+
+class HikerServiceMock: HikerServiceProtocol {
+    func updateStatistics(hikeId: String, statistics: HikeStatistics) async throws {
+        return
+    }
+    
+    func fetchHikes() async throws -> [Hike] {
+        var hike1 = Hike(name: "Tokes on the TA", description: "Let's do this!", startDate: Date())
+        hike1.id = "1"
+        hike1.statistics = HikeStatistics.sample
+        var hike2 = Hike(name: "Bibbulmun 2025", description: "Where are all the snakes", startDate: Date())
+        hike2.id = "2"
+        hike2.statistics = HikeStatistics.sample
+        return [hike1, hike2]
     }
 }

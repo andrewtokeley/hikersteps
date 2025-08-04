@@ -11,54 +11,56 @@ import CoreLocation
 extension HikeView {
     
     protocol ViewModelProtocol: ObservableObject {
-        func loadCheckIns(uid: String, hike: Hike, completion: (([CheckIn]) -> Void)?)
-        func saveCheckIn(_ checkIn: CheckIn, completion: ((Error?) -> Void)?)
-        func addCheckIn(_ checkIn: CheckIn, completion: ((Error?) -> Void)?)
+        init(checkInService: CheckInServiceProtocol, hikeService: HikerServiceProtocol)
+        
+        func loadCheckIns(uid: String, hike: Hike) async throws -> [CheckIn]
+        func saveCheckIn(_ checkIn: CheckIn) async throws
+        func addCheckIn(_ checkIn: CheckIn) async throws
+        func saveChanges(_ manager: CheckInManager) async throws
     }
     
     /**
-     ViewModel for HikeView. Controls interacting with the model and also for maintaining annotation state (which feels wrong!)
+     The ViewModel for HikeView controls interacting with the model to retrieve hike details including the checkins for the hike.
      */
     class ViewModel: ViewModelProtocol {
 
+        private var checkInService: CheckInServiceProtocol
+        private var hikeService: HikerServiceProtocol
+        
+        required init(checkInService: CheckInServiceProtocol, hikeService: HikerServiceProtocol) {
+            self.checkInService = checkInService
+            self.hikeService = hikeService
+        }
+        
         /**
          Loads checkins for the given hike and returns the results through the trailing closure
          */
-        func loadCheckIns(uid: String, hike: Hike, completion: (([CheckIn]) -> Void)? = nil) {
-            if let hikeId = hike.id {
-                CheckInService.getCheckIns(uid: uid, adventureId: hikeId) { checkIns, error in
-                    if let _ = error {
-                        //TODO: log error
-                    } else if let checkIns = checkIns {
-                        completion?(checkIns)
-                    } else {
-                        //TODO: proper exception handling
-                    }
-                }
+        func loadCheckIns(uid: String, hike: Hike) async throws -> [CheckIn] {
+            if let adventureId = hike.id {
+                let checkIns = try await checkInService.getCheckIns(uid: uid, adventureId: adventureId)
+                
+                // refresh the hike statistics from the checkins
+                try await hikeService.updateStatistics(hikeId: adventureId, statistics: HikeStatistics(checkIns: checkIns))
+                return checkIns
             } else {
-                completion?([])
+                print("missing hike id")
             }
+            return []
         }
         
-        func saveCheckIn(_ checkIn: CheckIn, completion: ((Error?) -> Void)?) {
-            completion?(nil)
+        /**
+         Saves any changes made to the checkin. If the checkin has no changes then no action is taken.
+         */
+        func saveCheckIn(_ checkIn: CheckIn) async throws {
+            try await checkInService.updateCheckIn(checkIn: checkIn)
         }
         
-        func addCheckIn(_ checkIn: CheckIn, completion: ((Error?) -> Void)?) {
-            completion?(nil)
+        func saveChanges(_ manager: CheckInManager) async throws {
+            try await checkInService.save(manager: manager)
         }
-    }
-    
-    class ViewModelMock: ViewModel {
         
-        override func loadCheckIns(uid: String, hike: Hike, completion: (([CheckIn]) -> Void)? = nil) {
-            let checkIns = [
-                CheckIn(id: "0", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.16, longitude: 174.7787), title: "Twolight Campsite", notes: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam", date: Date(), accommodation: LookupItem(id: "1", name: "Tent", imageName: "tent")),
-                CheckIn(id: "1", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.19, longitude: 174.7787), title: "Brakenexk Speed Camp", date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!),
-                CheckIn(id: "2",  uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.29, longitude: 174.7787), title: "Wild Camping", date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!),
-                CheckIn(id: "3", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.39, longitude: 174.7787), title: "Cherokee Point Camp", date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!),
-                ]
-            completion?(checkIns)
+        func addCheckIn(_ checkIn: CheckIn) async throws {
+            // to do
         }
     }
 }

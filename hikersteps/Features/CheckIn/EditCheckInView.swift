@@ -22,8 +22,7 @@ struct EditCheckInView: View {
     
     @FocusState private var focusedView: FocusableViews?
     
-    private var onDelete: (()-> Void)? = nil
-    private var onSaved: ((CheckIn) -> Void)? = nil
+    private var onSaved: (() -> CheckIn)? = nil
     
     private var image: Image? {
         if let url = viewModel.checkIn.images.first?.storageUrl {
@@ -41,8 +40,9 @@ struct EditCheckInView: View {
     }
     
     init(checkIn: Binding<CheckIn>) {
-        // pass a copy of the checkin that we can edit before committing to the bound checkIn
-        self.init(checkIn: checkIn, viewModel: ViewModel(checkIn: checkIn.wrappedValue))
+        // we pass in the wrapped value to the viewmodel so that we can choose whether to copy the changes back to the parent depending on whether changes are saved or canceled.
+        self.init(checkIn: checkIn,
+                  viewModel: ViewModel(checkIn: checkIn.wrappedValue, checkInService: CheckInService(), lookupService: LookupService()))
     }
     
     init(checkIn: Binding<CheckIn>, viewModel: ViewModel) {
@@ -170,16 +170,6 @@ struct EditCheckInView: View {
                     Divider()
                         .padding()
                     
-                    HStack {
-                        Spacer()
-                        Button("Delete") {
-                            self.onDelete?()
-                            dismiss()
-                        }
-                        .capsuleStyled(background: .red, foreground: .white)
-                        .padding()
-                        Spacer()
-                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -195,15 +185,16 @@ struct EditCheckInView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         // Save to firestore
-                        viewModel.save { checkIn, error in
-                            // copy the saved checkin to the bound checkIn
-                            print("saved")
-                            self.checkIn = checkIn
-                            dismiss()
-                            //...
+                        Task {
+                            do {
+                                try await viewModel.save(checkIn: viewModel.checkIn)
+                                //copy changes back to the bound checkIn to refresh the parent view
+                                self.checkIn = viewModel.checkIn
+                                dismiss()
+                            } catch {
+                                ErrorLogger.shared.log(error)
+                            }
                         }
-                            
-                        
                     }
                 }
             }
@@ -240,19 +231,28 @@ struct EditCheckInView: View {
             
             .onAppear {
                 // get accommodation looks
-                viewModel.loadAccommodationLookups()
+                Task {
+                    do {
+                        try await viewModel.loadAccommodationLookups()
+                    } catch {
+                        ErrorLogger.shared.log(error)
+                    }
+                }
             }
+            
         }
     }
-    func onDelete(_ handler: @escaping (() -> Void)) -> EditCheckInView {
+    
+    func onSaved(_ handler: (() -> CheckIn)?) -> EditCheckInView {
         var copy = self
-        copy.onDelete = handler
+        copy.onSaved = handler
         return copy
     }
 
 }
 
 #Preview {
-    @Previewable @State var checkIn = CheckIn.sample
-    EditCheckInView(checkIn: $checkIn, viewModel: EditCheckInView.ViewModelMock(checkIn: CheckIn.sample))
+    @Previewable @State var checkIn = CheckIn.sample()
+    EditCheckInView(checkIn: $checkIn,
+                    viewModel: EditCheckInView.ViewModel(checkIn: checkIn, checkInService: CheckInServiceMock(), lookupService: LookupServiceMock()))
 }

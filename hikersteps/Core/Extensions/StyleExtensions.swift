@@ -8,6 +8,15 @@
 import Foundation
 import SwiftUI
 
+extension Color {
+    
+    static func adaptive(light: Color, dark: Color) -> Color {
+        return Color(UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+    }
+}
+
 extension View {
     
     /**

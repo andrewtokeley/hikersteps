@@ -42,6 +42,20 @@ struct MapView: View {
         
         self.annotationSafeArea = annotationSafeArea
     }
+
+    private func pinState(_ annotation: CheckInAnnotation, _ index: Int) -> PinViewState {
+        
+        if index == selectedAnnotationIndex {
+            return .selected
+        } else if index == 0 {
+            return .start
+        } else if annotation.isNew {
+            return .dropped
+        } else if index == annotations.count - 1 {
+            return .end
+        }
+        return .normal
+    }
     
     var body: some View {
         MapReader { proxy in
@@ -50,18 +64,18 @@ struct MapView: View {
                     // Display checkins
                     ForEvery(Array(annotations.enumerated()), id: \.element.id) { index, annotation in
                         MapViewAnnotation(coordinate: annotation.coordinate) {
-                            PinView(label: annotation.title ?? "", state: (index == selectedAnnotationIndex) ? .selected : .normal)
+                            PinView(label: annotation.title ?? "", state: pinState(annotation, index), showLabel: false)
                                 .onTapGesture {
                                     isTapNavigation = true
                                     
                                     ensureAnnotationVisible(proxy: proxy, annotation: annotation)
                                 
                                     selectedAnnotationIndex = (selectedAnnotationIndex == index) ? -1 : index
+                                    
                                     onDidSelectAnnotation?(annotation)
                                 }
                         }
                     }
-                    
                     // Display dropped pin
                     if let drop = droppedPinAnnotation {
                         MapViewAnnotation(coordinate: drop.coordinate) {
@@ -81,9 +95,11 @@ struct MapView: View {
                         return true
                     }
                 }
+                .ignoresSafeArea()
                 .onChange(of: self.selectedAnnotationIndex, { oldValue, newValue in
                     guard !self.annotations.isEmpty else { return }
-                    if !isTapNavigation {
+                    if !isTapNavigation && newValue >= 0 {
+                        
                         let annotation = self.annotations[newValue]
                         
                         animateToAnnotation(proxy, annotation)
@@ -135,13 +151,13 @@ struct MapView: View {
      Animates the viewport to centre on the annotation
      */
     func animateToAnnotation(_ proxy: MapProxy, _ annotation: CheckInAnnotation) {
-        print("animate")
         
-        let cameraOptions = CameraOptions(
-            center: annotation.coordinate,
-            padding: UIEdgeInsets(top: 0, left: 0, bottom: 300, right: 0)
+        if let map = proxy.map {
+            let cameraOptions = CameraOptions(
+                center: annotation.coordinate,
             )
-        proxy.camera?.ease(to: cameraOptions, duration: 0.5)
+            proxy.camera?.ease(to: cameraOptions, duration: 0.3)
+        }
     }
 }
 

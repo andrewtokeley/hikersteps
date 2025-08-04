@@ -8,38 +8,41 @@
 import Foundation
 import FirebaseFirestore
 
-struct LookupService {
-    enum ServiceError: Error {
-        case unknownError
+protocol LookupServiceProtocol {
+    func getAccommodationLookups() async throws -> [LookupItem]
+}
+
+class LookupService: LookupServiceProtocol {
+    
+    func getAccommodationLookups() async throws -> [LookupItem] {
+        let result = try await getLookups(documentKey: "ACCOMMODATION")
+        return result
     }
     
-    static func getAccommodationLookups(completion: @escaping ([LookupItem]?, Error?) -> Void) {
-        getLookups(documentKey: "ACCOMMODATION", completion: completion)
-    }
-    
-    private static func getLookups(documentKey: String, completion: @escaping ([LookupItem]?, Error?) -> Void) {
+    private func getLookups(documentKey: String) async throws -> [LookupItem] {
         let db = Firestore.firestore()
-        db.collection("lookups")
+        let snapshot = try await db.collection("lookups")
             .document(documentKey).collection("keys")
-            .order(by: "order", descending: false)
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    completion(nil, error)
-                    return
-                }
-                do {
-                    let lookUps = try snapshot?.documents.compactMap { doc in
-                        var item = try doc.data(as: LookupItem.self)
-                        item.id = doc.documentID
-                        return item
-                    }
-                    completion(lookUps, nil)
-                    
-                } catch {
-                    print("\(error)")
-                    completion(nil, ServiceError.unknownError)
-                }
+            .getDocuments()
+        do {
+            let lookups = try snapshot.documents.compactMap { doc in
+                var item = try doc.data(as: LookupItem.self)
+                item.id = doc.documentID
+                return item
             }
+            return lookups
+        } catch {
+            throw error
+        }
     }
 }
 
+class LookupServiceMock: LookupServiceProtocol {
+    func getAccommodationLookups() async throws -> [LookupItem] {
+        return [
+            LookupItem(id: "1", name: "Tent", imageName: "carpenter"),
+            LookupItem(id: "2", name: "Hotel", imageName: "cabin"),
+            LookupItem(id: "3", name: "Trail Angel", imageName: "airline-seat-flat")
+        ]
+    }
+}

@@ -10,36 +10,107 @@ import Foundation
 import Foundation
 import FirebaseFirestore
 import FirebaseAuth
+import CoreLocation
 
-struct CheckInService {
+protocol CheckInServiceProtocol {
+    func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn]
+    func updateCheckIn (checkIn: CheckIn) async throws
+    func save(manager: CheckInManager) async throws
+}
+
+class CheckInService: CheckInServiceProtocol {
     
-    enum ServiceError: Error {
-        case unknownError
+    func save(manager: CheckInManager) async throws {
+    
+        let changes = manager.changes
+        
+        let db = Firestore.firestore()
+        let batch = db.batch()
+        
+        // Add new CheckIns
+        for checkIn in changes.added {
+            let newDocRef = db.collection("checkins").document()
+            if let dictionary = checkIn.toDictionary() {
+                batch.setData(dictionary, forDocument: newDocRef)
+            }
+        }
+        
+        // Update existing CheckIns
+        for checkIn in changes.modified {
+            guard let id = checkIn.id else { continue }
+            let docRef = db.collection("checkIns").document(id)
+            if let dictionary = checkIn.toDictionary() {
+                batch.setData(dictionary, forDocument: docRef, merge: true)
+            }
+        }
+        
+        // Delete CheckIns
+        for checkIn in changes.removed {
+            guard let id = checkIn.id else { continue }
+            let docRef = db.collection("checkIns").document(id)
+            batch.deleteDocument(docRef)
+        }
+        
+        // Commit the batch
+        try await batch.commit()
     }
     
-    static func getCheckIns(uid: String, adventureId: String, completion: @escaping ([CheckIn]?, Error?) -> Void) {
+    func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn] {
         let db = Firestore.firestore()
-        db.collection("check-ins")
+        let snapshot = try await db.collection("check-ins")
             .whereField("uid", isEqualTo: uid)
             .whereField("adventureId", isEqualTo: adventureId)
             .order(by: "date", descending: false)
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    completion(nil, error)
-                    return
-                }
-                do {
-                    let checkins = try snapshot?.documents.compactMap { doc in
-                        var item = try doc.data(as: CheckIn.self)
-                        item.id = doc.documentID
-                        return item
-                    }
-                    completion(checkins, nil)
-                    
-                } catch {
-                    print("\(error)")
-                    completion(nil, ServiceError.unknownError)
-                }
+            .getDocuments()
+        
+        do {
+            let checkins = try snapshot.documents.compactMap { doc -> CheckIn? in
+                var item = try doc.data(as: CheckIn.self)
+                item.id = doc.documentID
+                return item
             }
+            return checkins
+        } catch {
+            throw ServiceError.unknownError
+        }
+    }
+    
+    func updateCheckIn (checkIn: CheckIn) async throws {
+        guard let id = checkIn.id else {
+            throw ServiceError.missingDocumentID
+        }
+        let db = Firestore.firestore()
+        do {
+            try await db.collection("check-ins")
+                    .document(id)
+                    .setData(checkIn.toDictionary(), merge: true)
+        } catch {
+            throw error
+        }
     }
 }
+
+class CheckInServiceMock: CheckInServiceProtocol {
+    func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn] {
+        return [
+            CheckIn(id: "4", uid: "123", location: CLLocationCoordinate2D(latitude: -41.12, longitude: 174.7787), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distanceWalked: 10, date: Date(), images: [StorageImage.sample]),
+            CheckIn(id: "0", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.16, longitude: 174.7787), title: "Twolight Campsite", notes: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam",  distanceWalked: 21, date: Date(), accommodation: LookupItem(id: "1", name: "Tent", imageName: "tent")),
+            CheckIn(id: "1", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.19, longitude: 174.7787), title: "Brakenexk Speed Camp",  distanceWalked: 35, numberOfRestDays: 2, date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!),
+            CheckIn(id: "2",  uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.29, longitude: 174.7787), title: "Wild Camping", distanceWalked: 42, date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!),
+            CheckIn(id: "3", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.39, longitude: 174.7787), title: "Cherokee Point Camp",  distanceWalked: 15,date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!),
+        ]
+    }
+    
+    func updateCheckIn(checkIn: CheckIn) async throws {
+        // do nothing
+        return
+    }
+    
+    func save(manager: CheckInManager) async throws {
+        // do nothing
+        return
+    }
+    
+}
+
+

@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct LookupItem:Codable, Identifiable, Hashable {
+struct LookupItem:Codable, Identifiable, Hashable, FirestoreEncodable  {
     
     static let defaultImageName = "questionmark.app"
     
@@ -36,14 +36,16 @@ struct LookupItem:Codable, Identifiable, Hashable {
         switch imageName {
         case "send": return "tent"
         case "bedtime": return "moon.stars"
-        case "airline-seat-flat": return "zzz"
+        case "airline_seat_flat": return "zzz"
         case "dormitory": return "house"
         case "apartment": return "house.badge.wifi"
         case "brightness_3": return "tree"
-        case "holiday-village": return "house"
+        case "holiday_village": return "house"
         case "cabin": return "house"
         case "carpenter": return "tent"
         case "face_retouching_natural": return "face.smiling"
+        case "chalet": return "house"
+        case "hotel": return "house.badge.wifi"
         default:
             return nil
         }
@@ -92,6 +94,9 @@ struct LookupItem:Codable, Identifiable, Hashable {
         return lookup
     }
     
+    /**
+     Converts an imageName as received from firestore into an SF Symbol name.
+     */
     private func safeConvert(_ imageName: String) -> String {
         print("from \(imageName)...")
         // First see if this is an SFSymbolName
@@ -104,7 +109,6 @@ struct LookupItem:Codable, Identifiable, Hashable {
             return converted
             // If all else fails us leave it blank
         } else {
-            print("to blank...")
             return ""
         }
     }

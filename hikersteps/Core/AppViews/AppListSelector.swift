@@ -110,15 +110,26 @@ struct AppListSelector: View {
     }
 }
 
-#Preview {
-    @Previewable @State var selectedItem: LookupItem = LookupItem.noSelection()
+struct PreviewWrapper: View {
+    @State var selectedItem: LookupItem = LookupItem.noSelection()
+    @State var items: [LookupItem] = []
+    @State var service = LookupServiceMock()
     
-    AppListSelector(
-        items: [
-            LookupItem(id: "1", name: "Tent", imageName: "carpenter"),
-            LookupItem(id: "2", name: "Hotel", imageName: "cabin"),
-            LookupItem(id: "3", name: "Trail Angel", imageName: "airline-seat-flat")],
-        selectedItem: $selectedItem,
-        title: "Where did you stay",
-        noSelection: true)
+    var body: some View {
+        AppListSelector(items: self.items, selectedItem: $selectedItem, title: "Select a Lookup Item", noSelection: true)
+            .onAppear {
+                Task {
+                    do {
+                        self.items = try await service.getAccommodationLookups()
+                    } catch {
+                        ErrorLogger.shared.log(error)
+                    }
+                }
+            }
+    }
+        
+}
+
+#Preview {
+   PreviewWrapper()
 }

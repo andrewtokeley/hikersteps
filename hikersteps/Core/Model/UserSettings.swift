@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UserSettings {
+struct UserSettings: Codable, FirestoreEncodable  {
     var preferredDistanceUnit: Unit = .km
     
     static func sample() -> UserSettings {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CustomLink:Codable {
+struct CustomLink:Codable, Equatable, FirestoreEncodable  {
     var title: String?
     var url: String?
 }

@@ -9,21 +9,24 @@ import SwiftUI
 
 struct AppBackButton: View {
     @Environment(\.dismiss) private var dismiss
+    private var willDismiss: (() -> Void)? = nil
     
     var size: Double = 30
     
     var body: some View {
-        Button(action: {
-            dismiss()
-        }) {
-            Image(systemName: "arrow.backward.circle.fill")
-                .foregroundColor(.white)
-                .font(.system(size: size, weight: .medium))
-                .frame(width: size, height: size)
-                .background(Circle().fill(Color.black.opacity(0.7)))
-                
-        }
-        .buttonStyle(PlainButtonStyle()) // Prevents default button styling if you want
+        
+        AppCircleButton(imageSystemName: "arrow.backward")
+            .style(.filledOnImage)
+            .onClick {
+                willDismiss?()
+                dismiss()
+            }
+    }
+    
+    func willDismiss(_ handler: @escaping (() -> Void)) -> AppBackButton {
+        var copy = self
+        copy.willDismiss = handler
+        return copy
     }
 }
 

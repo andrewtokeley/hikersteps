@@ -7,36 +7,83 @@
 
 import SwiftUI
 
+enum CircleButtonStyle {
+    case filled
+    case filledOnImage
+    case plain
+    case white
+}
+
+/**
+ Circular button that surrounds a SF Symobl and is fully dark/light mode compatible
+ */
 struct AppCircleButton: View {
+    
     var size: Double
     var imageSystemName: String
+    var style: CircleButtonStyle = .filled
+    var rotationAngle: Angle = .degrees(0)
     
-    private var style: ( foreground: Color, background: Color, border: Bool )
+    private var _style: ( foreground: Color, background: Color, border: Bool ) {
+        switch style {
+        case .filled:
+            return (
+                foreground: Color(.black),
+                background: Color.adaptive(light: Color(.systemGray5), dark: Color(.systemGray)),
+                border: false)
+        case .filledOnImage:
+            return (
+                foreground: Color.adaptive(light: .black, dark: .white),
+                background: Color.adaptive(light: .white, dark: Color(.systemGray2).opacity(0.8)),
+                border: false)
+        case .plain:
+            return (
+                foreground: Color.adaptive(light: .black, dark: .white),
+                background: Color(.clear),
+                border: false)
+        case .white:
+            return (
+                foreground: .black,
+                background: .white,
+                border: false)
+        }
+    }
     private var onClick: (() -> Void)?
     
-    init(size: Double = 30, imageSystemName: String = "arrow.left.to.line", style: ( foreground: Color, background: Color, border: Bool ) = (foreground: Color(.appButtonForeground), background: Color(.appButtonBackground), border: false),  onClick: (() -> Void)? = nil) {
+    init(size: Double = 30, imageSystemName: String = "arrow.left.to.line", style: CircleButtonStyle = .filled, rotationAngle: Angle = .degrees(0),  onClick: (() -> Void)? = nil) {
         
         self.size = size
         self.imageSystemName = imageSystemName
         self.onClick = onClick
         self.style = style
+        self.rotationAngle = rotationAngle
     }
     
     var body: some View {
-        Button(action: {
-            onClick?()
-        }) {
-            Image(systemName: imageSystemName)
-                .foregroundColor(style.foreground)
-                .font(.system(size: 0.6 * size, weight: .medium))
-                .frame(width: size, height: size)
-                .background(Circle().fill(style.background))
-                .overlay(
-                    RoundedRectangle(cornerRadius: size / 2)
-                        .strokeBorder(style.border ? Color(.appButtonForeground) : Color(.clear), lineWidth: 1)
-                )
+        if onClick != nil {
+            Button(action: {
+                onClick?()
+            }) {
+                image
+            }
+            .buttonStyle(PlainButtonStyle()) // Prevents default button styling if you want
+        } else {
+            image
         }
-        .buttonStyle(PlainButtonStyle()) // Prevents default button styling if you want
+    }
+
+    private var image: some View {
+        Image(systemName: imageSystemName)
+            .foregroundColor(_style.foreground)
+            .font(.system(size: 0.6 * size, weight: .medium))
+            .frame(width: size, height: size)
+            .padding(.all, 4)
+            .background(Circle().fill(_style.background))
+            .overlay(
+                RoundedRectangle(cornerRadius: size / 2)
+                    .strokeBorder(_style.border ? Color(_style.foreground) : Color(.clear), lineWidth: 1)
+            )
+            .rotationEffect(rotationAngle)
     }
     
     func onClick(_ handler:(() -> Void)?) -> AppCircleButton {
@@ -44,22 +91,29 @@ struct AppCircleButton: View {
         copy.onClick = handler
         return copy
     }
-    func style(foreground: Color, background: Color, border: Bool = true) -> AppCircleButton {
+    
+    func style(_ style: CircleButtonStyle) -> AppCircleButton {
         var copy = self
-        copy.style = (foreground: foreground, background: background, border: border)
+        copy.style = style
         return copy
     }
 }
 
 #Preview {
-    HStack {
-        AppCircleButton(imageSystemName: "arrow.left.to.line")
-            .style(foreground: Color(.appButtonForeground), background: .white, border: false)
-        AppCircleButton(size: 40, imageSystemName: "arrow.left")
-        Spacer()
-        AppCircleButton(size: 40, imageSystemName: "arrow.right")
-        AppCircleButton(imageSystemName: "arrow.right.to.line")
-            .style(foreground: Color(.appButtonForeground), background: .white, border: false)
+    VStack {
+        AppCircleButton(imageSystemName: "arrow.left")
+            .style(.filledOnImage)
+            
+        HStack {
+            AppCircleButton(imageSystemName: "arrow.left.to.line")
+                .style(.plain)
+            AppCircleButton(imageSystemName: "arrow.left")
+            Spacer()
+            AppCircleButton(imageSystemName: "arrow.right")
+            AppCircleButton(imageSystemName: "arrow.right.to.line")
+                .style(.plain)
+        }
+        .padding()
     }
-    .padding()
+    
 }

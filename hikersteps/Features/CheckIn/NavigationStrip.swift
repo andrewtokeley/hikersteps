@@ -20,7 +20,7 @@ struct NavigationStripView<Content: View>: View {
         ZStack {
             HStack {
                 AppCircleButton(imageSystemName: "arrow.left.to.line")
-                    .style(foreground: Color(.appButtonForeground), background: .white, border: false)
+                    .style(.plain)
                     .onClick { onNavigate?(.start) }
                 AppCircleButton(size: 40, imageSystemName: "arrow.left")
                     .onClick { onNavigate?(.previous) }
@@ -28,7 +28,7 @@ struct NavigationStripView<Content: View>: View {
                 AppCircleButton(size: 40, imageSystemName: "arrow.right")
                     .onClick { onNavigate?(.next) }
                 AppCircleButton(imageSystemName: "arrow.right.to.line")
-                    .style(foreground: Color(.appButtonForeground), background: .white, border: false)
+                    .style(.plain)
                     .onClick { onNavigate?(.end) }
             }
             // centred

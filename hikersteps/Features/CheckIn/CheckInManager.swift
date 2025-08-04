@@ -15,11 +15,15 @@ enum NavigationDirection {
     case end
     case latest
     case to(id: String)
+    case toIndex(index: Int)
 }
 
 let nilIndex: Int = -1
 
 class CheckInManager: ObservableObject {
+    
+    //MARK: - Published properties
+    
     @Published var checkIns: [CheckIn] = []
     @Published var annotations: [CheckInAnnotation] = []
     @Published var droppedPinAnnotation: CheckInAnnotation?
@@ -46,12 +50,16 @@ class CheckInManager: ObservableObject {
         }
     }
     
-    init(checkIns: [CheckIn] = []) {
-        self.initialise(checkIns: checkIns)
-    }
+    //MARK: - Convenience Computed Properties
     
     var isEmpty: Bool {
         return checkIns.isEmpty
+    }
+    
+    //MARK: - Constructors
+    
+    init(checkIns: [CheckIn] = []) {
+        self.initialise(checkIns: checkIns)
     }
     
     /**
@@ -61,35 +69,72 @@ class CheckInManager: ObservableObject {
         self.checkIns = checkIns.sorted { $0.date < $1.date }
         self.annotations = checkIns.map { CheckInAnnotation(checkIn: $0 )}
         self.selectedIndex = nilIndex
+        self.resetDirtyState()
     }
     
+    // MARK: - Add/Remove CheckIns
+    
     /**
-     Adds a new instance of a CheckIn at the appropriate location in the array of all check-ins based on it's date.
+     Adds a new instance of a CheckIn at the appropriate location in the checkins array based on it's date.
+     
+     The new instance is returned.
      */
     func addCheckIn(uid: String, location: CLLocationCoordinate2D, date: Date) -> CheckIn {
         let new = CheckIn(uid: uid, location: location, date: date)
+        let newAnnotation = CheckInAnnotation(checkIn: new)
         
         // insert the new checkin at the right location
         if let index = checkIns.firstIndex(where: { $0.date > date }) {
             checkIns.insert(new, at: index)
+            annotations.insert(newAnnotation, at: index)
+            move(.toIndex(index: index))
         } else {
             checkIns.append(new)
+            annotations.append(newAnnotation)
+            move(.end)
         }
         return new
     }
     
-    func dayDescription(_ checkIn: CheckIn) -> String {
-        if let index = checkIns.firstIndex(where: { $0 == checkIn }) {
-            return "Day \(index)"
+    func removeCheckIn(id: String) {
+        guard let index = checkIns.firstIndex(where: { $0.id == id }) else { return }
+        
+        checkIns.remove(at: index)
+        annotations.remove(at: index)
+        
+        // if the last chechin was removed then make sure the selectedIndex isn't out of range
+        if selectedIndex > (checkIns.count - 1) {
+            selectedIndex = checkIns.count - 1
         }
-        return ""
     }
+    
+    //MARK: - UItilities
+    
+    /**
+     Returns a string representation for the day. Typically this is in the format "Day 21", but for the first day it will return "Start"
+     */
+    func dayDescription(_ checkIn: CheckIn) -> String {
+        var description = ""
+        
+        if let index = checkIns.firstIndex(where: { $0 == checkIn }) {
+            if index == 0 {
+                description = "Start"
+            } else {
+                description = "Day \(index)"
+            }
+        }
+        return description
+    }
+    
+    func clearSelectedCheckIn() {
+        selectedIndex = nilIndex
+    }
+    
+    //MARK: - Navigation
     
     func move(_ direction: NavigationDirection) {
         
         guard !checkIns.isEmpty else { selectedIndex = nilIndex; return }
-        
-        print("move \(direction)")
         
         // before moving make sure we copy any changes that were made to the selectedCheckIn back into the (value!) array.
         switch direction {
@@ -99,6 +144,7 @@ class CheckInManager: ObservableObject {
         case .previous: movePrevious()
         case .latest: moveLatest()
         case .to(let id): moveTo(id)
+        case .toIndex(let index): moveToIndex(index)
         }
         
         // Make sure the correct annotation is selected/deselected
@@ -115,6 +161,14 @@ class CheckInManager: ObservableObject {
         }
     }
     
+    private func moveToIndex(_ index: Int) {
+        guard index >= 0 && index < checkIns.count else { return }
+        selectedIndex = index
+    }
+    
+    /**
+     Moves to the check with the given id
+     */
     private func moveTo(_ id: String) {
         guard !checkIns.isEmpty else { selectedIndex = nilIndex; return }
         if let index = checkIns.firstIndex(where: { $0.id == id } ) {
@@ -158,10 +212,83 @@ class CheckInManager: ObservableObject {
         }
     }
     
+    //MARK: - Annotations
+    
     func addDropInAnnotation(location: CLLocationCoordinate2D) {
         self.droppedPinAnnotation = CheckInAnnotation(coordinate: location, title: "Drop In")
     }
     func removeDropInAnnotation() {
         self.droppedPinAnnotation = nil
+    }
+    
+    //MARK: - Tracking
+    
+    struct CheckInDiff {
+        var added: [CheckIn] = []
+        var removed: [CheckIn] = []
+        var modified: [CheckIn] = []
+        var reordered: Bool = false
+        
+        var hasDifferences: Bool {
+            return !added.isEmpty || !removed.isEmpty || !modified.isEmpty || reordered
+        }
+    }
+    
+    /**
+     Checks for changes in the underlying CheckIn array and returns a CheckInDiff result
+     */
+    private func diffCheckIns(old: [CheckIn], new: [CheckIn]) -> CheckInDiff {
+        var diff = CheckInDiff()
+        
+        let oldMap = Dictionary(uniqueKeysWithValues: old.map { ($0.id, $0) })
+        let newMap = Dictionary(uniqueKeysWithValues: new.map { ($0.id, $0) })
+        
+        // Detect removed
+        for oldItem in old {
+            if newMap[oldItem.id] == nil {
+                diff.removed.append(oldItem)
+            }
+        }
+        
+        // Detect added + modified
+        for newItem in new {
+            if let oldItem = oldMap[newItem.id] {
+                if oldItem != newItem {
+                    diff.modified.append(newItem)
+                }
+            } else {
+                diff.added.append(newItem)
+            }
+        }
+        
+        // Detect reordering (optional)
+        let oldIDs = old.map { $0.id }
+        let newIDs = new.map { $0.id }
+        if oldIDs != newIDs {
+            diff.reordered = true
+        }
+        
+        return diff
+    }
+    
+    /**
+     A copy of checkins to track whether any checkins have changed/been removed/add
+     */
+    var originalCheckIns: [CheckIn] = []
+    
+    var isDirty: Bool {
+        return self.changes.hasDifferences
+    }
+    
+    var changes: CheckInDiff {
+        return self.diffCheckIns(old: self.originalCheckIns, new: self.checkIns)
+    }
+    
+    func undoChanges() {
+        self.checkIns = self.originalCheckIns
+    }
+    
+    func resetDirtyState() {
+        self.originalCheckIns = self.checkIns
     }
 }

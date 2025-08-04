@@ -6,40 +6,32 @@
 //
 
 import Foundation
+import FirebaseAuth
 
 extension HomeView {
     
     protocol ViewModelProtocol: ObservableObject {
+        init(hikeService: HikerServiceProtocol)
         var hikes: [Hike] { get }
-        func loadHikes()
+        func loadHikes() async throws
     }
     
     class ViewModel: ViewModelProtocol {
+        private var hikeService: HikerServiceProtocol
+        
         @Published var hikes: [Hike] = []
         
-        func loadHikes() {
-            HikerService.fetchHikes { hikes, error in
-                if let error = error {
-                    self.hikes = []
-                } else if let hikes = hikes {
-                    self.hikes = hikes
-                } 
-            }
+        required init(hikeService: HikerServiceProtocol) {
+            self.hikeService = hikeService
         }
-    }
-    
-    class ViewModelMock: ViewModel {
-        override init() {
-            super.init()
-            let uid = UUID().uuidString
-            self.hikes = [
-                Hike(id: UUID().uuidString, name: "PCT", uid: uid, isPublic: false),
-                Hike(id: UUID().uuidString, name: "Te Araroa", uid: uid, isPublic: true),
-                Hike(id: UUID().uuidString, name: "Bibbulmun", uid: uid),
-            ]
+        
+        func loadHikes() async throws {
+            let result = try await hikeService.fetchHikes()
+            
+            await MainActor.run {
+                self.hikes = result
+            }            
         }
-        override func loadHikes() {
-            // do nothing
-        }
+        
     }
 }

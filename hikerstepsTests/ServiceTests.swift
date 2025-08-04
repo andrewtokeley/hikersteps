@@ -11,8 +11,9 @@ import Testing
 struct ServiceTests {
     
     @Test func fetchAccommodation() async throws {
+        let service = LookupService()
         let items = await withCheckedContinuation { continuation in
-            LookupService.getAccommodationLookups { items, error in
+            service.getAccommodationLookups { items, error in
                 continuation.resume(returning: items)
             }
         }

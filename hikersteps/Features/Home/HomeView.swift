@@ -13,40 +13,38 @@ struct HomeView: View {
     @EnvironmentObject var appState: AppState
     
     // The ViewModel for this view.
-    @StateObject private var viewModel = ViewModel()
+    @StateObject private var viewModel: ViewModel
     
     // The State managed by this view
     @State private var hasLoaded = false
     
     init() {
-        
+        self.init(viewModel: ViewModel(hikeService: HikerService()))
     }
     
     /**
      Constructure to inject a custom view model, most likely for testing purposes
      */
-    init(mockViewModel: ViewModel) {
-        _viewModel = StateObject(wrappedValue: mockViewModel)
+    init(viewModel: ViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
         NavigationStack() {
             VStack {
                 if auth.isLoggedIn {
-                    List {
+                    ScrollView {
                         ForEach(viewModel.hikes) { hike in
                             NavigationLink {
                                 HikeView(hike: hike)
                             } label: {
-                                VStack {
-                                    Text(hike.name)
-                                    Spacer()
-                                    Text(hike.trail?.name ?? "")
-                                        .font(.subheadline)
-                                }
+                             
+                                HikeCard(hike: hike)
+                                    .foregroundColor(Color(UIColor.label))
                             }
                         }
-                    }
+                    }.scrollIndicators(.hidden)
+                    Spacer()
                     
                     VStack {
                         Text("\(auth.loggedInUser?.displayName ?? "Unknown User")")
@@ -63,7 +61,8 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("Home")
+            .padding()
+            .navigationTitle("My Hikes")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: SettingsView()) {
@@ -73,18 +72,24 @@ struct HomeView: View {
                 }
             }
         }
-        .onAppear {
-            // The view can appear multiple times, we only want to reload the hikes if they haven't been loaded before.
+        .task {
             if (!hasLoaded) {
-                viewModel.loadHikes()
-                hasLoaded = true
+                do {
+                    try await viewModel.loadHikes()
+                    hasLoaded = true
+                } catch {
+                    ErrorLogger.shared.log(error)
+                }
+            } else {
+                print("didn't reload")
             }
         }
+        
     }
 }
 
 #Preview {
     let mock = AuthenticationManagerMock() as AuthenticationManager
-    return HomeView(mockViewModel: HomeView.ViewModelMock())
+    return HomeView(viewModel: HomeView.ViewModel(hikeService: HikerServiceMock()))
         .environmentObject(mock)
 }

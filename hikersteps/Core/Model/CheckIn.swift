@@ -9,13 +9,9 @@ import Foundation
 import FirebaseFirestore
 import CoreLocation
 
-struct CheckIn: Codable, Identifiable, Equatable {
+struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
     internal var _isNilValue: Bool = false
-    
-    static func == (lhs: CheckIn, rhs: CheckIn) -> Bool {
-        lhs.id == rhs.id
-    }
-    
+
     @DocumentID var id: String?
     
     // All properties are marked as non-optional even if they are optionally set by user. This allows us to bind directly to these properties from views (can't bind to optionals)
@@ -28,7 +24,7 @@ struct CheckIn: Codable, Identifiable, Equatable {
     var address: String = ""
     var accommodation: LookupItem = LookupItem.noSelection()
     var notes: String = ""
-    var date = Date.now
+    var date = Calendar.current.startOfDay(for: Date())
     var type: String = "day"
     var nearestTrailMarker: Double = 0
     var distanceWalked: Int = 0
@@ -97,6 +93,41 @@ struct CheckIn: Codable, Identifiable, Equatable {
         self.images = images
         self.accommodation = accommodation
     }
+    /**
+     Need to override default equalify check because GeoPoints and Dates are classes and won't necessarily compare with ==
+     */
+    static func == (lhs: CheckIn, rhs: CheckIn) -> Bool {
+        return lhs.id == rhs.id &&
+        lhs.uid == rhs.uid &&
+        lhs.locationAsGeoPoint.latitude == rhs.locationAsGeoPoint.latitude &&
+        lhs.locationAsGeoPoint.longitude == rhs.locationAsGeoPoint.longitude &&
+        lhs.title == rhs.title &&
+        lhs.address == rhs.address &&
+        lhs.accommodation == rhs.accommodation &&
+        lhs.notes == rhs.notes &&
+        Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date) &&
+        lhs.type == rhs.type &&
+        lhs.nearestTrailMarker == rhs.nearestTrailMarker &&
+        lhs.distanceWalked == rhs.distanceWalked &&
+        lhs.images == rhs.images &&
+        lhs.numberOfRestDays == rhs.numberOfRestDays &&
+        lhs.numberOfOffTrailDays == rhs.numberOfOffTrailDays &&
+        lhs.adventureId == rhs.adventureId &&
+        lhs.customLinks == rhs.customLinks &&
+        lhs.resupply == rhs.resupply &&
+        lhs.resupplyNotes == rhs.resupplyNotes &&
+        lhs._isNilValue == rhs._isNilValue
+    }
+    
+    func toDictionary() -> [String: Any]? {
+        do {
+            let encoder = Firestore.Encoder()
+            return try encoder.encode(self)
+        } catch {
+            print("Failed to encode CheckIn: \(error)")
+            return nil
+        }
+    }
     
     static var newWithDefaults: CheckIn {
         return CheckIn()
@@ -108,8 +139,9 @@ struct CheckIn: Codable, Identifiable, Equatable {
         new.locationAsGeoPoint = Coordinate(from: location).toGeoPoint()
         return new
     }
-    static var sample: CheckIn {
-        return CheckIn(id: "12", uid: UUID().uuidString, location: CLLocationCoordinate2D(latitude: -41.29, longitude: 174.7787), title: "Hotel High Five", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distanceWalked: 123, numberOfRestDays: 1, numberOfOffTrailDays: 2)
+    
+    static func sample(id: String = "1", distanceWalked: Int = 20, numberOfRestDays: Int = 0) -> CheckIn {
+        return CheckIn(id: id, uid: UUID().uuidString, location: Coordinate.wellington.toCLLLocationCoordinate2D(), title: "Hotel \(id)", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distanceWalked: distanceWalked, numberOfRestDays: numberOfRestDays, numberOfOffTrailDays: 0)
     }
     
     static var nilValue: CheckIn {

@@ -14,13 +14,16 @@ struct HikeView: View {
     @EnvironmentObject var auth: AuthenticationManager
     
     /// ViewModel to enable the view to access and persist model data.
-    @StateObject var viewModel: ViewModel = ViewModel()
+    @StateObject var viewModel: ViewModel
     
     /// In-memory structure to manage checkins and navigation.
     @StateObject var checkInManager: CheckInManager = CheckInManager(checkIns: [])
     
     /// Created when a pin is dropped and user requests to create a new checkin
     @State var newCheckIn: CheckIn?
+    
+    @State var hasLoaded: Bool = false
+    @State var navigateToStats: Bool = false
     
     /// Private flag to control when to show checkin sheet
     @State private var showCheckInDetails = false
@@ -30,17 +33,18 @@ struct HikeView: View {
     var hike: Hike
 
     /**
-     Constructs a new HikeView from hike instance
+     Constructs a new HikeView from a hike instance and using the default ViewModel
      */
     init(hike: Hike) {
-        self.hike = hike
+        let viewModel = ViewModel(checkInService: CheckInService(), hikeService: HikerService())
+        self.init(hike: hike, viewModel: viewModel)
     }
     
     /**
-     Used by the Preview to inject a mock ViewModel and Hike instances
+     Construct a new HikeView, and pass in a ViewModel - used by previewer to use a mock service.
      */
-    init(viewModel: ViewModel, hike: Hike) {
-        self.init(hike: hike)
+    init(hike: Hike, viewModel: ViewModel) {
+        self.hike = hike
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
@@ -62,7 +66,10 @@ struct HikeView: View {
                         droppedPinAnnotation: $checkInManager.droppedPinAnnotation
                     )
                     .onMapTap { location in
+                        self.checkInManager.clearSelectedCheckIn()
                         self.showCheckInDetails = false
+                        self.showAddCheckInSheet = false
+                        self.checkInManager.removeDropInAnnotation()
                     }
                     .onMapLongPress({ location in
                         self.checkInManager.addDropInAnnotation(location: location)
@@ -71,20 +78,29 @@ struct HikeView: View {
                     })
                     .onDidSelectAnnotation({ annotation in
                         if let checkInId = annotation.checkInId {
-                            print("move: onDidSelectAnnotation")
                             self.checkInManager.move(.to(id: checkInId))
                             self.showCheckInDetails = true
                         }
                     })
-                    .edgesIgnoringSafeArea(.all)
-                    .onAppear {
-                        if let uid = auth.loggedInUser?.uid {
-                            viewModel.loadCheckIns(uid: uid, hike: hike) { checkIns in
-                                // initialise the checkInMananger
-                                self.checkInManager.initialise(checkIns: checkIns)
-                                print("move: onAppear")
-                                self.checkInManager.move(.start)
-                            }
+                    .ignoresSafeArea()
+                }
+            }
+        }
+        .navigationDestination(isPresented: $navigateToStats) {
+            HikeStatisticsView(hike: hike)
+        }
+        .task {
+            if !hasLoaded {
+                if let uid = auth.loggedInUser?.uid {
+                    Task {
+                        do {
+                            let checkIns = try await viewModel.loadCheckIns(uid: uid, hike: hike)
+                            self.checkInManager.initialise(checkIns: checkIns)
+                            
+                            self.checkInManager.move(.start)
+                            self.hasLoaded = true
+                        } catch {
+                            print(error)
                         }
                     }
                 }
@@ -97,6 +113,7 @@ struct HikeView: View {
                 .interactiveDismissDisabled(true)
                 .presentationBackgroundInteraction(.enabled)
         }
+        
         .sheet(isPresented: $showAddCheckInSheet) {
             NewCheckInDialog()
                 .onCancel {
@@ -114,33 +131,63 @@ struct HikeView: View {
                 .interactiveDismissDisabled(true)
                 .presentationBackgroundInteraction(.enabled)
         }
+        
         // Show CheckIn Detail Sheet
         .sheet(isPresented: $showCheckInDetails) {
-                
-            CheckInView(checkIn: $checkInManager.selectedCheckIn, dayDescription: checkInManager.dayDescription(checkInManager.selectedCheckIn))
-                .onNavigate({ direction in
-                    print("move: onNavigate")
-                    self.checkInManager.move(direction)
-                })
-                .presentationDetents([.fraction(0.5), .large])
-                .presentationDragIndicator(.visible)
-                .interactiveDismissDisabled(true)
-                .presentationBackgroundInteraction(.enabled)
-        
+            
+            TabView(selection: $checkInManager.selectedIndex) {
+                ForEach(Array(checkInManager.checkIns.enumerated()), id: \.element.id) { index, checkIn in
+                    CheckInView(checkIn: $checkInManager.checkIns[index], dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]))
+                        .onNavigate({ direction in
+                            self.checkInManager.move(direction)
+                        })
+                        .onDeleteRequest({ checkIn in
+                            if let id = checkIn.id {
+                                self.checkInManager.removeCheckIn(id: id)
+                                Task {
+                                    do {
+                                        try await self.viewModel.saveChanges(self.checkInManager)
+                                    } catch {
+                                        ErrorLogger.shared.log(error, context: "HikeView:onDeleteRequest")
+                                    }
+                                }
+                            }
+                        })
+                        .tag(index)
+                    
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .presentationDetents([.height(255), .large])
+            .presentationDragIndicator(.visible)
+            .interactiveDismissDisabled(false)
+            .presentationBackgroundInteraction(.enabled)
+            
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 AppBackButton()
+                    .willDismiss {
+                        self.showCheckInDetails = false
+                    }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                AppCircleButton(imageSystemName: "chart.bar")
+                        .style(.filledOnImage)
+                        .onClick {
+                            self.showCheckInDetails = false
+                            self.navigateToStats = true
+                        }
             }
         }
     }
 }
 
 #Preview {
-    let mock = AuthenticationManagerMock() as AuthenticationManager
-    HikeView(
-        viewModel: HikeView.ViewModelMock(),
-        hike: Hike(description: "fWalking the length of Aotearoa", name: "Te Araroa 2021/22", uid: "1"))
-        .environmentObject(mock)
+    let authMock = AuthenticationManagerMock() as AuthenticationManager
+    HikeView(hike: Hike(),
+        viewModel: HikeView.ViewModel(checkInService: CheckInServiceMock(), hikeService: HikerServiceMock())
+        )
+        .environmentObject(authMock)
 }
