@@ -14,7 +14,14 @@ import CoreLocation
 
 protocol CheckInServiceProtocol {
     func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn]
-    func updateCheckIn (checkIn: CheckIn) async throws
+    
+    /**
+     Updates the checkin. If it doesn't exist it will add a new checkin
+     
+     - Returns: The id of the checkIn as a `String`. This is useful if saving a new checkIn.
+     */
+    func updateCheckIn (checkIn: CheckIn) async throws -> String
+    
     func save(manager: CheckInManager) async throws
 }
 
@@ -30,7 +37,7 @@ class CheckInService: CheckInServiceProtocol {
         // Add new CheckIns
         for checkIn in changes.added {
             let newDocRef = db.collection("checkins").document()
-            if let dictionary = checkIn.toDictionary() {
+            if let dictionary = try? checkIn.toDictionary() {
                 batch.setData(dictionary, forDocument: newDocRef)
             }
         }
@@ -39,7 +46,7 @@ class CheckInService: CheckInServiceProtocol {
         for checkIn in changes.modified {
             guard let id = checkIn.id else { continue }
             let docRef = db.collection("checkIns").document(id)
-            if let dictionary = checkIn.toDictionary() {
+            if let dictionary = try? checkIn.toDictionary() {
                 batch.setData(dictionary, forDocument: docRef, merge: true)
             }
         }
@@ -75,15 +82,24 @@ class CheckInService: CheckInServiceProtocol {
         }
     }
     
-    func updateCheckIn (checkIn: CheckIn) async throws {
-        guard let id = checkIn.id else {
-            throw ServiceError.missingDocumentID
-        }
+    func updateCheckIn (checkIn: CheckIn) async throws -> String {
         let db = Firestore.firestore()
+        var id: String
+        
+        if let _ = checkIn.id {
+            id = checkIn.id!
+        } else {
+            let docRef = db.collection("check-ins").document() // generates a new ID
+            id = docRef.documentID
+        }
+        
         do {
             try await db.collection("check-ins")
                     .document(id)
                     .setData(checkIn.toDictionary(), merge: true)
+            
+            return id
+            
         } catch {
             throw error
         }
@@ -93,17 +109,17 @@ class CheckInService: CheckInServiceProtocol {
 class CheckInServiceMock: CheckInServiceProtocol {
     func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn] {
         return [
-            CheckIn(id: "4", uid: "123", location: CLLocationCoordinate2D(latitude: -41.12, longitude: 174.7787), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distanceWalked: 10, date: Date(), images: [StorageImage.sample]),
-            CheckIn(id: "0", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.16, longitude: 174.7787), title: "Twolight Campsite", notes: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam",  distanceWalked: 21, date: Date(), accommodation: LookupItem(id: "1", name: "Tent", imageName: "tent")),
-            CheckIn(id: "1", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.19, longitude: 174.7787), title: "Brakenexk Speed Camp",  distanceWalked: 35, numberOfRestDays: 2, date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!),
-            CheckIn(id: "2",  uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.29, longitude: 174.7787), title: "Wild Camping", distanceWalked: 42, date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!),
-            CheckIn(id: "3", uid: "xxx", location: CLLocationCoordinate2D(latitude: -41.39, longitude: 174.7787), title: "Cherokee Point Camp",  distanceWalked: 15,date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!),
+            CheckIn(id: "4", uid: "123", location: Coordinate(latitude: -41.12, longitude: 174.7787), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distance: DistanceUnit(10, .km), date: Date(), images: [StorageImage.sample]),
+            CheckIn(id: "0", uid: "xxx", location: Coordinate(latitude: -41.16, longitude: 174.7787), title: "Twolight Campsite", notes: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam",  distance: DistanceUnit(21, .km), date: Date(), accommodation: LookupItem(id: "1", name: "Tent", imageName: "tent")),
+            CheckIn(id: "1", uid: "xxx", location: Coordinate(latitude: -41.19, longitude: 174.7787), title: "Brakenexk Speed Camp",  distance: DistanceUnit(35, .km), numberOfRestDays: 2, date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!),
+            CheckIn(id: "2",  uid: "xxx", location: Coordinate(latitude: -41.29, longitude: 174.7787), title: "Wild Camping", distance: DistanceUnit(42, .km), date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!),
+            CheckIn(id: "3", uid: "xxx", location: Coordinate(latitude: -41.39, longitude: 174.7787), title: "Cherokee Point Camp",  distance: DistanceUnit(15, .km), date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!),
         ]
     }
     
-    func updateCheckIn(checkIn: CheckIn) async throws {
+    func updateCheckIn(checkIn: CheckIn) async throws -> String {
         // do nothing
-        return
+        return ""
     }
     
     func save(manager: CheckInManager) async throws {

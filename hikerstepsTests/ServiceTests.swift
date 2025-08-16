@@ -12,15 +12,12 @@ struct ServiceTests {
     
     @Test func fetchAccommodation() async throws {
         let service = LookupService()
-        let items = await withCheckedContinuation { continuation in
-            service.getAccommodationLookups { items, error in
-                continuation.resume(returning: items)
-            }
-        }
-        // Verify
-        #expect(items?.count ?? 0 > 0)
+        let items = try await service.getAccommodationLookups()
         
-        if let firstItem = items?.first {
+        // Verify
+        #expect(items.count > 0)
+        
+        if let firstItem = items.first {
             #expect(firstItem.id != nil)
             #expect(firstItem.order == 1.0)
         } else {

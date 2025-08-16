@@ -33,7 +33,7 @@ final class hikerstepsTests: XCTestCase {
         let trail = try decoder.decode(Trail.self, from: jsonData)
         
         // Verify
-        let expected = Trail(id: "BB", name: "Bibbulmun")
+        let expected = Trail(key: "BB", name: "Bibbulmun")
         XCTAssertEqual(trail.id, expected.id)
         XCTAssertEqual(trail.name, expected.name)
         

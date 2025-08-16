@@ -8,11 +8,25 @@
 import SwiftUI
 
 struct MessageView: View {
+    var message: String
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            VStack {
+                Text(message)
+                Spacer()
+            }
+        }
+        .navigationTitle("Message")
     }
 }
 
 #Preview {
-    MessageView()
+    MessageView(message: """
+                Thanks for being amazing. Thanks for being amazing. Thanks for being amazing. Thanks for being amazing.Thanks for being amazing. Thanks for being amazing.Thanks for being amazing. Thanks for being amazing.Thanks for being amazing. Thanks for being amazing.
+
+                Thanks for being amazing.
+
+                Yours sincerely
+                Tokes
+""")
 }

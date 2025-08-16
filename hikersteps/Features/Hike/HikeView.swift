@@ -20,14 +20,16 @@ struct HikeView: View {
     @StateObject var checkInManager: CheckInManager = CheckInManager(checkIns: [])
     
     /// Created when a pin is dropped and user requests to create a new checkin
-    @State var newCheckIn: CheckIn?
+    @State var newCheckIn: CheckIn = CheckIn.nilValue
     
     @State var hasLoaded: Bool = false
     @State var navigateToStats: Bool = false
+    @State var reOpenCheckInDetailsSheet: Bool = false
     
     /// Private flag to control when to show checkin sheet
     @State private var showCheckInDetails = false
     @State private var showAddCheckInSheet = false
+    @State private var showEditCheckIn = false
     
     /// The hike this view is representing
     var hike: Hike
@@ -72,7 +74,7 @@ struct HikeView: View {
                         self.checkInManager.removeDropInAnnotation()
                     }
                     .onMapLongPress({ location in
-                        self.checkInManager.addDropInAnnotation(location: location)
+                        self.checkInManager.addDropInAnnotation(location: location.coordinate)
                         showAddCheckInSheet = true
                         showCheckInDetails = false
                     })
@@ -87,7 +89,12 @@ struct HikeView: View {
             }
         }
         .navigationDestination(isPresented: $navigateToStats) {
-            HikeStatisticsView(hike: hike)
+            HikeDetailsView(hike: hike)
+                .onDisappear {
+                    if self.reOpenCheckInDetailsSheet {
+                        self.showCheckInDetails = true
+                    }
+                }
         }
         .task {
             if !hasLoaded {
@@ -106,27 +113,52 @@ struct HikeView: View {
                 }
             }
         }
-        .sheet(item: $newCheckIn) { checkIn in
-            EditCheckInView(checkIn: Binding(get: {newCheckIn!}, set: {newCheckIn = $0}))
-                .presentationDetents([.fraction(0.2)])
-                .presentationDragIndicator(.hidden)
-                .interactiveDismissDisabled(true)
-                .presentationBackgroundInteraction(.enabled)
+        .sheet(isPresented: $showEditCheckIn) {
+            if newCheckIn != CheckIn.nilValue {
+                EditCheckInView(checkIn: $newCheckIn)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.hidden)
+                    .interactiveDismissDisabled(true)
+                    .presentationBackgroundInteraction(.disabled)
+            } else {
+                EmptyView()
+            }
         }
         
         .sheet(isPresented: $showAddCheckInSheet) {
-            NewCheckInDialog()
+            NewCheckInDialog(proposedDate: checkInManager.nextAvailableDate)
+                .isDateAvailable({ date in
+                    return checkInManager.isDateAvailable(date)
+                })
                 .onCancel {
                     self.checkInManager.removeDropInAnnotation()
                 }
-                .onConfirm {
-                    if let uid = auth.loggedInUser?.uid, let location = checkInManager.droppedPinAnnotation?.coordinate {
-                        let new = self.checkInManager.addCheckIn(uid: uid, location: location , date: Date())
-                        self.newCheckIn = new
+                // The user has selected a date and ready to create the entry
+                .onConfirm() { date in
+                    
+                    if let uid = auth.loggedInUser?.uid,
+                       let location = checkInManager.droppedPinAnnotation?.coordinate,
+                       let hikeId = self.hike.id {
+                    
+                        // add the checkIn to the in-memory checkInManager. This will add it in the correct order by date
+                        var new = self.checkInManager.addCheckIn(hikeId: hikeId, uid: uid, location: location , date: date)
+                        Task {
+                            do {
+                                let id = try await viewModel.saveCheckIn(new)
+                                new.id = id
+                                self.newCheckIn = new
+                                checkInManager.move(.to(id: id))
+                                self.showEditCheckIn = true
+                            } catch {
+                                ErrorLogger.shared.log(error)
+                            }
+                        }
+                    } else {
+                            // Error?
                     }
                     self.checkInManager.removeDropInAnnotation()
                 }
-                .presentationDetents([.fraction(0.2)])
+                .presentationDetents([.fraction(0.4)])
                 .presentationDragIndicator(.hidden)
                 .interactiveDismissDisabled(true)
                 .presentationBackgroundInteraction(.enabled)
@@ -148,12 +180,27 @@ struct HikeView: View {
                                     do {
                                         try await self.viewModel.saveChanges(self.checkInManager)
                                     } catch {
-                                        ErrorLogger.shared.log(error, context: "HikeView:onDeleteRequest")
+                                        ErrorLogger.shared.log(error)
                                     }
                                 }
                             }
                         })
+                        .onHeroImageUpdated({ urlString in
+                            if let id = self.hike.id {
+                                Task {
+                                    do {
+                                        try await viewModel.updateHeroImage(hikeId: id, urlString: urlString)
+                                    } catch {
+                                        ErrorLogger.shared.log(error)
+                                    }
+                                }
+                            }
+                        })
+                        .onDisappear {
+                            self.reOpenCheckInDetailsSheet = false
+                        }
                         .tag(index)
+                    
                     
                 }
             }
@@ -173,9 +220,12 @@ struct HikeView: View {
                     }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                AppCircleButton(imageSystemName: "chart.bar")
+                AppCircleButton(imageSystemName: "chevron.right")
                         .style(.filledOnImage)
-                        .onClick {
+                        .onClick { 
+                            if self.showCheckInDetails {
+                                self.reOpenCheckInDetailsSheet = true
+                            }
                             self.showCheckInDetails = false
                             self.navigateToStats = true
                         }

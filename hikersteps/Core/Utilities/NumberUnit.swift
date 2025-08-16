@@ -31,7 +31,7 @@ enum Unit: String, Codable, Identifiable, CaseIterable {
         self == .km || self == .mi
     }
     var isWeight: Bool {
-        self == .km || self == .mi
+        self == .kg || self == .lbs
     }
 }
 
@@ -42,142 +42,165 @@ enum NumberUnitErrors: Error, Equatable {
 }
 
 protocol NumberUnitProtocol {
-    var number: Double { get set }
-    var unit: Unit { get }
-    
-    init(_ number: Double, _ unit: Unit)
-    
-    static func zero(_ unit: Unit) -> Self
-    
-    static func + (lhs: Self, rhs: Self) -> Self
-    static func - (lhs: Self, rhs: Self) -> Self
-    static func += (lhs: inout Self, rhs: Self)
-    static func -= (lhs: inout Self, rhs: Self)
-    
     var description: String { get }
 }
 
-extension NumberUnitProtocol {
+class NumberUnit<T>: Codable, NumberUnitProtocol where T: Numeric, T: Codable, T: CVarArg {
     
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.number == rhs.number && lhs.unit == rhs.unit
+    var number: T = 0
+    var unit: Unit = .none
+    
+    // MARK: - Enable Firestore retrieval
+    
+    enum CodingKeys: String, CodingKey {
+        case number
+        case unit
     }
     
-    static func + (lhs: Self, rhs: Self) -> Self {
-        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-        return .init(lhs.number + rhs.number, lhs.unit)
+    required init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.number = try container.decodeIfPresent(T.self, forKey: .number) ?? 0
+        self.unit = try container.decodeIfPresent(Unit.self, forKey: .unit) ?? .none
     }
     
-    static func - (lhs: Self, rhs: Self) -> Self  {
-        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-        return .init(lhs.number - rhs.number, lhs.unit)
+    
+    required init(_ number: T, _ unit: Unit) {
+        self.number = number
+        self.unit = unit
     }
     
-    static func += (lhs: inout Self, rhs: Self) {
-        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-        lhs.number += rhs.number
-    }
-    
-    static func -= (lhs: inout Self, rhs: Self) {
-        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-        lhs.number -= rhs.number
-    }
-
     static func zero(_ unit: Unit) -> Self {
         return .init(0, unit)
     }
-
+    
     var description: String {
         if unit == .days || unit == .weeks {
             return String(format: "%.0f", number) + unit.rawValue
         }
         return String(format: "%.1f", number) + unit.rawValue
     }
+    
+    
+//    static func == (lhs: NumberUnit<T>, rhs: NumberUnit<T>) -> Bool {
+//        return lhs.number == rhs.number && lhs.unit == rhs.unit
+//    }
+//    
+//    static func + (lhs: NumberUnit<T>, rhs: NumberUnit<T>) -> NumberUnit<T> {
+//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
+//        return .init(lhs.number + rhs.number, lhs.unit)
+//    }
+//    
+//    static func - (lhs: NumberUnit<T>, rhs: NumberUnit<T>) -> NumberUnit<T>  {
+//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
+//        return .init(lhs.number - rhs.number, lhs.unit)
+//    }
+//    
+//    static func += (lhs: inout NumberUnit<T>, rhs: NumberUnit<T>) {
+//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
+//        lhs.number += rhs.number
+//    }
+//    
+//    static func -= (lhs: inout NumberUnit<T>, rhs: NumberUnit<T>) {
+//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
+//        lhs.number -= rhs.number
+//    }
+    
 }
 
-struct NumberUnit: NumberUnitProtocol, Codable {
+class DistanceUnit: NumberUnit<Int> {
     
-    var number: Double = 0
-    var unit: Unit = .none
-    
-    init(_ number: Double, _ unit: Unit) {
-        self.number = number
-        self.unit = unit
+    /**
+     Creates a new distance unit.
+     
+     - Parameters:
+        - number: Integer value for the distance
+        - unit: either .km or .mi. If another unit is supplied it will be converted to .km
+     */
+    required init(_ number: Int, _ unit: Unit) {
+        super.init(number, unit.isDistance ? unit : .km)
     }
     
-    init<T: Numeric>(_ number: T, _ unit: Unit) {
-        self.number = Double("\(number)") ?? 0
-        self.unit = unit
-    }
-    
-}
-
-struct DistanceUnit: NumberUnitProtocol, Codable {
-    var number: Double = 0
-    var unit: Unit = .none
-    
-    init(_ number: Double, _ unit: Unit) {
-        if !unit.isDistance {
-            self.unit = .km
-        } else {
-            self.unit = unit
-        }
-        self.number = number
+    required init(from decoder: any Decoder) throws {
+        try super.init(from: decoder)
     }
     
     func convertTo(_ to: Unit) -> DistanceUnit {
-        guard unit.isDistance && to.isDistance else { fatalError("Illegal Distance Unit \(unit)") }
         
         if unit == to {
             return self
         }
         
-        let convertedValue: Double
         switch (unit, to) {
         case (.km, .mi):
-            convertedValue = number * 0.621371
+            return DistanceUnit(Int(Double(number) * 0.621371), to)
         case (.mi, .km):
-            convertedValue = number * 1.60934
+            return DistanceUnit(Int(Double(number) * 1.60934), to)
         default:
-            convertedValue = number
+            // can't convert to anything else, just return self unchanged
+            return self
         }
-        
-        return DistanceUnit(convertedValue, to)
     }
 }
 
-struct WeightUnit: NumberUnitProtocol, Codable {
-    var number: Double = 0
-    var unit: Unit = .none
+class WeightUnit: NumberUnit<Double> {
     
-    init(_ number: Double, _ unit: Unit) {
-        if !unit.isWeight {
-            self.unit = .kg
-        } else {
-            self.unit = unit
-        }
-        self.number = number
+    /**
+     Creates a new weight unit.
+     
+     - Parameters:
+     - number: Double value for the weight
+     - unit: a weight unit. If not a weight unit it will be assumed to be .kg
+     */
+    required init(_ number: Double, _ unit: Unit) {
+        super.init(number, unit.isWeight ? unit : .kg)
+    }
+    
+    required init(from decoder: any Decoder) throws {
+        try super.init(from: decoder)
     }
     
     func convertTo(_ to: Unit) -> WeightUnit {
-        guard unit.isWeight && to.isWeight else { fatalError("Illegal Weight Unit \(unit)") }
         
         if unit == to {
             return self
         }
         
-        let convertedValue: Double
         switch (unit, to) {
         case (.km, .mi):
-            convertedValue = number * 0.621371
+            return WeightUnit(number * 0.621371, to)
         case (.mi, .km):
-            convertedValue = number * 1.60934
+            return WeightUnit(number * 1.60934, to)
         default:
-            convertedValue = number
+            // can't convert to anything else, just return self unchanged
+            return self
         }
-        
-        return WeightUnit(convertedValue, to)
     }
 }
 
+func += <T: Numeric & Codable & CVarArg, U: NumberUnit<T>>(lhs: inout U, rhs: U) {
+    precondition(lhs.unit == rhs.unit, "Mismatched Units")
+    lhs.number += rhs.number
+}
 
+func -= <T: Numeric & Codable & CVarArg, U: NumberUnit<T>>(lhs: inout U, rhs: U) {
+    precondition(lhs.unit == rhs.unit, "Mismatched Units")
+    lhs.number -= rhs.number
+}
+
+func + <T: Numeric & Codable & CVarArg, U: NumberUnit<T>>(lhs: U, rhs: U) -> U {
+    precondition(lhs.unit == rhs.unit, "Mismatched Units")
+    return U(lhs.number + rhs.number, lhs.unit)
+}
+
+func - <T: Numeric & Codable & CVarArg, U: NumberUnit<T>>(lhs: U, rhs: U) -> U {
+    precondition(lhs.unit == rhs.unit, "Mismatched Units")
+    return U(lhs.number - rhs.number, lhs.unit)
+}
+
+func == <T: Numeric & Codable & CVarArg, U: NumberUnit<T>>(lhs: U, rhs: U) -> Bool {
+    lhs.number == rhs.number && lhs.unit == rhs.unit
+}
+
+func != <T: Numeric & Codable & CVarArg, U: NumberUnit<T>>(lhs: U, rhs: U) -> Bool {
+    !(lhs == rhs)
+}

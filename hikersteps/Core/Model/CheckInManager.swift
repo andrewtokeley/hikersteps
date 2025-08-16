@@ -74,16 +74,35 @@ class CheckInManager: ObservableObject {
     
     // MARK: - Add/Remove CheckIns
     
+    var nextAvailableDate: Date {
+        guard !checkIns.isEmpty else { return Date() }
+        
+        let latestDate = checkIns.max(by: { $0.date < $1.date })?.date ?? Date()
+        return Calendar.current.date(byAdding: .day, value: 1, to: latestDate) ?? Date()
+    }
+    
+    /**
+     Returns whether the given date is available for a new journal entry. We only allow one entry per day.
+     */
+    func isDateAvailable(_ date: Date) -> Bool {
+        if let _ = checkIns.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
+            return false
+        }
+        return true
+    }
+    
     /**
      Adds a new instance of a CheckIn at the appropriate location in the checkins array based on it's date.
      
      The new instance is returned.
      */
-    func addCheckIn(uid: String, location: CLLocationCoordinate2D, date: Date) -> CheckIn {
-        let new = CheckIn(uid: uid, location: location, date: date)
+    func addCheckIn(hikeId: String, uid: String, location: Coordinate, date: Date) -> CheckIn {
+        var new = CheckIn(uid: uid, location: location, date: date)
+        new.adventureId = hikeId
+        
         let newAnnotation = CheckInAnnotation(checkIn: new)
         
-        // insert the new checkin at the right location
+        // insert the new checkin at the right location and move to it.
         if let index = checkIns.firstIndex(where: { $0.date > date }) {
             checkIns.insert(new, at: index)
             annotations.insert(newAnnotation, at: index)
@@ -214,7 +233,7 @@ class CheckInManager: ObservableObject {
     
     //MARK: - Annotations
     
-    func addDropInAnnotation(location: CLLocationCoordinate2D) {
+    func addDropInAnnotation(location: Coordinate) {
         self.droppedPinAnnotation = CheckInAnnotation(coordinate: location, title: "Drop In")
     }
     func removeDropInAnnotation() {

@@ -14,9 +14,6 @@ struct HikeStatisticsView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Text(hike.name)
-                    .font(.headline)
-                Divider()
                 Group {
                     HStack {
                         StatisticView(numberUnit: hike.statistics.totalDays, description: "Days")

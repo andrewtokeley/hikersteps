@@ -13,16 +13,16 @@ struct HikeStatisticsTests {
     @Test func mainFlow() async throws {
         let checkIns = [
             CheckIn(
-                distanceWalked: 5,
+                distance: DistanceUnit(5, .km),
                 date: Date(),
             ),
             CheckIn(
-                distanceWalked: 20,
+                distance: DistanceUnit(20, .km),
                 numberOfRestDays: 1,
                 date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!
             ),
             CheckIn(
-                distanceWalked: 5,
+                distance: DistanceUnit(5, .km),
                 date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!
             ),
         ]
@@ -35,5 +35,34 @@ struct HikeStatisticsTests {
         #expect(statistics.longestDistance.number == 20)
         #expect(statistics.longestDistance.description == "20.0km")
     }
+    
+    @Test func startCheckInOnly() async throws {
+        let checkIns = [
+            CheckIn(
+                type: "start",
+                date: Date(),
+            )
+        ]
+        let statistics = HikeStatistics()
+        statistics.updateFrom(checkIns)
+        
+        #expect(statistics.totalDays.number == 0)
+    }
 
+    @Test func oneDay() async throws {
+        let checkIns = [
+            CheckIn(
+                type: "start",
+                date: Date(),
+            ),
+            CheckIn(
+                distance: DistanceUnit(20, .km),
+                date: Date(),
+            )
+        ]
+        let statistics = HikeStatistics()
+        statistics.updateFrom(checkIns)
+        
+        #expect(statistics.totalDays.number == 0)
+    }
 }

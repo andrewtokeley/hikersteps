@@ -20,9 +20,11 @@ struct EditCheckInView: View {
     @State private var showZeroDaysSelector = false
     @State private var dateDescription: String? = nil
     
+    @State private var isSaving: Bool = false
+    
     @FocusState private var focusedView: FocusableViews?
     
-    private var onSaved: (() -> CheckIn)? = nil
+    private var onSaved: (() -> Void)? = nil
     
     private var image: Image? {
         if let url = viewModel.checkIn.images.first?.storageUrl {
@@ -42,7 +44,10 @@ struct EditCheckInView: View {
     init(checkIn: Binding<CheckIn>) {
         // we pass in the wrapped value to the viewmodel so that we can choose whether to copy the changes back to the parent depending on whether changes are saved or canceled.
         self.init(checkIn: checkIn,
-                  viewModel: ViewModel(checkIn: checkIn.wrappedValue, checkInService: CheckInService(), lookupService: LookupService()))
+                  viewModel: ViewModel(checkIn: checkIn.wrappedValue,
+                                       checkInService: CheckInService(),
+                                       lookupService: LookupService(),
+                                      storageService: StorageService()))
     }
     
     init(checkIn: Binding<CheckIn>, viewModel: ViewModel) {
@@ -98,8 +103,8 @@ struct EditCheckInView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "figure.walk")
-                                Text("\(viewModel.checkIn.distanceWalked) km")
-                                    .foregroundStyle(viewModel.checkIn.distanceWalked > 0 ? .primary : .secondary )
+                                Text(viewModel.checkIn.distance.description)
+                                    .foregroundStyle(viewModel.checkIn.distance.number > 0 ? .primary : .secondary )
                                 Spacer()
                                 Image(systemName: "chevron.down")
                             }
@@ -133,9 +138,27 @@ struct EditCheckInView: View {
                         }
                     }
                     
-                    AppImagePicker(image: image)
-                        .padding(.bottom)
-                    
+                    // We aren't binding to anything here since the image we browse to needs to be persisted to Storage only if we save.
+                    StorageImageEditorView(imageURL: viewModel.checkIn.images.first?.storageUrl)
+                        .onImageDataChanged { data, contentType in
+                            // store this data on the viewModel so we know to replace/add a new image
+                            print("new image data returned")
+                            // when this checkin is saved we're going to redefine these properties
+                            viewModel.newImageData = data
+                            viewModel.newImageContentType = contentType
+                        }
+                        .onRemove {
+                            print("removed image from StorageImageEditor")
+                            if (!checkIn.images.isEmpty) {
+                                // let the know to delete the existing image on save
+                                viewModel.deleteImageOnSave = true
+                            }
+                            
+                            // clear new image data so we don't add any images
+                            viewModel.newImageData = nil
+                            viewModel.newImageContentType = nil
+                        }
+                     
                     AppTextEditor(text: $viewModel.checkIn.notes, placeholder: "Write something about your day :)")
                         .frame(height: 300)
                         .padding(.bottom)
@@ -146,7 +169,6 @@ struct EditCheckInView: View {
                     Toggle(isOn: $viewModel.checkIn.resupply) {
                         HStack {
                             Image(systemName: "cart")
-                                .foregroundColor(.orange)
                             Text("Did you resupply here?")
                         }
                     }
@@ -181,21 +203,28 @@ struct EditCheckInView: View {
                         dismiss()
                     }
                     .buttonStyle(.plain)
+                    .disabled(self.isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(isSaving ? "Saving" : "Save") {
+                        self.isSaving = true
+                        
                         // Save to firestore
                         Task {
                             do {
-                                try await viewModel.save(checkIn: viewModel.checkIn)
+                                // work out what sort of image action to perform
+                                try await viewModel.save()
                                 //copy changes back to the bound checkIn to refresh the parent view
                                 self.checkIn = viewModel.checkIn
+                                self.isSaving = false
                                 dismiss()
                             } catch {
+                                self.isSaving = false
                                 ErrorLogger.shared.log(error)
                             }
                         }
                     }
+                    .disabled(self.isSaving)
                 }
             }
             .sheet(isPresented: $showAccommodationSelect) {
@@ -209,7 +238,7 @@ struct EditCheckInView: View {
                 }
             }
             .sheet(isPresented: $showDateSelector) {
-                AppDateSelect(selectedDate: $viewModel.checkIn.date, title: "Check-In Date")
+                AppDateSelect(selectedDate: $viewModel.checkIn.date, title: "Day")
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.medium])
             }
@@ -217,7 +246,7 @@ struct EditCheckInView: View {
             
             .sheet(isPresented: $showDistanceSelector) {
                 // Need to handle units
-                AppNumberPicker(title: "Distance Walked", number: $viewModel.checkIn.distanceWalked, units: [.km, .mi])
+                AppNumberPicker(title: "Distance Walked", number: $viewModel.checkIn.distance.number, units: [.km, .mi], unit: $viewModel.checkIn.distance.unit)
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.height(350)])
             }
@@ -243,16 +272,19 @@ struct EditCheckInView: View {
         }
     }
     
-    func onSaved(_ handler: (() -> CheckIn)?) -> EditCheckInView {
+    func onSaved(_ handler: (() -> Void)?) -> EditCheckInView {
         var copy = self
         copy.onSaved = handler
         return copy
     }
-
 }
 
 #Preview {
     @Previewable @State var checkIn = CheckIn.sample()
     EditCheckInView(checkIn: $checkIn,
-                    viewModel: EditCheckInView.ViewModel(checkIn: checkIn, checkInService: CheckInServiceMock(), lookupService: LookupServiceMock()))
+                    viewModel: EditCheckInView.ViewModel(
+                        checkIn: checkIn,
+                        checkInService: CheckInServiceMock(),
+                        lookupService: LookupServiceMock(),
+                        storageService: StorageSerivceMock()))
 }

@@ -30,7 +30,9 @@ class LookupService: LookupServiceProtocol {
                 item.id = doc.documentID
                 return item
             }
-            return lookups
+            return lookups.sorted { a, b in
+                a.order < b.order
+            }
         } catch {
             throw error
         }

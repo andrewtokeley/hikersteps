@@ -11,29 +11,56 @@ struct HikeCard: View {
     var hike: Hike
     
     var body: some View {
-        VStack (alignment: .leading) {
-            ZStack {
+        HStack {
+            if let url = URL(string: hike.heroImageUrl) {
+                Group {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: ContentMode.fill)
+                    } placeholder: {
+                        Text("...")
+                            .foregroundStyle(Color(.appLightGray))
+                    }
+                }
+                .frame(width: 100, height: 100)
+                .cornerRadius(10)
+                .clipped()
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color(.appLightGray), lineWidth: 1)
+                )
+            } else {
                 Image("pct")
                     .resizable()
                     .aspectRatio(contentMode: ContentMode.fill)
-                    .frame(height: 200)
+                    .frame(width: 100, height: 100)
                     .cornerRadius(10)
+                    .clipped()
             }
-            Text(hike.name)
-                .foregroundStyle(.primary)
-                .font(.headline)
-            Text(hike.startDate.formatted(.dateTime.weekday().day().month().year()))
-                .foregroundStyle(.primary)
-            HStack {
-                Text("Completed")
-                Text(hike.statistics.totalDistanceWalked.description)
-                Text(" in ")
-                Text(hike.statistics.totalDays.description)
+            
+            VStack(alignment: .leading) {
+                Text(hike.name)
+                    .foregroundStyle(.primary)
+                    .font(.headline)
+                Text(hike.startDate.formatted(.dateTime.day().month().year()))
+                    .foregroundStyle(.primary)
+                Group {
+                    Text("Completed")
+                    HStack {
+                        Text(hike.statistics.totalDistanceWalked.description)
+                        Text(" in ")
+                        Text(hike.statistics.totalDays.description)
+                    }
+                }
+                .foregroundStyle(.secondary)
                 Spacer()
             }
-            .foregroundStyle(.secondary)
+            Spacer()
         }
+        .frame(height: 110)
         .padding(.bottom)
+        
     }
 }
 

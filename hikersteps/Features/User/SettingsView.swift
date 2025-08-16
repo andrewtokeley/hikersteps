@@ -92,6 +92,18 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                 }
                 
+                if auth.loggedInUser?.email == "andrewtokeley@gmail.com" {
+                    Button("Add Trails") {
+                        Task {
+                            do {
+                                let service = TrailService()
+                                try await service.addDefaults()
+                            } catch {
+                                ErrorLogger.shared.log(error)
+                            }
+                        }
+                    }
+                }
                 Spacer()
                 
                 HStack {

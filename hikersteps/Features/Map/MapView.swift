@@ -63,7 +63,7 @@ struct MapView: View {
                      
                     // Display checkins
                     ForEvery(Array(annotations.enumerated()), id: \.element.id) { index, annotation in
-                        MapViewAnnotation(coordinate: annotation.coordinate) {
+                        MapViewAnnotation(coordinate: annotation.coordinate.clLocationCoordinate2D) {
                             PinView(label: annotation.title ?? "", state: pinState(annotation, index), showLabel: false)
                                 .onTapGesture {
                                     isTapNavigation = true
@@ -78,7 +78,7 @@ struct MapView: View {
                     }
                     // Display dropped pin
                     if let drop = droppedPinAnnotation {
-                        MapViewAnnotation(coordinate: drop.coordinate) {
+                        MapViewAnnotation(coordinate: drop.coordinate.clLocationCoordinate2D) {
                             PinView(label: drop.title ?? "f", state: .dropped)
                         }
                     }
@@ -140,7 +140,7 @@ struct MapView: View {
      */
     func ensureAnnotationVisible(proxy: MapProxy, annotation: CheckInAnnotation) {
         if let map = proxy.map {
-            let point = map.point(for: annotation.coordinate)
+            let point = map.point(for: annotation.coordinate.clLocationCoordinate2D)
             if !annotationSafeArea.contains(point) {
                 animateToAnnotation(proxy, annotation)
             }
@@ -152,19 +152,18 @@ struct MapView: View {
      */
     func animateToAnnotation(_ proxy: MapProxy, _ annotation: CheckInAnnotation) {
         
-        if let map = proxy.map {
-            let cameraOptions = CameraOptions(
-                center: annotation.coordinate,
-            )
-            proxy.camera?.ease(to: cameraOptions, duration: 0.3)
-        }
+        let cameraOptions = CameraOptions(
+            center: annotation.coordinate.clLocationCoordinate2D,
+        )
+        proxy.camera?.ease(to: cameraOptions, duration: 0.3)
+    
     }
 }
 
 #Preview {
     @Previewable @State var annotations = [
-        CheckInAnnotation(id: "1", coordinate: CLLocationCoordinate2D(latitude: -41.29, longitude: 174.7787), title: "Hotel High Five"),
-        CheckInAnnotation(id: "2", coordinate: CLLocationCoordinate2D(latitude: -41.39, longitude: 174.7787), title: "Camp of Dissappointment")
+        CheckInAnnotation(id: "1", coordinate: Coordinate(latitude: -41.29, longitude: 174.7787), title: "Hotel High Five"),
+        CheckInAnnotation(id: "2", coordinate: Coordinate(latitude: -41.39, longitude: 174.7787), title: "Camp of Dissappointment")
         ]
     @Previewable @State var selectedIndex: Int = 1
     

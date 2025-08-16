@@ -19,6 +19,8 @@
 		D88DB54F2E0CBA4A009FC991 /* hikerstepsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB54E2E0CBA4A009FC991 /* hikerstepsTests.swift */; };
 		D88DB5592E0CBA4A009FC991 /* hikerstepsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB5582E0CBA4A009FC991 /* hikerstepsUITests.swift */; };
 		D88DB55B2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB55A2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift */; };
+		D89FA8B12E4C801A003B2EB5 /* TrailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89FA8B02E4C801A003B2EB5 /* TrailTests.swift */; };
+		D89FA8B32E4C80E2003B2EB5 /* HikeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89FA8B22E4C80E2003B2EB5 /* HikeTests.swift */; };
 		D8C8D4282E1293A800E6714F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D8C8D4272E1293A800E6714F /* FirebaseAuth */; };
 		D8C8D42A2E1293A800E6714F /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D8C8D4292E1293A800E6714F /* FirebaseCore */; };
 		D8C8D42C2E1293A800E6714F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D8C8D42B2E1293A800E6714F /* FirebaseFirestore */; };
@@ -59,6 +61,8 @@
 		D88DB5542E0CBA4A009FC991 /* hikerstepsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hikerstepsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88DB5582E0CBA4A009FC991 /* hikerstepsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsUITests.swift; sourceTree = "<group>"; };
 		D88DB55A2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D89FA8B02E4C801A003B2EB5 /* TrailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailTests.swift; sourceTree = "<group>"; };
+		D89FA8B22E4C80E2003B2EB5 /* HikeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeTests.swift; sourceTree = "<group>"; };
 		D8CA8A472E3B5F5E008348E4 /* HikeStatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeStatisticsTests.swift; sourceTree = "<group>"; };
 		D8ED7DCC2E2C3807009CC070 /* ServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceTests.swift; sourceTree = "<group>"; };
 		D8F28B8B2E16726C00A10266 /* ModelDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDecodingTests.swift; sourceTree = "<group>"; };
@@ -155,6 +159,8 @@
 				D87E478E2E2F5E7300097AD4 /* NumberUnitTests.swift */,
 				D8CA8A472E3B5F5E008348E4 /* HikeStatisticsTests.swift */,
 				D80918F52E3C3C6F0096C6BE /* CheckInManagerTests.swift */,
+				D89FA8B02E4C801A003B2EB5 /* TrailTests.swift */,
+				D89FA8B22E4C80E2003B2EB5 /* HikeTests.swift */,
 			);
 			path = hikerstepsTests;
 			sourceTree = "<group>";
@@ -322,8 +328,10 @@
 				D87E478F2E2F5E7300097AD4 /* NumberUnitTests.swift in Sources */,
 				D8F28B8C2E16726C00A10266 /* ModelDecodingTests.swift in Sources */,
 				D8ED7DCD2E2C3807009CC070 /* ServiceTests.swift in Sources */,
+				D89FA8B12E4C801A003B2EB5 /* TrailTests.swift in Sources */,
 				D8CA8A482E3B5F5E008348E4 /* HikeStatisticsTests.swift in Sources */,
 				D88DB54F2E0CBA4A009FC991 /* hikerstepsTests.swift in Sources */,
+				D89FA8B32E4C80E2003B2EB5 /* HikeTests.swift in Sources */,
 				D80918F62E3C3C700096C6BE /* CheckInManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

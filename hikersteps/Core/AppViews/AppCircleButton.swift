@@ -20,6 +20,7 @@ enum CircleButtonStyle {
 struct AppCircleButton: View {
     
     var size: Double
+    var bottonNudge: CGFloat = 0
     var imageSystemName: String
     var style: CircleButtonStyle = .filled
     var rotationAngle: Angle = .degrees(0)
@@ -50,13 +51,14 @@ struct AppCircleButton: View {
     }
     private var onClick: (() -> Void)?
     
-    init(size: Double = 30, imageSystemName: String = "arrow.left.to.line", style: CircleButtonStyle = .filled, rotationAngle: Angle = .degrees(0),  onClick: (() -> Void)? = nil) {
+    init(size: Double = 30, imageSystemName: String = "arrow.left.to.line", style: CircleButtonStyle = .filled, rotationAngle: Angle = .degrees(0), bottomNudge: CGFloat = 0, onClick: (() -> Void)? = nil) {
         
         self.size = size
         self.imageSystemName = imageSystemName
         self.onClick = onClick
         self.style = style
         self.rotationAngle = rotationAngle
+        self.bottonNudge = bottomNudge
     }
     
     var body: some View {
@@ -78,6 +80,7 @@ struct AppCircleButton: View {
             .font(.system(size: 0.6 * size, weight: .medium))
             .frame(width: size, height: size)
             .padding(.all, 4)
+            .padding(.bottom, bottonNudge)
             .background(Circle().fill(_style.background))
             .overlay(
                 RoundedRectangle(cornerRadius: size / 2)

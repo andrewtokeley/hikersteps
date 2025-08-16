@@ -11,9 +11,9 @@ import Foundation
 
 struct CheckInManagerTests {
     let checkIns = [
-        CheckIn(id: "1", title: "Title1", notes: "Some notes 1", distanceWalked: 20, date: Date())
-        , CheckIn(id: "2", title: "Title2", notes: "Some notes 2", distanceWalked: 30, date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
-        , CheckIn(id: "3", title: "Title3", notes: "Some notes 3", distanceWalked: 40, date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
+        CheckIn(id: "1", title: "Title1", notes: "Some notes 1", distance: DistanceUnit(20, .km), date: Date())
+        , CheckIn(id: "2", title: "Title2", notes: "Some notes 2", distance: DistanceUnit(30, .km), date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
+        , CheckIn(id: "3", title: "Title3", notes: "Some notes 3", distance: DistanceUnit(40, .km), date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
     ]
     
     @Test func dirtyUpdateTest() async throws {
@@ -57,7 +57,7 @@ struct CheckInManagerTests {
         manager.move(.start)
         
         // this should add the checkin at index 2 according to dates
-        let new = manager.addCheckIn(uid: "4", location: Coordinate.wellington.toCLLLocationCoordinate2D(), date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!)
+        let new = manager.addCheckIn(hikeId: "1", uid: "4", location: Coordinate.wellington, date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!)
         
         // based on date should have been inserted here
         let index = manager.checkIns.firstIndex(of: new)

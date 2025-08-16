@@ -14,9 +14,10 @@ extension HikeView {
         init(checkInService: CheckInServiceProtocol, hikeService: HikerServiceProtocol)
         
         func loadCheckIns(uid: String, hike: Hike) async throws -> [CheckIn]
-        func saveCheckIn(_ checkIn: CheckIn) async throws
+        func saveCheckIn(_ checkIn: CheckIn) async throws -> String
         func addCheckIn(_ checkIn: CheckIn) async throws
         func saveChanges(_ manager: CheckInManager) async throws
+        func updateHeroImage(hikeId: String, urlString: String) async throws
     }
     
     /**
@@ -51,8 +52,8 @@ extension HikeView {
         /**
          Saves any changes made to the checkin. If the checkin has no changes then no action is taken.
          */
-        func saveCheckIn(_ checkIn: CheckIn) async throws {
-            try await checkInService.updateCheckIn(checkIn: checkIn)
+        func saveCheckIn(_ checkIn: CheckIn) async throws -> String {
+            return try await checkInService.updateCheckIn(checkIn: checkIn)
         }
         
         func saveChanges(_ manager: CheckInManager) async throws {
@@ -61,6 +62,10 @@ extension HikeView {
         
         func addCheckIn(_ checkIn: CheckIn) async throws {
             // to do
+        }
+        
+        func updateHeroImage(hikeId: String, urlString: String) async throws {
+            try await hikeService.updateHeroImage(hikeId: hikeId, urlString: urlString)
         }
     }
 }

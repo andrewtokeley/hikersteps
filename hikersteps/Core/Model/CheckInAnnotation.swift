@@ -6,14 +6,11 @@
 //
 
 import Foundation
-import CoreLocation
 
 /**
- A CheckInAnnotation contains information about where and how to display a CheckIn indicator on a map.
- 
- It is defined as an ObservableObject so that changes to it's properties can be monitored by views to update accordingly
+ A CheckInAnnotation contains information about where and how to display a CheckIn marker on a Map.
  */
-struct CheckInAnnotation: Identifiable, Equatable {
+struct CheckInAnnotation: Codable, Identifiable, Equatable {
     
     /**
      Guaranteed unique id for the annotation
@@ -23,7 +20,7 @@ struct CheckInAnnotation: Identifiable, Equatable {
     /**
      Annotation's location on a map
      */
-    var coordinate: CLLocationCoordinate2D
+    var coordinate: Coordinate
     
     /**
      Title that may be displayed under an annotation's view
@@ -49,7 +46,7 @@ struct CheckInAnnotation: Identifiable, Equatable {
     /**
      Construct a new CheckInAnnotation
      */
-    init(coordinate: CLLocationCoordinate2D, title: String? = nil, subtitle: String? = nil, checkInId: String? = nil, isNew: Bool = false) {
+    init(coordinate: Coordinate, title: String? = nil, subtitle: String? = nil, checkInId: String? = nil, isNew: Bool = false) {
         self.id = UUID().uuidString
         self.coordinate = coordinate
         self.title = title
@@ -57,7 +54,7 @@ struct CheckInAnnotation: Identifiable, Equatable {
         self.checkInId = checkInId
     }
     
-    init(id: String, coordinate: CLLocationCoordinate2D, title: String? = nil, subtitle: String? = nil, checkInId: String? = nil, isNew: Bool = false) {
+    init(id: String, coordinate: Coordinate, title: String? = nil, subtitle: String? = nil, checkInId: String? = nil, isNew: Bool = false) {
         self.init(coordinate: coordinate, title: title, subtitle: subtitle, checkInId: checkInId, isNew: isNew)
         self.id = id
     }
@@ -67,7 +64,7 @@ struct CheckInAnnotation: Identifiable, Equatable {
      */
     init(checkIn: CheckIn) {
         self.id = UUID().uuidString
-        self.coordinate = checkIn.location.toCLLLocationCoordinate2D()
+        self.coordinate = checkIn.location
         self.title = checkIn.title
         self.checkInId = checkIn.id
         self.selected = false

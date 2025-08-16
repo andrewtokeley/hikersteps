@@ -9,10 +9,18 @@ import Foundation
 
 class HikeStatistics: Codable, FirestoreEncodable  {
     
+    enum CodingKeys: String, CodingKey {
+        case totalDays
+        case latestCheckInDate = "latestCheckIn"
+        case totalRestDays
+        case totalDistanceWalked
+        case longestDistance
+    }
+    
     // Day Stats
-    var totalDays = NumberUnit.zero(.days)
-    var totalRestDays = NumberUnit.zero(.days)
-    var latestCheckIn: Date = Date()
+    var totalDays = NumberUnit<Int>.zero(.days)
+    var totalRestDays = NumberUnit<Int>.zero(.days)
+    var latestCheckInDate: Date = Date()
     
     // Distance Stats
     
@@ -47,34 +55,39 @@ class HikeStatistics: Codable, FirestoreEncodable  {
         let sortedCheckIns = checkIns.sorted { $0.date < $1.date }
         
         // Day Stats
-        let _totalDays = sortedCheckIns.reduce(0) { total, checkIn in
-            return total + 1 + checkIn.numberOfRestDays
-        }
-        self.totalDays = NumberUnit(_totalDays, .days)
         
         let _totalRestDays = sortedCheckIns.reduce(0) { total, checkIn in
             return total + checkIn.numberOfRestDays
         }
         self.totalRestDays = NumberUnit(_totalRestDays, .days)
-        self.latestCheckIn = sortedCheckIns.last?.date ?? Date()
+        self.latestCheckInDate = sortedCheckIns.last?.date ?? Date()
         
+        // Don't assume there is a checkin every day, instead work out the number of days between the 'start' checkin and the last one
+        self.totalDays = NumberUnit(0, .days)
+        if let first = sortedCheckIns.first?.date, let last = sortedCheckIns.last?.date {
+            let components = Calendar.current.dateComponents([.day], from: first, to: last)
+            if let days = components.day {
+                self.totalDays = NumberUnit(days, .days)
+            }
+        }
+            
         // Distance Stats
         self.totalDistanceWalked = sortedCheckIns.reduce(DistanceUnit.zero(.km)) { total, checkIn in
-            return total + DistanceUnit(Double(checkIn.distanceWalked), .km)
+            return total + checkIn.distance
         }
         
-        let max = sortedCheckIns.map({ $0.distanceWalked }).max() ?? 0
-        self.longestDistance = DistanceUnit(Double(max), .km)
+        let max = sortedCheckIns.map({ $0.distance.number }).max() ?? 0
+        self.longestDistance = DistanceUnit(max, .km)
         
     }
     
     static var sample: HikeStatistics {
         return HikeStatistics(checkIns: [
-            CheckIn.sample(id: "1", distanceWalked: 24, numberOfRestDays: 0),
-            CheckIn.sample(id: "2", distanceWalked: 52, numberOfRestDays: 1),
-            CheckIn.sample(id: "3", distanceWalked: 33, numberOfRestDays: 0),
-            CheckIn.sample(id: "4", distanceWalked: 32, numberOfRestDays: 1),
-            CheckIn.sample(id: "5", distanceWalked: 34, numberOfRestDays: 0),
+            CheckIn.sample(id: "1", distance: DistanceUnit(24, .km), numberOfRestDays: 0),
+            CheckIn.sample(id: "2", distance: DistanceUnit(52, .km), numberOfRestDays: 1),
+            CheckIn.sample(id: "3", distance: DistanceUnit(33, .km), numberOfRestDays: 0),
+            CheckIn.sample(id: "4", distance: DistanceUnit(32, .km), numberOfRestDays: 1),
+            CheckIn.sample(id: "5", distance: DistanceUnit(34, .km), numberOfRestDays: 0),
         ])
     }
 }

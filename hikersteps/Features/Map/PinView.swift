@@ -21,22 +21,23 @@ enum PinViewState {
 }
 
 struct PinView: View {
-    var label: String
+    var label: String = ""
     var state: PinViewState = .normal
     var showLabel: Bool = false
+    var size: Double = 20
     
     @State private var scale: CGFloat = 0.0
         
     var body: some View {
-        let size = 20.0
+        
         VStack {
             ZStack {
                 PinShape()
                     .fill(state.colour)
-                PinShape()
-                    .stroke(Color.white.opacity(0.4), lineWidth: 1)
+                //PinShape()
+                  //  .stroke(Color.white.opacity(0.4), lineWidth: 1)
             }
-            .shadow(radius: 10)
+            .shadow(radius: size / 4)
             .scaleEffect(scale, anchor: .bottom)
             .onAppear {
                 withAnimation(Animation.interpolatingSpring(stiffness: 200, damping: 10).delay(0)) {

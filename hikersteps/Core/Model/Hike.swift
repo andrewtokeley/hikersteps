@@ -12,7 +12,7 @@ import FirebaseFirestore
  A Hike represents a walk a hiker has done, or is doing, on one of the trails.
  */
 struct Hike: Codable, Identifiable, FirestoreEncodable  {
-    @DocumentID var id: String?
+    var id: String? = nil
     var description: String = ""
     var name: String = ""
     var isPublic: Bool = false
@@ -21,7 +21,8 @@ struct Hike: Codable, Identifiable, FirestoreEncodable  {
     var userName: String = ""
     var trail: Trail = Trail()
     var statistics: HikeStatistics = HikeStatistics()
-
+    var heroImageUrl: String = ""
+    
     enum CodingKeys: String, CodingKey {
         case id
         case description
@@ -32,6 +33,7 @@ struct Hike: Codable, Identifiable, FirestoreEncodable  {
         case userName
         case trail
         case statistics
+        case heroImageUrl
     }
     
     init() {
@@ -57,13 +59,14 @@ struct Hike: Codable, Identifiable, FirestoreEncodable  {
         self.userName = try container.decodeIfPresent(String.self, forKey: .userName) ?? ""
         self.trail = try container.decodeIfPresent(Trail.self, forKey: .trail) ?? Trail()
         self.statistics = try container.decodeIfPresent(HikeStatistics.self, forKey: .statistics) ?? HikeStatistics()
+        self.heroImageUrl = try container.decodeIfPresent(String.self, forKey: .heroImageUrl) ?? ""
     }
     
     static var sample: Hike {
-        var hike = Hike(name: "Tokes on TA 2021/22ppp", description: "Amazing trip!", startDate: Calendar.current.date(from: DateComponents(year: 2021, month: 9, day: 28))!)
-        hike.id = "1"
+        var hike = Hike(name: "Bibb 2025", description: "Amazing trip!", startDate: Calendar.current.date(from: DateComponents(year: 2021, month: 9, day: 28))!)
+        hike.id = "2"
         hike.statistics = HikeStatistics.sample
-        print(hike.statistics)
+        hike.heroImageUrl = StorageImage.sample.storageUrl ?? ""
         return hike
     }
 }

@@ -14,6 +14,7 @@ struct HomeView: View {
     
     // The ViewModel for this view.
     @StateObject private var viewModel: ViewModel
+    @State private var showNewHike: Bool = false
     
     // The State managed by this view
     @State private var hasLoaded = false
@@ -31,8 +32,11 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack() {
-            VStack {
+            VStack (alignment: .leading) {
                 if auth.isLoggedIn {
+                    Text("Journals")
+                        .foregroundStyle(.primary)
+                        .font(.title)
                     ScrollView {
                         ForEach(viewModel.hikes) { hike in
                             NavigationLink {
@@ -62,8 +66,23 @@ struct HomeView: View {
                 }
             }
             .padding()
-            .navigationTitle("My Hikes")
+            .navigationTitle("Home")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        showNewHike = true
+                    }) {
+                        Image(systemName: "plus")
+                            .imageScale(.large)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: NotificationView()) {
+                        Image(systemName: "bell")
+                            .imageScale(.large)
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gearshape")
@@ -84,7 +103,11 @@ struct HomeView: View {
                 print("didn't reload")
             }
         }
-        
+        .sheet(isPresented: $showNewHike) {
+            NewJournalStep1View()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 

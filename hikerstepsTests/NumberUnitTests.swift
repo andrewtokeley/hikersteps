@@ -33,8 +33,9 @@ struct NumberUnitTests {
         
         var total = DistanceUnit(20, .km)
         total += DistanceUnit(20, .km)
-        total += DistanceUnit(20, .km)
-        #expect(total.number == 60)
+        total -= DistanceUnit(10, .km)
+        #expect(total.number == 30)
+        
     }
     
 }

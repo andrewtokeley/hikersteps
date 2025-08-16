@@ -11,19 +11,24 @@ struct NewCheckInDialog: View {
     @Environment(\.dismiss) private var dismiss
     
     private var onCancel: (() -> Void)?
-    private var onConfirm: (() -> Void)?
-    var info: String?
+    private var onConfirm: ((Date) -> Void)?
+    private var isDateAvailable: ((Date) -> Bool)?
     
-    init(info: String? = nil, onCancel: (() -> Void)? = nil, onConfirm: (() -> Void)? = nil) {
+    @State private var canConfirm: Bool = false
+    @State private var proposedDate: Date
+    @State private var dateMessage: String = ""
+    
+    var info: String? = nil
+    
+    init(info: String? = nil, proposedDate: Date = Date()) {
+        _proposedDate = State(initialValue: proposedDate)
         self.info = info
-        self.onCancel = onCancel
-        self.onConfirm = onConfirm
     }
     
     var body: some View {
         VStack (alignment: .leading) {
-            HStack {
-                Text("New Check-In")
+            HStack (alignment: .top) {
+                Text("New Journal Entry")
                     .font(.title)
                 Spacer()
                 Button(action: {
@@ -36,47 +41,81 @@ struct NewCheckInDialog: View {
                         .foregroundColor(.secondary)
                 }
             }
+            HStack {
+                DatePicker("", selection: $proposedDate, displayedComponents: .date)
+                    .labelsHidden()
+                    .datePickerStyle(.compact)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .strokeBorder(canConfirm ? .gray : .red, lineWidth: 1)
+                    )
+                    .onChange(of: proposedDate) {
+                        // check if this date is available
+                        print("changed")
+                        self.canConfirm = isDateAvailable?(proposedDate) ?? false
+                    }
+                    .onAppear {
+                        self.canConfirm = isDateAvailable?(proposedDate) ?? false
+                    }
+                if (!canConfirm) {
+                    Text("Date unavailable")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
+            
+            Text("You can create a journal entry for every day of your adventure!")
+                .padding(.top,1)
+
             if let info
                 = info {
                 Text(info)
                     .font(.subheadline)
+                    .padding(.top)
             }
+            
             HStack {
-                Button(action: {
-                    onCancel?()
+                
+                AppCapsuleButton("Cancel") {
                     dismiss()
-                }) {
-                    Text("Cancel")
                 }
-                .capsuleStyled(background: .gray, foreground: .white)
+                .capsuleStyle(.white)
                 Spacer()
-                Button(action: {
-                    onConfirm?()
+                AppCapsuleButton("Continue") {
+                    onConfirm?(proposedDate)
                     dismiss()
-                }) {
-                    Text("Create...")
                 }
-                .capsuleStyled(background: .blue, foreground: .white)
+                .capsuleStyle(.filled)
+                .disabled(!canConfirm)
             }
-            .padding(.top)
+            .padding(.top, 30)
             Spacer()
         }
         .padding()
     }
     
-    func onCancel(_ handler: @escaping (() -> Void)) -> NewCheckInDialog {
+    func onCancel(_ handler: (() -> Void)?) -> NewCheckInDialog {
         var copy = self
         copy.onCancel = handler
         return copy
     }
     
-    func onConfirm(_ handler: @escaping (() -> Void)) -> NewCheckInDialog {
+    func onConfirm(_ handler: ((Date) -> Void)?) -> NewCheckInDialog {
         var copy = self
         copy.onConfirm = handler
+        return copy
+    }
+    
+    func isDateAvailable(_ handler: ((Date) -> Bool)?) -> NewCheckInDialog {
+        var copy = self
+        copy.isDateAvailable = handler
         return copy
     }
 }
 
 #Preview {
-    NewCheckInDialog(info: "Point of interest")
+    NewCheckInDialog(proposedDate: Date())
+        .isDateAvailable { date in
+            return date.compare(Date()) == .orderedAscending
+    }
 }

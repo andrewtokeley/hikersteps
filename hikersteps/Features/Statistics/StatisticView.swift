@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StatisticView: View {
-    var numberUnit: any NumberUnitProtocol
+    var numberUnit: NumberUnitProtocol
     var description: String
     
     var onInfoDetails: (() -> (String, String))?
@@ -19,39 +19,41 @@ struct StatisticView: View {
     
     var body: some View {
         VStack {
-            VStack (alignment: .trailing){
+            VStack {
                 Text(description)
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                     .padding(.horizontal, 10)
-            }
-            HStack {
+                
                 Text(numberUnit.description)
+                    .bold()
+                    .foregroundStyle(.primary)
             }
-            .bold()
-            .foregroundStyle(.primary)
         }
-        .frame(width: 180)
-        .padding(.horizontal)
-        
     }
 }
 
 #Preview {
-    VStack {
+    VStack (spacing: 10) {
         HStack {
-            StatisticView(numberUnit: DistanceUnit(25, .km), description: "Total Distance")
-                .infoDetails("Distance Walked", "Total distance you've walked so far. Total distance you've walked so far. Total distance you've walked so far.")
-            Spacer()
-            StatisticView(numberUnit: DistanceUnit(25, .km), description: "Total Distance")
-                .infoDetails("Distance Walked", "Total distance you've walked so far. Total distance you've walked so far. Total distance you've walked so far.")
+            Group {
+                StatisticView(numberUnit: DistanceUnit(25, .km), description: "Total Distance")
+                StatisticView(numberUnit: DistanceUnit(25, .km), description: "Total Distance")
+            }
+            .frame(width: 140)
+            .background(.red)
         }
+        
         HStack (alignment: .top) {
-            StatisticView(numberUnit: WeightUnit(6.7, .kg), description: "Base Weight")
-            Spacer()
-            StatisticView(numberUnit: DistanceUnit(25, .km), description: "Long Title Long Title Title Long Title")
+            Group {
+                StatisticView(numberUnit: WeightUnit(6.7, .kg), description: "Base Weight")
+                
+                StatisticView(numberUnit: DistanceUnit(25, .km), description: "Long Title Long Title Title Long Title")
+            }
+            .frame(width: 140)
+            .background(.blue)
         }
-        Spacer()
     }
-    .padding(.trailing)
+    .padding()
 }
