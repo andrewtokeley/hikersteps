@@ -39,7 +39,7 @@ struct HikeStatisticsView: View {
 
 struct PreviewWrapper2: View {
     
-    @State var hike = Hike()
+    @State var hike: Hike = Hike.nilValue
     @State var show: Bool = false
     
     var body: some View {

@@ -9,14 +9,18 @@ import Foundation
 import FirebaseFirestore
 
 protocol TrailServiceProtocol {
-    func fetchTrails() async throws -> [Trail]
+    
+    /**
+     Returns all trails in the system
+     */
+    func getTrails() async throws -> [Trail]
 }
-
-// TODO: must automate adding "if request.auth.token.admin == true;" to Trails document rules in Firestore (manually did in dev)
 
 class TrailService: TrailServiceProtocol {
     private let db = Firestore.firestore()
     private let collection = "trails"
+
+    // Temporary way to get the trails into firestore - this list is the master list and can be set by admin from settings.
     static let allTrails: [Trail] = [
         Trail(
             key: "AT",
@@ -147,7 +151,7 @@ class TrailService: TrailServiceProtocol {
         try await batch.commit()
     }
     
-    func fetchTrails() async throws -> [Trail] {
+    func getTrails() async throws -> [Trail] {
         let snapshot = try await db.collection(collection)
             .getDocuments()
         do {
@@ -166,7 +170,7 @@ class TrailService: TrailServiceProtocol {
 extension TrailService {
     
     class Mock: TrailServiceProtocol {
-        func fetchTrails() async throws -> [Trail] {
+        func getTrails() async throws -> [Trail] {
             return TrailService.allTrails
         }
     }

@@ -113,7 +113,7 @@ struct AppListSelector: View {
 struct PreviewWrapper: View {
     @State var selectedItem: LookupItem = LookupItem.noSelection()
     @State var items: [LookupItem] = []
-    @State var service = LookupServiceMock()
+    @State var service = LookupService.Mock()
     
     var body: some View {
         AppListSelector(items: self.items, selectedItem: $selectedItem, title: "Select a Lookup Item", noSelection: true)

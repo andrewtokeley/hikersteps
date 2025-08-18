@@ -17,9 +17,19 @@ class HikeStatistics: Codable, FirestoreEncodable  {
         case longestDistance
     }
     
-    // Day Stats
+    /**
+     The total number of days on trail, including any rest days
+     */
     var totalDays = NumberUnit<Int>.zero(.days)
+    
+    /**
+     Total number of days marked as rest days.
+     */
     var totalRestDays = NumberUnit<Int>.zero(.days)
+    
+    /**
+     The date of the latest CheckIn
+     */
     var latestCheckInDate: Date = Date()
     
     // Distance Stats
@@ -36,6 +46,9 @@ class HikeStatistics: Codable, FirestoreEncodable  {
      */
     var longestDistance: DistanceUnit = DistanceUnit.zero(.km)
     
+    /**
+     Deprecated?
+     */
     convenience init() {
         self.init(checkIns: [])
     }
@@ -45,7 +58,8 @@ class HikeStatistics: Codable, FirestoreEncodable  {
     }
     
     /**
-     Update all statistics based on the CheckInManager's collection of checkIns. This method can be called multiple times to refresh the statistics
+     Update all statistics based on an array of checkIns. This method can be called multiple times to refresh the statistics
+
      */
     func updateFrom(_ checkIns: [CheckIn]) {
         
@@ -64,10 +78,13 @@ class HikeStatistics: Codable, FirestoreEncodable  {
         
         // Don't assume there is a checkin every day, instead work out the number of days between the 'start' checkin and the last one
         self.totalDays = NumberUnit(0, .days)
-        if let first = sortedCheckIns.first?.date, let last = sortedCheckIns.last?.date {
+        
+        // ignore the start checkin
+        let walkingDays = sortedCheckIns.filter( {$0.type != "start" })
+        if let first = walkingDays.first?.date, let last = walkingDays.last?.date {
             let components = Calendar.current.dateComponents([.day], from: first, to: last)
             if let days = components.day {
-                self.totalDays = NumberUnit(days, .days)
+                self.totalDays = NumberUnit(days + 1, .days)
             }
         }
             

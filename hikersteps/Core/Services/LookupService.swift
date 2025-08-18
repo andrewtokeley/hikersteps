@@ -39,12 +39,14 @@ class LookupService: LookupServiceProtocol {
     }
 }
 
-class LookupServiceMock: LookupServiceProtocol {
-    func getAccommodationLookups() async throws -> [LookupItem] {
-        return [
-            LookupItem(id: "1", name: "Tent", imageName: "carpenter"),
-            LookupItem(id: "2", name: "Hotel", imageName: "cabin"),
-            LookupItem(id: "3", name: "Trail Angel", imageName: "airline-seat-flat")
-        ]
+extension LookupService {
+    class Mock: LookupServiceProtocol {
+        func getAccommodationLookups() async throws -> [LookupItem] {
+            return [
+                LookupItem(id: "1", name: "Tent", imageName: "carpenter"),
+                LookupItem(id: "25", name: "Hotel", imageName: "cabin"),
+                LookupItem(id: "3", name: "Trail Angel", imageName: "airline-seat-flat")
+            ]
+        }
     }
 }

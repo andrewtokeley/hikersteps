@@ -36,21 +36,41 @@ struct Hike: Codable, Identifiable, FirestoreEncodable  {
         case heroImageUrl
     }
     
-    init() {
-        self.id = UUID().uuidString
-    }
-    
-    init(name: String, description: String, startDate: Date) {
-        self.id = UUID().uuidString
+    /**
+     Primary constructor that accepts the required fields for a new Journal.
+     
+     - Parameters:
+        - uid: the uid of the user this Journal is for
+        - name: a name to give the Journal - typically defaults to the name of the trail
+        - description: optional description for the Journal, defaults to empty string.
+        - startDate: optional date for when the Journal's adventure begins, defaults to today.
+     */
+    init(uid: String, name: String, description: String = "", startDate: Date = Date()) {
+        self.uid = uid
         self.name = name
-        self.description = description
         self.startDate = startDate
     }
     
+//
+//    init() {
+//        self.id = UUID().uuidString
+//    }
+//    
+//    init(name: String, description: String, startDate: Date) {
+//        self.id = UUID().uuidString
+//        self.name = name
+//        self.description = description
+//        self.startDate = startDate
+//    }
+    
+    /**
+     Used by Firestore to create a new instance of Hike from data returned from a service call.
+     
+     This is required to set defaults for values not returned by service calls. All Hike's properties are non-optional to allow direct binding in Views.
+     */
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // Attempt to decode each value, using a default if it's missing or null
         self.name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
         self.description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
         self.isPublic = try container.decodeIfPresent(Bool.self, forKey: .isPublic) ?? false
@@ -62,11 +82,37 @@ struct Hike: Codable, Identifiable, FirestoreEncodable  {
         self.heroImageUrl = try container.decodeIfPresent(String.self, forKey: .heroImageUrl) ?? ""
     }
     
+    /**
+     Convenience property to construct a sample Hike for Previews and Testing.
+     */
     static var sample: Hike {
-        var hike = Hike(name: "Bibb 2025", description: "Amazing trip!", startDate: Calendar.current.date(from: DateComponents(year: 2021, month: 9, day: 28))!)
-        hike.id = "2"
+        var hike = Hike(uid: "abc", name: "Bibb 2025", startDate: Calendar.current.date(from: DateComponents(year: 2021, month: 9, day: 28))!)
+        hike.id = "23"
+        hike.description = "Amazing trip!"
         hike.statistics = HikeStatistics.sample
         hike.heroImageUrl = StorageImage.sample.storageUrl ?? ""
         return hike
     }
+    
+    /**
+     An instance of a Hike that represents nil.
+     
+     I've done this to allow Views that don't accept optional bindings to bind to say a selected Hike (that may not be selected). For example,
+     ```
+     @State private var selectedHike: Hike = Hike.nilValue
+     
+     if !selectedHike.isNil {
+     // View expects non-optional binding
+     CheckInView($selectedHike)
+     }
+     ```
+     */
+    static var nilValue: Hike {
+        var nilHike = Hike(uid: "", name: "")
+        nilHike._isNilValue = true
+        return nilHike
+    }
+    
+    /// Used to mark a CheckIn value as "nil"
+    internal var _isNilValue: Bool = false
 }

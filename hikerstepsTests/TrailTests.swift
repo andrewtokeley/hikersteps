@@ -12,7 +12,7 @@ struct TrailTests {
 
     @Test func fetchTrails() async throws {
         let service = TrailService()
-        let trails = try await service.fetchTrails()
+        let trails = try await service.getTrails()
         
         #expect(trails.count > 0)
     }

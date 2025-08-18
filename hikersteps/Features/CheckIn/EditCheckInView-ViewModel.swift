@@ -40,7 +40,7 @@ extension EditCheckInView {
         func loadAccommodationLookups() async throws
         
         /**
-         Intiate a sve operation for the checkin/images
+         Intiate an update/add operation for the checkin/images
          */
         func save() async throws
     }
@@ -79,14 +79,12 @@ extension EditCheckInView {
         
         
         /**
-         Saves the viewModel's version of the checkin (the one that the view is modifying) to firestore aswell as add/removing images appropriately
+         Saves (adds or updates) the viewModel's version of the checkin (the one that the view is modifying) to firestore aswell as add/removing images appropriately
          
          Assuming it's successful, the checkIn's state will be copied back to the bound checkIn so that the parent view will update.
          */
         func save() async throws {
-            guard let uid = Auth.auth().currentUser?.uid else {
-                throw ServiceError.unauthenticateUser
-            }
+            guard let _ = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
             
             // Delete existing image if we've removed it
             if self.deleteImageOnSave {
@@ -96,26 +94,17 @@ extension EditCheckInView {
                 }
             }
             
-            // Save checkin first so that for new checkIns we have an id
-            let id = try await checkInService.updateCheckIn(checkIn: self.checkIn)
-            if self.checkIn.id == nil {
+            // Add/Update checkin
+            if let _ = checkIn.id {
+                try await checkInService.updateCheckIn(checkIn: checkIn)
+            } else {
+                let id = try await checkInService.addCheckIn(checkIn: checkIn)
                 self.checkIn.id = id
             }
             
-            // add new image if there is one
-            if let data = self.newImageData {
-                if self.checkIn.images.count == 0 {
-                    self.checkIn.images.append(StorageImage())
-                }
-                let path = "images/\(uid)/\(checkIn.adventureId)/\(id)/1"
-                
-                let url = try await storageService.saveImage(path, data: data, contentType: self.newImageContentType)
-
-                self.checkIn.images[0].storagePath = path
-                self.checkIn.images[0].storageUrl = url.absoluteString
-                
-                // Save checkin again to persist image changes
-                let _ = try await checkInService.updateCheckIn(checkIn: self.checkIn)
+            // add new image if the user added one
+            if let data = self.newImageData, let contentType = self.newImageContentType {
+                try await checkInService.addImage(to: self.checkIn, imageData: data, contentType: contentType, caption: "??")
             }
         }
         

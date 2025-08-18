@@ -12,7 +12,7 @@ extension NewJournalStep2View {
     
     protocol ViewModelProtocol: ObservableObject {
         
-        init(hikeService: HikerServiceProtocol, checkInService: CheckInServiceProtocol)
+        init(hikeService: JournalServiceProtocol, checkInService: CheckInServiceProtocol)
         
         func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Hike
     }
@@ -21,10 +21,10 @@ extension NewJournalStep2View {
      The ViewModel for HikeView controls interacting with the model to retrieve hike details including the checkins for the hike.
      */
     class ViewModel: ViewModelProtocol {
-        var hikeService: HikerServiceProtocol
+        var hikeService: JournalServiceProtocol
         var checkInService: CheckInServiceProtocol
         
-        required init(hikeService: HikerServiceProtocol, checkInService: CheckInServiceProtocol) {
+        required init(hikeService: JournalServiceProtocol, checkInService: CheckInServiceProtocol) {
             self.hikeService = hikeService
             self.checkInService = checkInService
         }
@@ -33,19 +33,17 @@ extension NewJournalStep2View {
             guard let uid = Auth.auth().currentUser?.uid else { throw AuthErrorCode.nullUser }
             
             // Create the Journal
-            var hike = Hike(name: trail.name, description: "", startDate: Date())
+            var hike = Hike(uid: "abc", name: trail.name)
             hike.trail = trail
             hike.uid = uid
             
-            let id = try await hikeService.updateHike(hike: hike)
+            let id = try await hikeService.addHike(hike: hike)
             hike.id = id
             
             // Add the 'start' checkin
             if let location = startLocation?.coordinate {
-                var startCheckIn = CheckIn(location: location)
+                var startCheckIn = CheckIn(uid: uid, adventureId: id, location: location)
                 startCheckIn.type = "start"
-                startCheckIn.uid = uid
-                startCheckIn.adventureId = id
                 startCheckIn.title = trail.name
                 let _ = try await checkInService.updateCheckIn(checkIn: startCheckIn)
             }

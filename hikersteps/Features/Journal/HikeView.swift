@@ -38,7 +38,7 @@ struct HikeView: View {
      Constructs a new HikeView from a hike instance and using the default ViewModel
      */
     init(hike: Hike) {
-        let viewModel = ViewModel(checkInService: CheckInService(), hikeService: HikerService())
+        let viewModel = ViewModel(checkInService: CheckInService(), hikeService: JournalService())
         self.init(hike: hike, viewModel: viewModel)
     }
     
@@ -144,7 +144,7 @@ struct HikeView: View {
                         var new = self.checkInManager.addCheckIn(hikeId: hikeId, uid: uid, location: location , date: date)
                         Task {
                             do {
-                                let id = try await viewModel.saveCheckIn(new)
+                                let id = try await viewModel.addCheckIn(newCheckIn)
                                 new.id = id
                                 self.newCheckIn = new
                                 checkInManager.move(.to(id: id))
@@ -236,8 +236,8 @@ struct HikeView: View {
 
 #Preview {
     let authMock = AuthenticationManagerMock() as AuthenticationManager
-    HikeView(hike: Hike(),
-        viewModel: HikeView.ViewModel(checkInService: CheckInServiceMock(), hikeService: HikerServiceMock())
+    HikeView(hike: Hike.nilValue,
+             viewModel: HikeView.ViewModel(checkInService: CheckInService.Mock(), hikeService: JournalService.Mock())
         )
         .environmentObject(authMock)
 }

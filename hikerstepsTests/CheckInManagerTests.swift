@@ -11,9 +11,9 @@ import Foundation
 
 struct CheckInManagerTests {
     let checkIns = [
-        CheckIn(id: "1", title: "Title1", notes: "Some notes 1", distance: DistanceUnit(20, .km), date: Date())
-        , CheckIn(id: "2", title: "Title2", notes: "Some notes 2", distance: DistanceUnit(30, .km), date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
-        , CheckIn(id: "3", title: "Title3", notes: "Some notes 3", distance: DistanceUnit(40, .km), date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
+        CheckIn(uid: "1", adventureId: "1", id: "1", title: "Title1", notes: "Some notes 1", distance: DistanceUnit(20, .km), date: Date())
+        , CheckIn(uid: "1", adventureId: "1", id: "2", title: "Title2", notes: "Some notes 2", distance: DistanceUnit(30, .km), date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
+        , CheckIn(uid: "1", adventureId: "1", id: "3", title: "Title3", notes: "Some notes 3", distance: DistanceUnit(40, .km), date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
     ]
     
     @Test func dirtyUpdateTest() async throws {
@@ -84,7 +84,6 @@ struct CheckInManagerTests {
         #expect(manager.isDirty == true)
         #expect(manager.changes.removed.count == 1)
         #expect(manager.changes.removed[0].id == "2")
-        
     }
     
     @Test func clearingSelection() throws {

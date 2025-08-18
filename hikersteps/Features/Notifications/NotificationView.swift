@@ -9,8 +9,8 @@ import SwiftUI
 
 struct NotificationView: View {
     @State private var notifications: [Notification] = [
-        Notification(id: "1", title: "System message", body: "You have a new message.", isRead: false, type: .systemMessage("Hello there")),
-        Notification(id: "2", title: "New check in!", body: "Jane sent you a friend request.", isRead: false, type: .newCheckIn(hikeId: "123"))
+        Notification(id: "111", title: "System message", body: "You have a new message.", isRead: false, type: .systemMessage("Hello there")),
+        Notification(id: "222", title: "New check in!", body: "Jane sent you a friend request.", isRead: false, type: .newCheckIn(hikeId: "123"))
     ]
     
     @State var selectedNotification: Notification?

@@ -58,6 +58,9 @@ class CheckInManager: ObservableObject {
     
     //MARK: - Constructors
     
+    /**
+     Initialises a new manager
+     */
     init(checkIns: [CheckIn] = []) {
         self.initialise(checkIns: checkIns)
     }
@@ -97,8 +100,7 @@ class CheckInManager: ObservableObject {
      The new instance is returned.
      */
     func addCheckIn(hikeId: String, uid: String, location: Coordinate, date: Date) -> CheckIn {
-        var new = CheckIn(uid: uid, location: location, date: date)
-        new.adventureId = hikeId
+        let new = CheckIn(uid: uid, adventureId: hikeId, location: location, date: date)
         
         let newAnnotation = CheckInAnnotation(checkIn: new)
         

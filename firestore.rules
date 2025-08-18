@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	// Authenitcated users can read their own record, others only if adventure is public
+  	// Authenitcated users can only write their own record
+    match /adventures/{adventureId} {
+    	allow read: if (request.auth != null && request.auth.uid == resource.data.uid) || resource.data.public == true;
+  		allow create, update: if request.auth != null && request.auth.uid == request.resource.data.uid;
+        allow delete: if request.auth != null && request.auth.uid == resource.data.uid;      
+	}
+    // Authenticated users can only read their own record
+    // Authenticated users can only write their own record
+	match /users/{uid} {
+  		allow write: if request.auth != null && request.auth.uid == uid;
+      	allow read: if true; // only public non sensitive data at root of user doc
+      
+		// Only authenticated users can read/write their own private data
+		match /private/{uid} {
+			allow read, write: if request.auth != null && request.auth.uid == uid;
+		}
+	}
+    // Authenticated users can read their own records
+    // Public can read any checkins from adventures that have been marked as public
+    // Authenticated users write their own records
+	match /check-ins/{id} {
+  		allow read: if (request.auth != null && request.auth.uid == resource.data.uid) || get(/databases/$(database)/documents/adventures/$(resource.data.adventureId)).data.public == true;
+  		allow delete, update: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+		}
+    // Public can read all records
+    // Private write - these are internal records that can only be updated via the console
+	match /map-layers/{maplayer} {
+  		allow read: if true;
+  		allow write: if false;
+		}
+    // Public	can read all records
+    // Private write - these are internal records that can only be updated via the console (temporarily add write for admins)
+	match /trails/{trail} {
+  		allow read: if true;
+  		allow write: if request.auth.token.admin == true;
+		}
+    
+    // Public can read all lookup types
+    // Admin write - e.g. for setting up new database with default records
+    match /lookups/{types}/{document=**} {
+  		allow read: if true;
+		allow write: if request.auth.token.admin == true;
+  	}
+  }
+}	

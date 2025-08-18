@@ -8,7 +8,18 @@
 import SwiftUI
 
 struct HikeCard: View {
+    @Environment(\.dismiss) private var dismiss
+    
     var hike: Hike
+    
+    @State private var showContextMenu: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
+    
+    private var onDeleteRequest: ((Hike) -> Void )? = nil
+
+    init(hike: Hike) {
+        self.hike = hike
+    }
     
     var body: some View {
         HStack {
@@ -60,12 +71,36 @@ struct HikeCard: View {
         }
         .frame(height: 110)
         .padding(.bottom)
-        
+        .onLongPressGesture {
+            self.showContextMenu = true
+        }
+        .confirmationDialog("Options", isPresented: $showContextMenu, titleVisibility: .hidden) {
+            Button("Delete Journal...", role: .destructive) {
+                showDeleteConfirmation = true
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .alert("Delete Journal", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {
+                dismiss()
+            }
+            Button("Delete", role: .destructive) {
+                onDeleteRequest?(self.hike)
+            }
+        } message: {
+            Text("Are you sure you want to delete this Journal, including all journal entries and photos?. You can't undo this!")
+        }
+    }
+    
+    func onDeleteRequest(_ handler: ((Hike) -> Void)?) -> HikeCard {
+        var copy = self
+        copy.onDeleteRequest = handler
+        return copy
     }
 }
 
 
 #Preview {
-    @Previewable @State var hike = Hike(name: "TA 2021/22", description: "This is a test hike", startDate: Date())
+    @Previewable @State var hike = Hike(uid: "abc", name: "TA 2021/22", description: "This is a test hike", startDate: Date())
     HikeCard(hike: hike)
 }

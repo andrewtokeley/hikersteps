@@ -10,7 +10,7 @@ import Foundation
 /**
  A CheckInAnnotation contains information about where and how to display a CheckIn marker on a Map.
  */
-struct CheckInAnnotation: Codable, Identifiable, Equatable {
+struct CheckInAnnotation: Codable, Identifiable, Equatable, Hashable {
     
     /**
      Guaranteed unique id for the annotation

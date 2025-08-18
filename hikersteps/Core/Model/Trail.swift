@@ -14,7 +14,7 @@ import FirebaseFirestore
 import SwiftUI
 import FirebaseFirestore
 
-struct Trail: Identifiable, Codable, FirestoreEncodable {
+struct Trail: Identifiable, Codable, FirestoreEncodable, Hashable {
     var id: String { return key }
     var key: String = ""
     var name: String = ""

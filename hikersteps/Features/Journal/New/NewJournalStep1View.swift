@@ -21,6 +21,8 @@ struct NewJournalStep1View: View {
     
     @StateObject private var viewModel: ViewModel
     
+    private var onTrailSelected: ((Trail) -> Void )? = nil
+    
     init() {
         self.init(viewModel: ViewModel(trailService: TrailService()))
         
@@ -50,31 +52,31 @@ struct NewJournalStep1View: View {
                 }
                 .padding(.top)
                 Group {
-                    Text("Create a New Journal")
-                        .font(.title)
+                    Text("Exciting!")
                         .foregroundStyle(.primary)
+                    Text("A New Journal")
+                        .foregroundStyle(.primary)
+                        .padding(.bottom)
                 }
-                .foregroundStyle(.primary)
                 .font(.title)
                 .multilineTextAlignment(.center)
-                .padding(.bottom)
                 
-                Text("That's exciting!")
                 Text("Which trail are you walking?")
                     .padding(.bottom)
                 
                 List {
                     ForEach(trails) { trail in
-                        NavigationLink {
-                            NewJournalStep2View(trail: trail)
+                        Button {
+                            self.onTrailSelected?(trail)
+                            self.dismiss()
                         } label: {
-                            HStack {
-                                Text(CountryManager.country(for: trail.countryCode)?.flag ?? "")
+                            Label {
                                 Text(trail.name)
+                            } icon: {
+                                Text(CountryManager.country(for: trail.countryCode)?.flag ?? "")
                             }
                         }
-                    }
-                    
+                    }                    
                 }
                 .listStyle(.plain)
             }
@@ -89,6 +91,11 @@ struct NewJournalStep1View: View {
         }
     }
     
+    func onTrailSelected(_ handler: ((Trail) -> Void)?) -> NewJournalStep1View {
+        var copy = self
+        copy.onTrailSelected = handler
+        return copy
+    }
 }
 
 #Preview {

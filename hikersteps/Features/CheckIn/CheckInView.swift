@@ -17,6 +17,7 @@ struct CheckInView: View {
     
     private var onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil
     private var onDeleteRequest: ((CheckIn) -> Void )? = nil
+    
     private var onHeroImageUpdated: ((String) -> Void)? = nil
     
     @Binding var checkIn: CheckIn
@@ -177,6 +178,6 @@ struct CheckInView: View {
 
 
 #Preview {
-    @Previewable @State var checkIn: CheckIn = CheckIn(id: "1", uid: "123", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
+    @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", adventureId: "1", id: "111", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
     CheckInView(checkIn: $checkIn, dayDescription: "Day 12")
 }

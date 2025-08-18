@@ -14,7 +14,7 @@ extension EditHikeView {
         /**
          Initialise a new ViewModel for EditHikeView
          */
-        init(hike: Hike, hikeService: any HikerServiceProtocol, trailService: TrailServiceProtocol)
+        init(hike: Hike, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol)
                 
         /**
         This is a copy of the hike being edited - we publsh changes so the parent can copy back to the master hike record that's being updated.
@@ -22,11 +22,16 @@ extension EditHikeView {
         var hike: Hike { get }
 
         /**
-         Intiate a save operation for the hike. If the Hike exists it will be updated, otherwise a new hike is created.
+         Updates changes to the hike
+         */
+        func updateCheckIn() async throws
+        
+        /**
+         Adds a new hike to firestore.
          
          - Returns: The id of the saved hike
          */
-        func save() async throws -> String
+        func addCheckIn() async throws -> String
         
         func fetchTrails() async throws -> [Trail]
     }
@@ -35,21 +40,25 @@ extension EditHikeView {
 
         @Published var hike: Hike
 
-        private var hikeService: HikerServiceProtocol
+        private var hikeService: JournalServiceProtocol
         private var trailService: TrailServiceProtocol
         
-        required init(hike: Hike, hikeService: any HikerServiceProtocol, trailService: TrailServiceProtocol) {
+        required init(hike: Hike, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol) {
             self.hike = hike
             self.hikeService = hikeService
             self.trailService = trailService
         }
         
-        func save() async throws -> String {
-            return try await hikeService.updateHike(hike: self.hike)
+        func addCheckIn() async throws -> String {
+            return try await hikeService.addHike(hike: hike)
+        }
+        
+        func updateCheckIn() async throws {
+            try await hikeService.updateHike(hike: self.hike)
         }
         
         func fetchTrails() async throws -> [Trail] {
-            return try await trailService.fetchTrails()
+            return try await trailService.getTrails()
         }
         
     }

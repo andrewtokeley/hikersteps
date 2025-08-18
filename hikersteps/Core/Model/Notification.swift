@@ -14,7 +14,7 @@ enum NotificationType: Equatable, Hashable {
 }
 
 struct Notification: Identifiable, Hashable {
-    @DocumentID var id: String? = nil
+    var id: String? = nil
     var title: String = ""
     var body: String = ""
     var date: Date = Date()

@@ -28,7 +28,7 @@ struct NewJournalStep2View: View {
     @State private var navigateToHikeView: Bool = false
     
     init(trail: Trail) {
-        self.init(trail: trail, viewModel: ViewModel(hikeService: HikerService(), checkInService: CheckInService()))
+        self.init(trail: trail, viewModel: ViewModel(hikeService: JournalService(), checkInService: CheckInService()))
     }
     
     init(trail: Trail, viewModel: ViewModel) {
@@ -46,6 +46,7 @@ struct NewJournalStep2View: View {
                     .padding(.bottom)
                 
                 RadioButtonGroup(options: locationOptions, selected: $selectedStartLocation)
+                    .disabled(self.isSaving)
                 
                 Spacer()
                 
@@ -59,10 +60,11 @@ struct NewJournalStep2View: View {
                             } catch {
                                 ErrorLogger.shared.log(error)
                             }
-                            self.isSaving = false
                         }
                     }
-                }.disabled(isSaving)
+                    self.isSaving = false
+                }
+                .disabled(isSaving)
             }
             .padding(.horizontal, 20)
             .navigationDestination(isPresented: $navigateToHikeView) {
@@ -76,5 +78,5 @@ struct NewJournalStep2View: View {
 }
 
 #Preview {
-    NewJournalStep2View(trail: Trail.sample, viewModel: NewJournalStep2View.ViewModel(hikeService: HikerServiceMock(), checkInService: CheckInServiceMock()))
+    NewJournalStep2View(trail: Trail.sample, viewModel: NewJournalStep2View.ViewModel(hikeService: JournalService.Mock(), checkInService: CheckInService.Mock()))
 }

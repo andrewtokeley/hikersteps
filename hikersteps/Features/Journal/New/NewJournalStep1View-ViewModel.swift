@@ -26,7 +26,7 @@ extension NewJournalStep1View {
         }
         
         func loadTrails() async throws -> [Trail] {
-            return try await service.fetchTrails()
+            return try await service.getTrails()
         }
         
     }

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D80918F62E3C3C700096C6BE /* CheckInManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80918F52E3C3C6F0096C6BE /* CheckInManagerTests.swift */; };
+		D81301812E51D17F00EEADE6 /* CheckInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81301802E51D17F00EEADE6 /* CheckInTests.swift */; };
 		D813C45C2E15E88D00264C01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */; };
 		D829B7012E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
 		D829B7022E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
@@ -50,7 +51,13 @@
 
 /* Begin PBXFileReference section */
 		D80918F52E3C3C6F0096C6BE /* CheckInManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInManagerTests.swift; sourceTree = "<group>"; };
+		D81301802E51D17F00EEADE6 /* CheckInTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInTests.swift; sourceTree = "<group>"; };
 		D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		D814D8092E510D300001EBAE /* firebase.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = firebase.json; sourceTree = "<group>"; };
+		D814D80A2E510D300001EBAE /* firestore.rules */ = {isa = PBXFileReference; lastKnownFileType = text; path = firestore.rules; sourceTree = "<group>"; };
+		D814D80B2E510D300001EBAE /* firestore.indexes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = firestore.indexes.json; sourceTree = "<group>"; };
+		D814D80C2E5115670001EBAE /* .firebaserc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .firebaserc; sourceTree = "<group>"; };
+		D814D80D2E5116390001EBAE /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D829B7002E1358E00055B789 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		D87E478E2E2F5E7300097AD4 /* NumberUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberUnitTests.swift; sourceTree = "<group>"; };
 		D88DB5342E0CBA47009FC991 /* hikersteps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hikersteps.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -114,6 +121,11 @@
 				D88DB54D2E0CBA4A009FC991 /* hikerstepsTests */,
 				D88DB5572E0CBA4A009FC991 /* hikerstepsUITests */,
 				D88DB5352E0CBA47009FC991 /* Products */,
+				D814D80D2E5116390001EBAE /* .gitignore */,
+				D814D80C2E5115670001EBAE /* .firebaserc */,
+				D814D8092E510D300001EBAE /* firebase.json */,
+				D814D80A2E510D300001EBAE /* firestore.rules */,
+				D814D80B2E510D300001EBAE /* firestore.indexes.json */,
 			);
 			sourceTree = "<group>";
 		};
@@ -161,6 +173,7 @@
 				D80918F52E3C3C6F0096C6BE /* CheckInManagerTests.swift */,
 				D89FA8B02E4C801A003B2EB5 /* TrailTests.swift */,
 				D89FA8B22E4C80E2003B2EB5 /* HikeTests.swift */,
+				D81301802E51D17F00EEADE6 /* CheckInTests.swift */,
 			);
 			path = hikerstepsTests;
 			sourceTree = "<group>";
@@ -332,6 +345,7 @@
 				D8CA8A482E3B5F5E008348E4 /* HikeStatisticsTests.swift in Sources */,
 				D88DB54F2E0CBA4A009FC991 /* hikerstepsTests.swift in Sources */,
 				D89FA8B32E4C80E2003B2EB5 /* HikeTests.swift in Sources */,
+				D81301812E51D17F00EEADE6 /* CheckInTests.swift in Sources */,
 				D80918F62E3C3C700096C6BE /* CheckInManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

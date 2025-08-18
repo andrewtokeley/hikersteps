@@ -31,7 +31,7 @@ struct EditHikeView: View {
         // we pass in the wrapped value to the viewmodel so that we can choose whether to copy the changes back to the parent depending on whether changes are saved or canceled.
         self.init(hike: hike,
                   viewModel: ViewModel(hike: hike.wrappedValue,
-                                       hikeService: HikerService(),
+                                       hikeService: JournalService(),
                                        trailService: TrailService()))
     }
     
@@ -112,7 +112,7 @@ struct EditHikeView: View {
                         Task {
                             do {
                                 // work out what sort of image action to perform
-                                let _ = try await viewModel.save()
+                                let _ = try await viewModel.updateCheckIn()
                                 
                                 //copy changes back to the bound checkIn to refresh the parent view
                                 self.hike = viewModel.hike
@@ -155,6 +155,6 @@ struct EditHikeView: View {
     EditHikeView(hike: $hike,
                  viewModel: EditHikeView.ViewModel(
                         hike: hike,
-                        hikeService: HikerServiceMock(),
+                        hikeService: JournalService.Mock(),
                         trailService: TrailService.Mock()))
 }

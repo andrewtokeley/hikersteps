@@ -212,7 +212,6 @@ struct EditCheckInView: View {
                         // Save to firestore
                         Task {
                             do {
-                                // work out what sort of image action to perform
                                 try await viewModel.save()
                                 //copy changes back to the bound checkIn to refresh the parent view
                                 self.checkIn = viewModel.checkIn
@@ -284,7 +283,7 @@ struct EditCheckInView: View {
     EditCheckInView(checkIn: $checkIn,
                     viewModel: EditCheckInView.ViewModel(
                         checkIn: checkIn,
-                        checkInService: CheckInServiceMock(),
-                        lookupService: LookupServiceMock(),
-                        storageService: StorageSerivceMock()))
+                        checkInService: CheckInService.Mock(),
+                        lookupService: LookupService.Mock(),
+                        storageService: StorageService.Mock()))
 }

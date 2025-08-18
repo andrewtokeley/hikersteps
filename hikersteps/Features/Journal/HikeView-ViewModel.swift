@@ -11,11 +11,11 @@ import CoreLocation
 extension HikeView {
     
     protocol ViewModelProtocol: ObservableObject {
-        init(checkInService: CheckInServiceProtocol, hikeService: HikerServiceProtocol)
+        init(checkInService: CheckInServiceProtocol, hikeService: JournalServiceProtocol)
         
         func loadCheckIns(uid: String, hike: Hike) async throws -> [CheckIn]
-        func saveCheckIn(_ checkIn: CheckIn) async throws -> String
-        func addCheckIn(_ checkIn: CheckIn) async throws
+        func saveCheckIn(_ checkIn: CheckIn) async throws
+        func addCheckIn(_ checkIn: CheckIn) async throws -> String
         func saveChanges(_ manager: CheckInManager) async throws
         func updateHeroImage(hikeId: String, urlString: String) async throws
     }
@@ -26,9 +26,9 @@ extension HikeView {
     class ViewModel: ViewModelProtocol {
 
         private var checkInService: CheckInServiceProtocol
-        private var hikeService: HikerServiceProtocol
+        private var hikeService: JournalServiceProtocol
         
-        required init(checkInService: CheckInServiceProtocol, hikeService: HikerServiceProtocol) {
+        required init(checkInService: CheckInServiceProtocol, hikeService: JournalServiceProtocol) {
             self.checkInService = checkInService
             self.hikeService = hikeService
         }
@@ -52,16 +52,16 @@ extension HikeView {
         /**
          Saves any changes made to the checkin. If the checkin has no changes then no action is taken.
          */
-        func saveCheckIn(_ checkIn: CheckIn) async throws -> String {
-            return try await checkInService.updateCheckIn(checkIn: checkIn)
+        func saveCheckIn(_ checkIn: CheckIn) async throws {
+            try await checkInService.updateCheckIn(checkIn: checkIn)
         }
         
         func saveChanges(_ manager: CheckInManager) async throws {
             try await checkInService.save(manager: manager)
         }
         
-        func addCheckIn(_ checkIn: CheckIn) async throws {
-            // to do
+        func addCheckIn(_ checkIn: CheckIn) async throws -> String {
+            return try await checkInService.addCheckIn(checkIn: checkIn)
         }
         
         func updateHeroImage(hikeId: String, urlString: String) async throws {

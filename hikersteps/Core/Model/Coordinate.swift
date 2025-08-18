@@ -12,7 +12,7 @@ import CoreLocation
 /**
  The default structure across the app to describe a location on a map. Conversion methods allow translation between GEOPoint (Firestore) annd CLLocationCoordinate2D (CoreLocatin).
  */
-struct Coordinate: Codable {
+struct Coordinate: Codable, Hashable {
     let latitude: Double
     let longitude: Double
     

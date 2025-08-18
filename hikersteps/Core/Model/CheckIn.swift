@@ -8,17 +8,18 @@
 import Foundation
 import FirebaseFirestore
 import CoreLocation
+import FirebaseAuth
 
 /**
- All properties are marked as non-optional even if  they might not be stored in firebase. This allows us to bind directly to these properties from views (can't bind to optionals) and we handle converting fetched data in init(decoder:) for cases where there is no data for a field and setting a default.
+ 
  */
 struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
-    
-    /// Used to mark a CheckIn value as "nil"
-    internal var _isNilValue: Bool = false
 
     /// The id of the document in firestore.
-    @DocumentID var id: String?
+    var id: String?
+    
+    /// Note: all properties are marked as non-optional even if  they might not be stored in firebase. This allows us to bind directly to these properties from views (can't bind to optionals) and we handle converting fetched data in init(decoder:) for cases where there is no data for a field and setting a default.
+    ///
     
     var uid: String = ""
     private var locationAsGeoPoint: GeoPoint = GeoPoint(latitude: 0, longitude: 0)
@@ -49,6 +50,22 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
     var resupplyNotes: String = ""
     var isHeroImage: Bool = false
     
+    /**
+     This is the root "directory" of all images for this check-in. Currently this should only contain a single image.
+     */
+    func getStorageFolder() -> String? {
+        guard !uid.isEmpty, !adventureId.isEmpty else { return nil }
+        return "images/\(uid)/\(adventureId)/"
+    }
+
+    /**
+     The path where the image should be stored. Currently there is only one image and it will always be at index == 1.
+     */
+    func getStoragePathForImage(_ index: Int) -> String? {
+        guard let folder = self.getStorageFolder(), let id = id, index > 0 else { return nil }
+        return folder + "\(id)/\(index)"
+    }
+    
     enum CodingKeys: String, CodingKey {
         case uid
         case date
@@ -69,6 +86,8 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
         case resupplyNotes
         case isHeroImage
     }
+    
+    // MARK: - Initialisers
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -92,9 +111,14 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
         self.isHeroImage = try container.decodeIfPresent(Bool.self, forKey: .isHeroImage) ?? false
     }
         
-    init(id: String? = nil, uid: String = "", type: String = "day", location: Coordinate = Coordinate.zero, title: String = "", notes: String = "", distance: DistanceUnit = DistanceUnit.zero(.km), numberOfRestDays: Int = 0, numberOfOffTrailDays: Int = 0, date: Date = Date(), images: [StorageImage] = [], isHeroImage: Bool = false, accommodation: LookupItem = LookupItem.noSelection()) {
+    /**
+     This initialiser it typically only used for testing purposes. For App use it's more common to use Checkin(uid, adventureId)
+     */
+    init(uid: String, adventureId: String, id: String? = nil, type: String = "day", location: Coordinate = Coordinate.zero, title: String = "", notes: String = "", distance: DistanceUnit = DistanceUnit.zero(.km), numberOfRestDays: Int = 0, numberOfOffTrailDays: Int = 0, date: Date = Date(), images: [StorageImage] = [], isHeroImage: Bool = false, accommodation: LookupItem = LookupItem.noSelection()) {
+        
+        self.init(uid: uid, adventureId: adventureId)
+        
         self.id = id
-        self.uid = uid
         self.type = type
         self.locationAsGeoPoint = location.geoPoint
         self.title = title
@@ -107,12 +131,26 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
         self.accommodation = accommodation
         self.isHeroImage = isHeroImage
     }
+    
+    /**
+     This is the primary initialiser. Both uid and adventureId are mandatory fields to persist data about a CheckIn and should be presented as the context for the CheckIn.
+     
+     - Parameters
+        - uid: uid of the currently logged in user
+        - adventureId: id of the journal the checkIn is associated with
+     */
+    init(uid: String, adventureId: String) {
+        self.uid = uid
+        self.adventureId = adventureId
+    }
+    
     /**
      Need to override default equalify check because GeoPoints and Dates are classes and won't necessarily compare with ==
      */
     static func == (lhs: CheckIn, rhs: CheckIn) -> Bool {
         return lhs.id == rhs.id &&
         lhs.uid == rhs.uid &&
+        lhs.adventureId == rhs.adventureId &&
         lhs.locationAsGeoPoint.latitude == rhs.locationAsGeoPoint.latitude &&
         lhs.locationAsGeoPoint.longitude == rhs.locationAsGeoPoint.longitude &&
         lhs.title == rhs.title &&
@@ -126,7 +164,6 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
         lhs.images == rhs.images &&
         lhs.numberOfRestDays == rhs.numberOfRestDays &&
         lhs.numberOfOffTrailDays == rhs.numberOfOffTrailDays &&
-        lhs.adventureId == rhs.adventureId &&
         lhs.customLinks == rhs.customLinks &&
         lhs.resupply == rhs.resupply &&
         lhs.resupplyNotes == rhs.resupplyNotes &&
@@ -134,29 +171,55 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
         lhs._isNilValue == rhs._isNilValue
     }
     
-    static var newWithDefaults: CheckIn {
-        return CheckIn()
-    }
+//    static var newWithDefaults: CheckIn {
+//        if let uid = Auth.auth().currentUser?.uid {
+//        let adventureId = "1"
+//        return CheckIn(uid: uid, adventureId: adventureId)
+//    }
     
-    static func new(location: Coordinate) -> CheckIn {
-        var new = newWithDefaults
-        new.title = "Dropped Pin"
-        new.location = location
-        return new
-    }
+//    static func new(location: Coordinate) -> CheckIn {
+//        var new = newWithDefaults
+//        new.title = "Dropped Pin"
+//        new.location = location
+//        return new
+//    }
     
+    /**
+     This func is only to be used for Previews and Testing, where you need to set an id (which you wouldn't normally have to). In either case the sample should not (and can't) be saved to firestore.
+     */
     static func sample(id: String = "1", distance: DistanceUnit = DistanceUnit(20, .km), numberOfRestDays: Int = 0) -> CheckIn {
-        return CheckIn(id: id, uid: UUID().uuidString, location: Coordinate.wellington, title: "Hotel \(id)", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distance: distance, numberOfRestDays: numberOfRestDays, numberOfOffTrailDays: 0)
+        let uid = Auth.auth().currentUser?.uid ?? UUID().uuidString
+        let adventureId = "123"
+        return CheckIn(uid: uid, adventureId: adventureId, id: id, location: Coordinate.wellington, title: "Hotel \(id)", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distance: distance, numberOfRestDays: numberOfRestDays, numberOfOffTrailDays: 0)
     }
     
+    /**
+     An instance of a CheckIn that represents nil.
+     
+     I've done this to allow Views that don't accept optional bindings to bind to say a selected CheckIn (that may not be selected). For example,
+     ```
+     @State private var $selectedCheckIn: CheckIn
+     
+     if !selectedCheckIn.isNil {
+        // View expects non-optional binding
+        CheckInView($selectedCheckIn)
+     }
+     ```
+     */
     static var nilValue: CheckIn {
-        var nilCheckIn = CheckIn()
+        var nilCheckIn = CheckIn(uid: "", adventureId: "")
         nilCheckIn._isNilValue = true
         return nilCheckIn
     }
     
+    /**
+     Returns whether the current CheckIn represents "nil"
+     */
     var isNil: Bool {
         return _isNilValue
     }
+    
+    /// Used to mark a CheckIn value as "nil"
+    internal var _isNilValue: Bool = false
 }
 

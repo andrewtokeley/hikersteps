@@ -11,7 +11,7 @@ import FirebaseStorage
 protocol StorageServiceProtocol {
     
     /**
-     Saves an image to storage
+     Adds an image to storage
      - Parameters:
         - path: full path of the storage location where the file will be stored
         - data: the image data
@@ -19,7 +19,7 @@ protocol StorageServiceProtocol {
      
      - Returns: the downloadable url for the image
      */
-    func saveImage(_ path: String, data: Data, contentType: String?) async throws -> URL
+    func addImage(_ path: String, data: Data, contentType: String?) async throws -> URL
     
     /**
      Deletes the image located at the path from Storage
@@ -28,11 +28,16 @@ protocol StorageServiceProtocol {
         - path: full path where the image data to be deleted is located
      */
     func deleteImageFromStorage(_ path: String) async throws
+    
+    /**
+     Delete all the images for all the CheckIns for the Hike
+     */
+    func deleteImages(for hike: Hike) async throws
 }
 
 class StorageService: StorageServiceProtocol {
     
-    func saveImage(_ path: String, data: Data, contentType: String?) async throws -> URL {
+    func addImage(_ path: String, data: Data, contentType: String?) async throws -> URL {
         print("saveing image to \(path) with contentType \(contentType ?? "unknown")...")
         
         let storageRef = Storage.storage().reference(withPath: path)
@@ -47,20 +52,37 @@ class StorageService: StorageServiceProtocol {
     
     
     func deleteImageFromStorage(_ path: String) async throws {
-        print("deleting from Storage at \(path)...")
-        
         let storageRef = Storage.storage().reference(withPath: path)
         try await storageRef.delete()
-        print("deleted")
+    }
+    
+    func deleteImages(for hike: Hike) async throws {
+        
     }
 }
 
-class StorageSerivceMock: StorageServiceProtocol {
-    func saveImage(_ path: String, data: Data, contentType: String?) async throws -> URL {
-        return URL(string: "file:///path/to/mock/image")!
-    }
-    
-    func deleteImageFromStorage(_ path: String) async throws {
-        // do nothing
+extension StorageService {
+    class Mock: StorageServiceProtocol {
+        func addImage(_ path: String, data: Data, contentType: String?) async throws -> URL {
+            return URL(string: "file:///path/to/mock/image")!
+        }
+        
+        func deleteImageFromStorage(_ path: String) async throws {
+            // do nothing
+        }
+        
+        func deleteImages(for hike: Hike) async throws {
+            guard let id = hike.id else { return }
+            
+            let service = CheckInService()
+            let checkIns = try await service.getCheckIns(uid: hike.uid, adventureId: id)
+            for checkIn in checkIns {
+                for image in checkIn.images {
+                    if let path = image.storagePath {
+                        try await deleteImageFromStorage(path)
+                    }
+                }
+            }
+        }
     }
 }

@@ -11,16 +11,19 @@ struct HomeView: View {
     // Access to the authentication state, user info etc.
     @EnvironmentObject var auth: AuthenticationManager
     @EnvironmentObject var appState: AppState
+    @Environment(\.dismiss) private var dismiss
     
     // The ViewModel for this view.
     @StateObject private var viewModel: ViewModel
     @State private var showNewHike: Bool = false
     
+    @State private var selectedTrailForNewJournal: Trail?
+    
     // The State managed by this view
     @State private var hasLoaded = false
     
     init() {
-        self.init(viewModel: ViewModel(hikeService: HikerService()))
+        self.init(viewModel: ViewModel(hikeService: JournalService()))
     }
     
     /**
@@ -42,8 +45,11 @@ struct HomeView: View {
                             NavigationLink {
                                 HikeView(hike: hike)
                             } label: {
-                             
                                 HikeCard(hike: hike)
+                                    .onDeleteRequest({ hike in
+                                        // delete Hike
+                                        
+                                    })
                                     .foregroundColor(Color(UIColor.label))
                             }
                         }
@@ -68,6 +74,17 @@ struct HomeView: View {
             .padding()
             .navigationTitle("Home")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(item: $selectedTrailForNewJournal) { trail in
+                NewJournalStep2View(trail: trail)
+                    .navigationBarBackButtonHidden(true)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Cancel") {
+                                selectedTrailForNewJournal = nil
+                            }
+                        }
+                    }
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
@@ -105,14 +122,19 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showNewHike) {
             NewJournalStep1View()
-                .presentationDetents([.large])
+                .onTrailSelected { trail in
+                    print("hi")
+                    self.selectedTrailForNewJournal = trail
+                }
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+            
         }
     }
 }
 
 #Preview {
     let mock = AuthenticationManagerMock() as AuthenticationManager
-    return HomeView(viewModel: HomeView.ViewModel(hikeService: HikerServiceMock()))
+    return HomeView(viewModel: HomeView.ViewModel(hikeService: JournalService.Mock()))
         .environmentObject(mock)
 }

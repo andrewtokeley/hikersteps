@@ -163,7 +163,7 @@ struct MapView: View {
 #Preview {
     @Previewable @State var annotations = [
         CheckInAnnotation(id: "1", coordinate: Coordinate(latitude: -41.29, longitude: 174.7787), title: "Hotel High Five"),
-        CheckInAnnotation(id: "2", coordinate: Coordinate(latitude: -41.39, longitude: 174.7787), title: "Camp of Dissappointment")
+        CheckInAnnotation(id: "22", coordinate: Coordinate(latitude: -41.39, longitude: 174.7787), title: "Camp of Dissappointment")
         ]
     @Previewable @State var selectedIndex: Int = 1
     

@@ -12,4 +12,6 @@ enum ServiceError: Error {
     case unknownError
     case dataConversionError
     case unauthenticateUser
+    case generalError(String)
+    case missingField(String)
     }

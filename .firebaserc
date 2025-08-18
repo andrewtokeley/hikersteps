@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "dev": "istayedhere-dev",
+    "prod": "istayedhere"
+  },
+  "targets": {},
+  "etags": {}
+}
