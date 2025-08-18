@@ -13,7 +13,7 @@ extension HikeView {
     protocol ViewModelProtocol: ObservableObject {
         init(checkInService: CheckInServiceProtocol, hikeService: JournalServiceProtocol)
         
-        func loadCheckIns(uid: String, hike: Hike) async throws -> [CheckIn]
+        func loadCheckIns(uid: String, hike: Journal) async throws -> [CheckIn]
         func saveCheckIn(_ checkIn: CheckIn) async throws
         func addCheckIn(_ checkIn: CheckIn) async throws -> String
         func saveChanges(_ manager: CheckInManager) async throws
@@ -36,12 +36,12 @@ extension HikeView {
         /**
          Loads checkins for the given hike and returns the results through the trailing closure
          */
-        func loadCheckIns(uid: String, hike: Hike) async throws -> [CheckIn] {
+        func loadCheckIns(uid: String, hike: Journal) async throws -> [CheckIn] {
             if let adventureId = hike.id {
                 let checkIns = try await checkInService.getCheckIns(uid: uid, adventureId: adventureId)
                 
                 // refresh the hike statistics from the checkins
-                try await hikeService.updateStatistics(hikeId: adventureId, statistics: HikeStatistics(checkIns: checkIns))
+                try await hikeService.updateStatistics(journalId: adventureId, statistics: HikeStatistics(checkIns: checkIns))
                 return checkIns
             } else {
                 print("missing hike id")
@@ -65,7 +65,7 @@ extension HikeView {
         }
         
         func updateHeroImage(hikeId: String, urlString: String) async throws {
-            try await hikeService.updateHeroImage(hikeId: hikeId, urlString: urlString)
+            try await hikeService.updateHeroImage(journalId: hikeId, urlString: urlString)
         }
     }
 }

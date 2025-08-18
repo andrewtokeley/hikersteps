@@ -14,7 +14,7 @@ extension NewJournalStep2View {
         
         init(hikeService: JournalServiceProtocol, checkInService: CheckInServiceProtocol)
         
-        func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Hike
+        func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Journal
     }
     
     /**
@@ -29,15 +29,15 @@ extension NewJournalStep2View {
             self.checkInService = checkInService
         }
         
-        func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Hike {
+        func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Journal {
             guard let uid = Auth.auth().currentUser?.uid else { throw AuthErrorCode.nullUser }
             
             // Create the Journal
-            var hike = Hike(uid: "abc", name: trail.name)
+            var hike = Journal(uid: "abc", name: trail.name)
             hike.trail = trail
             hike.uid = uid
             
-            let id = try await hikeService.addHike(hike: hike)
+            let id = try await hikeService.addJournal(journal: hike)
             hike.id = id
             
             // Add the 'start' checkin

@@ -23,7 +23,7 @@ struct HomeView: View {
     @State private var hasLoaded = false
     
     init() {
-        self.init(viewModel: ViewModel(hikeService: JournalService()))
+        self.init(viewModel: ViewModel(journalService: JournalService()))
     }
     
     /**
@@ -37,19 +37,34 @@ struct HomeView: View {
         NavigationStack() {
             VStack (alignment: .leading) {
                 if auth.isLoggedIn {
-                    Text("Journals")
-                        .foregroundStyle(.primary)
-                        .font(.title)
+                    Group {
+                        if (hasLoaded) {
+                            Text("Journals")
+                        } else {
+                            Text("Journals - Loading...")
+                        }
+                    }
+                    .foregroundStyle(.primary)
+                    .font(.title)
+                    
                     ScrollView {
-                        ForEach(viewModel.hikes) { hike in
+                        ForEach(viewModel.journals) { journal in
                             NavigationLink {
-                                HikeView(hike: hike)
+                                HikeView(hike: journal)
                             } label: {
-                                HikeCard(hike: hike)
-                                    .onDeleteRequest({ hike in
-                                        // delete Hike
-                                        
-                                    })
+                                HikeCard(hike: journal)
+                                    .onDeleteRequest { journal in
+                                        Task {
+                                            do {
+                                                hasLoaded = false
+                                                try await viewModel.deleteJournal(journal: journal)
+                                                try await viewModel.loadJournals()
+                                                hasLoaded = true
+                                            } catch {
+                                                ErrorLogger.shared.log(error)
+                                            }
+                                        }
+                                    }
                                     .foregroundColor(Color(UIColor.label))
                             }
                         }
@@ -111,7 +126,7 @@ struct HomeView: View {
         .task {
             if (!hasLoaded) {
                 do {
-                    try await viewModel.loadHikes()
+                    try await viewModel.loadJournals()
                     hasLoaded = true
                 } catch {
                     ErrorLogger.shared.log(error)
@@ -135,6 +150,6 @@ struct HomeView: View {
 
 #Preview {
     let mock = AuthenticationManagerMock() as AuthenticationManager
-    return HomeView(viewModel: HomeView.ViewModel(hikeService: JournalService.Mock()))
+    return HomeView(viewModel: HomeView.ViewModel(journalService: JournalService.Mock()))
         .environmentObject(mock)
 }

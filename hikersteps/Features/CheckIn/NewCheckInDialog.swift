@@ -12,23 +12,50 @@ struct NewCheckInDialog: View {
     
     private var onCancel: (() -> Void)?
     private var onConfirm: ((Date) -> Void)?
+    private var onCreated: ((CheckIn) -> Void)?
     private var isDateAvailable: ((Date) -> Bool)?
     
     @State private var canConfirm: Bool = false
-    @State private var proposedDate: Date
-    @State private var dateMessage: String = ""
     
+    @StateObject private var viewModel: ViewModel
+    
+    // The CheckIn that gets created and saved
+    @State private var checkIn: CheckIn = CheckIn.nilValue
+    
+    @State private var notes: String = ""
+    @State private var title: String = ""
+    @State private var journalDate: Date
+    
+    var location: Coordinate
     var info: String? = nil
+    var journal: Journal
     
-    init(info: String? = nil, proposedDate: Date = Date()) {
-        _proposedDate = State(initialValue: proposedDate)
+    init(viewModel: ViewModel) {
+        _viewModel = StateObject(wrappedValue: ViewModel(checkInService: CheckInService()))
+        _journalDate = State(initialValue: Date())
+        self.journal = .nilValue
+        self.location = .init(latitude: 0, longitude: 0)
+    }
+    
+    init(journal: Journal,
+         proposedDate: Date = Date(),
+         info: String? = nil,
+         location: Coordinate) {
+        
+        // default constructor
+        _viewModel = StateObject(wrappedValue: ViewModel(checkInService: CheckInService()))
+
+        _journalDate = State(initialValue: proposedDate)
+        self.journal = journal
+        self.location = location
         self.info = info
     }
     
     var body: some View {
         VStack (alignment: .leading) {
             HStack (alignment: .top) {
-                Text("New Journal Entry")
+                TextField("Add Title", text: $title)
+                    .padding(.bottom)
                     .font(.title)
                 Spacer()
                 Button(action: {
@@ -42,29 +69,28 @@ struct NewCheckInDialog: View {
                 }
             }
             HStack {
-                DatePicker("", selection: $proposedDate, displayedComponents: .date)
+                DatePicker("", selection: $journalDate, displayedComponents: .date)
                     .labelsHidden()
                     .datePickerStyle(.compact)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .strokeBorder(canConfirm ? .gray : .red, lineWidth: 1)
                     )
-                    .onChange(of: proposedDate) {
+                    .onChange(of: journalDate) {
                         // check if this date is available
-                        print("changed")
-                        self.canConfirm = isDateAvailable?(proposedDate) ?? false
+                        self.canConfirm = isDateAvailable?(journalDate) ?? false
                     }
                     .onAppear {
-                        self.canConfirm = isDateAvailable?(proposedDate) ?? false
+                        self.canConfirm = isDateAvailable?(journalDate) ?? false
                     }
                 if (!canConfirm) {
-                    Text("Date unavailable")
+                    Text("You've already written a journal entry for that day.")
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
             }
-            
-            Text("You can create a journal entry for every day of your adventure!")
+            AppTextEditor(text: $notes, placeholder: "Thoughts of the day...")
+                .frame(height: 150)
                 .padding(.top,1)
 
             if let info
@@ -81,9 +107,19 @@ struct NewCheckInDialog: View {
                 }
                 .capsuleStyle(.white)
                 Spacer()
-                AppCapsuleButton("Continue") {
-                    onConfirm?(proposedDate)
-                    dismiss()
+                AppCapsuleButton("Create") {
+                    Task {
+                        do {
+                            if let journalId = journal.id {
+                                self.checkIn = try await viewModel.addCheckIn(title: title, date: journalDate, notes: notes, journalId: journalId)
+                                onCreated?(self.checkIn)
+                                dismiss()
+                            }
+                        } catch {
+                            ErrorLogger.shared.log(error)
+                        }
+                    }
+                    
                 }
                 .capsuleStyle(.filled)
                 .disabled(!canConfirm)
@@ -97,6 +133,12 @@ struct NewCheckInDialog: View {
     func onCancel(_ handler: (() -> Void)?) -> NewCheckInDialog {
         var copy = self
         copy.onCancel = handler
+        return copy
+    }
+    
+    func onCreated(_ handler: ((CheckIn) -> Void)?) -> NewCheckInDialog {
+        var copy = self
+        copy.onCreated = handler
         return copy
     }
     
@@ -114,7 +156,7 @@ struct NewCheckInDialog: View {
 }
 
 #Preview {
-    NewCheckInDialog(proposedDate: Date())
+    NewCheckInDialog(viewModel: NewCheckInDialog.ViewModel(checkInService: CheckInService.Mock()))
         .isDateAvailable { date in
             return date.compare(Date()) == .orderedAscending
     }

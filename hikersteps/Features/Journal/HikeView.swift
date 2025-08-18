@@ -32,12 +32,12 @@ struct HikeView: View {
     @State private var showEditCheckIn = false
     
     /// The hike this view is representing
-    var hike: Hike
+    var hike: Journal
 
     /**
      Constructs a new HikeView from a hike instance and using the default ViewModel
      */
-    init(hike: Hike) {
+    init(hike: Journal) {
         let viewModel = ViewModel(checkInService: CheckInService(), hikeService: JournalService())
         self.init(hike: hike, viewModel: viewModel)
     }
@@ -45,7 +45,7 @@ struct HikeView: View {
     /**
      Construct a new HikeView, and pass in a ViewModel - used by previewer to use a mock service.
      */
-    init(hike: Hike, viewModel: ViewModel) {
+    init(hike: Journal, viewModel: ViewModel) {
         self.hike = hike
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -104,7 +104,7 @@ struct HikeView: View {
                             let checkIns = try await viewModel.loadCheckIns(uid: uid, hike: hike)
                             self.checkInManager.initialise(checkIns: checkIns)
                             
-                            self.checkInManager.move(.start)
+                            self.checkInManager.move(.latest)
                             self.hasLoaded = true
                         } catch {
                             print(error)
@@ -126,42 +126,27 @@ struct HikeView: View {
         }
         
         .sheet(isPresented: $showAddCheckInSheet) {
-            NewCheckInDialog(proposedDate: checkInManager.nextAvailableDate)
-                .isDateAvailable({ date in
-                    return checkInManager.isDateAvailable(date)
-                })
-                .onCancel {
-                    self.checkInManager.removeDropInAnnotation()
-                }
-                // The user has selected a date and ready to create the entry
-                .onConfirm() { date in
-                    
-                    if let uid = auth.loggedInUser?.uid,
-                       let location = checkInManager.droppedPinAnnotation?.coordinate,
-                       let hikeId = self.hike.id {
-                    
-                        // add the checkIn to the in-memory checkInManager. This will add it in the correct order by date
-                        var new = self.checkInManager.addCheckIn(hikeId: hikeId, uid: uid, location: location , date: date)
-                        Task {
-                            do {
-                                let id = try await viewModel.addCheckIn(newCheckIn)
-                                new.id = id
-                                self.newCheckIn = new
-                                checkInManager.move(.to(id: id))
-                                self.showEditCheckIn = true
-                            } catch {
-                                ErrorLogger.shared.log(error)
-                            }
-                        }
-                    } else {
-                            // Error?
+            if let location = checkInManager.droppedPinAnnotation?.coordinate {
+                NewCheckInDialog(journal: self.hike, proposedDate: checkInManager.nextAvailableDate, location: location)
+                    .isDateAvailable({ date in
+                        return checkInManager.isDateAvailable(date)
+                    })
+                    .onCancel {
+                        self.checkInManager.removeDropInAnnotation()
                     }
-                    self.checkInManager.removeDropInAnnotation()
-                }
-                .presentationDetents([.fraction(0.4)])
+                    // The user has selected a date and ready to create the entry
+                    .onCreated() { newCheckIn in
+                        self.checkInManager.addCheckIn(newCheckIn)
+                        checkInManager.move(.to(id: newCheckIn.id!))
+                        self.showEditCheckIn = true
+                        self.checkInManager.removeDropInAnnotation()
+                    }
+                .presentationDetents([.fraction(0.5)])
                 .presentationDragIndicator(.hidden)
                 .interactiveDismissDisabled(true)
                 .presentationBackgroundInteraction(.enabled)
+            }
+                
         }
         
         // Show CheckIn Detail Sheet
@@ -236,7 +221,7 @@ struct HikeView: View {
 
 #Preview {
     let authMock = AuthenticationManagerMock() as AuthenticationManager
-    HikeView(hike: Hike.nilValue,
+    HikeView(hike: Journal.nilValue,
              viewModel: HikeView.ViewModel(checkInService: CheckInService.Mock(), hikeService: JournalService.Mock())
         )
         .environmentObject(authMock)

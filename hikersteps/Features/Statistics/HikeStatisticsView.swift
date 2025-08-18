@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HikeStatisticsView: View {
     
-    let hike: Hike
+    let hike: Journal
     
     var body: some View {
         NavigationStack {
@@ -39,7 +39,7 @@ struct HikeStatisticsView: View {
 
 struct PreviewWrapper2: View {
     
-    @State var hike: Hike = Hike.nilValue
+    @State var hike: Journal = Journal.nilValue
     @State var show: Bool = false
     
     var body: some View {
@@ -50,7 +50,7 @@ struct PreviewWrapper2: View {
             Spacer()
         }
         .onAppear {
-            self.hike = Hike.sample
+            self.hike = Journal.sample
             self.show = true
         }
     }

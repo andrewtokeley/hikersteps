@@ -20,42 +20,42 @@ struct HikeTests {
         self.uid = Auth.auth().currentUser?.uid ?? "123"
     }
     
-    @Test func fetchHikes() async throws {
-        let hikes = try await service.getHikes()
+    @Test func getJournals() async throws {
+        let hikes = try await service.getJournals()
         
         #expect(hikes.count > 0)
         #expect(hikes.first?.id != nil)
     }
     
-    @Test func deleteHike() async throws {
+    @Test func deleteJournal() async throws {
         
         // create a hike
-        var hike = Hike(uid: uid, name: "new", description: "testing")
-        let id = try await service.addHike(hike: hike)
+        var hike = Journal(uid: uid, name: "new", description: "testing")
+        let id = try await service.addJournal(journal: hike)
         hike.id = id
         
         // retrieve it to check it was saved
-        let addedHike = try await service.getHike(id: id)
+        let addedHike = try await service.getJournal(id: id)
         #expect(addedHike?.id == id)
         
         // delete it
         if let _ = addedHike {
-            try await service.deleteHike(hike: addedHike!, cascade: false)
+            try await service.deleteJournal(journal: addedHike!, cascade: false)
             
             // try and retrieve it - it shouldn't be there
-            let hike = try await service.getHike(id: id)
+            let hike = try await service.getJournal(id: id)
             #expect(hike == nil)
         }
     }
     
-    @Test func cascadeDeleteHike() async throws {
+    @Test func cascadeDeleteJournal() async throws {
         
         let storageService = StorageService()
         let checkInService = CheckInService()
         
         // create a hike
-        let hike = Hike(uid: uid, name: "new", description: "testing")
-        let newHikeId = try await service.addHike(hike: hike)
+        let hike = Journal(uid: uid, name: "new", description: "testing")
+        let newHikeId = try await service.addJournal(journal: hike)
         
         // add a checkIn with an image
         let checkIn = CheckIn(uid: uid, adventureId: newHikeId)
@@ -75,7 +75,7 @@ struct HikeTests {
                     #expect(exists)
                     
                     // cascade delete Hike - this should remove everything
-                    try await service.deleteHike(hike: hike, cascade: true)
+                    try await service.deleteJournal(journal: hike, cascade: true)
                     
                     // check there's no image anymore
                     exists = await urlExists(url)

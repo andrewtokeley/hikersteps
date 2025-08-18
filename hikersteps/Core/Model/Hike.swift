@@ -9,9 +9,9 @@ import Foundation
 import FirebaseFirestore
 
 /**
- A Hike represents a walk a hiker has done, or is doing, on one of the trails.
+ A Journal contains the entries recorded on a user's walk.
  */
-struct Hike: Codable, Identifiable, FirestoreEncodable  {
+struct Journal: Codable, Identifiable, FirestoreEncodable  {
     var id: String? = nil
     var description: String = ""
     var name: String = ""
@@ -85,8 +85,8 @@ struct Hike: Codable, Identifiable, FirestoreEncodable  {
     /**
      Convenience property to construct a sample Hike for Previews and Testing.
      */
-    static var sample: Hike {
-        var hike = Hike(uid: "abc", name: "Bibb 2025", startDate: Calendar.current.date(from: DateComponents(year: 2021, month: 9, day: 28))!)
+    static var sample: Journal {
+        var hike = Journal(uid: "abc", name: "Bibb 2025", startDate: Calendar.current.date(from: DateComponents(year: 2021, month: 9, day: 28))!)
         hike.id = "23"
         hike.description = "Amazing trip!"
         hike.statistics = HikeStatistics.sample
@@ -107,8 +107,8 @@ struct Hike: Codable, Identifiable, FirestoreEncodable  {
      }
      ```
      */
-    static var nilValue: Hike {
-        var nilHike = Hike(uid: "", name: "")
+    static var nilValue: Journal {
+        var nilHike = Journal(uid: "", name: "")
         nilHike._isNilValue = true
         return nilHike
     }

@@ -20,6 +20,11 @@ enum NavigationDirection {
 
 let nilIndex: Int = -1
 
+/**
+ The CheckInManager is an in-memory representation of a Journals Entries and their associated map annotations. It allows for sequential navigation up and down the entry list and provides functions to add/remove entries safely.
+ 
+ Some properties are marked as @Published to allow Views to be aware of changes.
+ */
 class CheckInManager: ObservableObject {
     
     //MARK: - Published properties
@@ -77,11 +82,30 @@ class CheckInManager: ObservableObject {
     
     // MARK: - Add/Remove CheckIns
     
+    /**
+     Returns when the next likely date is for a new journal entry.
+     
+     The next available date for a journal entry follows the following rules
+     - if there are no entries yet, today
+     - if there is only one entry and it's a 'start' entry, then the same day as the start
+     - if there are many entries, return the date after the latest plus the number of rest days and off trail days.
+     */
     var nextAvailableDate: Date {
         guard !checkIns.isEmpty else { return Date() }
         
+        // The first entry after the "start" entry is on the same day.
+        if checkIns.count == 1 && checkIns.first?.type == "start" {
+            return Date()
+        }
+        
         let latestDate = checkIns.max(by: { $0.date < $1.date })?.date ?? Date()
-        return Calendar.current.date(byAdding: .day, value: 1, to: latestDate) ?? Date()
+        
+        if let latestCheckIn = checkIns.last {
+            // offset the latest checkin date by the number of rest days, off trail days and one more
+            let offSet = latestCheckIn.numberOfRestDays + latestCheckIn.numberOfOffTrailDays + 1
+            return Calendar.current.date(byAdding: .day, value: offSet, to: latestDate) ?? Date()
+        }
+        return Date()
     }
     
     /**
@@ -94,18 +118,11 @@ class CheckInManager: ObservableObject {
         return true
     }
     
-    /**
-     Adds a new instance of a CheckIn at the appropriate location in the checkins array based on it's date.
-     
-     The new instance is returned.
-     */
-    func addCheckIn(hikeId: String, uid: String, location: Coordinate, date: Date) -> CheckIn {
-        let new = CheckIn(uid: uid, adventureId: hikeId, location: location, date: date)
-        
+    func addCheckIn(_ new: CheckIn) {
         let newAnnotation = CheckInAnnotation(checkIn: new)
         
         // insert the new checkin at the right location and move to it.
-        if let index = checkIns.firstIndex(where: { $0.date > date }) {
+        if let index = checkIns.firstIndex(where: { $0.date > new.date }) {
             checkIns.insert(new, at: index)
             annotations.insert(newAnnotation, at: index)
             move(.toIndex(index: index))
@@ -114,6 +131,18 @@ class CheckInManager: ObservableObject {
             annotations.append(newAnnotation)
             move(.end)
         }
+    }
+    
+    /**
+     Adds a new instance of a CheckIn at the appropriate location in the checkins array based on it's date.
+     
+     The new instance is returned.
+     */
+    func addCheckIn(hikeId: String, uid: String, location: Coordinate, date: Date) -> CheckIn {
+        let new = CheckIn(uid: uid, adventureId: hikeId, location: location, date: date)
+        
+        addCheckIn(new)
+        
         return new
     }
     

@@ -10,7 +10,7 @@ import SwiftUI
 struct EditHikeView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @Binding var hike: Hike
+    @Binding var hike: Journal
     
     @FocusState private var focusedView: FocusableViews?
 
@@ -27,7 +27,7 @@ struct EditHikeView: View {
         case resupplyNotes
     }
     
-    init(hike: Binding<Hike>) {
+    init(hike: Binding<Journal>) {
         // we pass in the wrapped value to the viewmodel so that we can choose whether to copy the changes back to the parent depending on whether changes are saved or canceled.
         self.init(hike: hike,
                   viewModel: ViewModel(hike: hike.wrappedValue,
@@ -35,7 +35,7 @@ struct EditHikeView: View {
                                        trailService: TrailService()))
     }
     
-    init(hike: Binding<Hike>, viewModel: ViewModel) {
+    init(hike: Binding<Journal>, viewModel: ViewModel) {
         _hike = hike
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -151,7 +151,7 @@ struct EditHikeView: View {
 }
 
 #Preview {
-    @Previewable @State var hike = Hike.sample
+    @Previewable @State var hike = Journal.sample
     EditHikeView(hike: $hike,
                  viewModel: EditHikeView.ViewModel(
                         hike: hike,

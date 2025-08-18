@@ -10,14 +10,14 @@ import SwiftUI
 struct HikeCard: View {
     @Environment(\.dismiss) private var dismiss
     
-    var hike: Hike
+    var hike: Journal
     
     @State private var showContextMenu: Bool = false
     @State private var showDeleteConfirmation: Bool = false
     
-    private var onDeleteRequest: ((Hike) -> Void )? = nil
+    private var onDeleteRequest: ((Journal) -> Void)? = nil
 
-    init(hike: Hike) {
+    init(hike: Journal) {
         self.hike = hike
     }
     
@@ -80,7 +80,7 @@ struct HikeCard: View {
             }
             Button("Cancel", role: .cancel) { }
         }
-        .alert("Delete Journal", isPresented: $showDeleteConfirmation) {
+        .alert("Delete \(hike.name)", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) {
                 dismiss()
             }
@@ -92,7 +92,7 @@ struct HikeCard: View {
         }
     }
     
-    func onDeleteRequest(_ handler: ((Hike) -> Void)?) -> HikeCard {
+    func onDeleteRequest(_ handler: ((Journal) -> Void)?) -> HikeCard {
         var copy = self
         copy.onDeleteRequest = handler
         return copy
@@ -101,6 +101,6 @@ struct HikeCard: View {
 
 
 #Preview {
-    @Previewable @State var hike = Hike(uid: "abc", name: "TA 2021/22", description: "This is a test hike", startDate: Date())
+    @Previewable @State var hike = Journal(uid: "abc", name: "TA 2021/22", description: "This is a test hike", startDate: Date())
     HikeCard(hike: hike)
 }

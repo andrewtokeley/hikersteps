@@ -14,12 +14,12 @@ extension EditHikeView {
         /**
          Initialise a new ViewModel for EditHikeView
          */
-        init(hike: Hike, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol)
+        init(hike: Journal, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol)
                 
         /**
         This is a copy of the hike being edited - we publsh changes so the parent can copy back to the master hike record that's being updated.
         */
-        var hike: Hike { get }
+        var hike: Journal { get }
 
         /**
          Updates changes to the hike
@@ -38,23 +38,23 @@ extension EditHikeView {
     
     class ViewModel: ViewModelProtocol {
 
-        @Published var hike: Hike
+        @Published var hike: Journal
 
         private var hikeService: JournalServiceProtocol
         private var trailService: TrailServiceProtocol
         
-        required init(hike: Hike, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol) {
+        required init(hike: Journal, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol) {
             self.hike = hike
             self.hikeService = hikeService
             self.trailService = trailService
         }
         
         func addCheckIn() async throws -> String {
-            return try await hikeService.addHike(hike: hike)
+            return try await hikeService.addJournal(journal: hike)
         }
         
         func updateCheckIn() async throws {
-            try await hikeService.updateHike(hike: self.hike)
+            try await hikeService.updateJournal(journal: self.hike)
         }
         
         func fetchTrails() async throws -> [Trail] {

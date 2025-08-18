@@ -12,7 +12,7 @@ struct HikeDetailsView: View {
     @State private var showShare = false
     @State private var topSectionHeight: CGFloat = 200
     
-    let hike: Hike
+    let hike: Journal
     
     var body: some View {
         NavigationStack {
@@ -113,5 +113,5 @@ struct HikeDetailsView: View {
 }
 
 #Preview {
-    HikeDetailsView(hike: Hike.sample)
+    HikeDetailsView(hike: Journal.sample)
 }

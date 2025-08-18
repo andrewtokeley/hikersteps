@@ -13,8 +13,30 @@ struct CheckInManagerTests {
     let checkIns = [
         CheckIn(uid: "1", adventureId: "1", id: "1", title: "Title1", notes: "Some notes 1", distance: DistanceUnit(20, .km), date: Date())
         , CheckIn(uid: "1", adventureId: "1", id: "2", title: "Title2", notes: "Some notes 2", distance: DistanceUnit(30, .km), date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
-        , CheckIn(uid: "1", adventureId: "1", id: "3", title: "Title3", notes: "Some notes 3", distance: DistanceUnit(40, .km), date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
+        , CheckIn(uid: "1", adventureId: "1", id: "3", title: "Title3", notes: "Some notes 3", distance: DistanceUnit(40, .km), numberOfRestDays: 2, numberOfOffTrailDays: 1, date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
     ]
+    
+    @Test func nextAvailableDateForFirstCheckIn() async throws {
+        let manager = CheckInManager(checkIns: checkIns)
+        
+        let latestDate = manager.checkIns.last!.date
+        
+        // should be the date of the last on plus the 2 rest days, 1 offTrailDay + 1
+        if let nextAvailableDate = Calendar.current.date(byAdding: .day, value: 4, to: latestDate) {
+            // should be the day after the last checkin and take into account the number of rest days
+            #expect(Calendar.current.isDate(nextAvailableDate, inSameDayAs: manager.nextAvailableDate))
+        } else {
+            #expect(Bool(false))
+        }
+    }
+    
+    @Test func nextAvailableDateWhenOnlyAStart() async throws {
+        let manager = CheckInManager(checkIns: [
+            CheckIn(uid: "abs", adventureId: "123", type: "start", date: Date())
+        ])
+        // should be on the same day as the start checkin, rather than 1 day after
+        #expect(Calendar.current.isDate(Date(), inSameDayAs: manager.nextAvailableDate))
+    }
     
     @Test func dirtyUpdateTest() async throws {
         let manager = CheckInManager(checkIns: checkIns)

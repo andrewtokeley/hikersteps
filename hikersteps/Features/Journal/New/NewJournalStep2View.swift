@@ -24,7 +24,7 @@ struct NewJournalStep2View: View {
     
     @State private var selectedStartLocation: RadioOption?
     @State private var isSaving: Bool = false
-    @State private var newHike: Hike?
+    @State private var newHike: Journal?
     @State private var navigateToHikeView: Bool = false
     
     init(trail: Trail) {

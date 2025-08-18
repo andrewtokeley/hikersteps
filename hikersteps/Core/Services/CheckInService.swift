@@ -46,7 +46,7 @@ protocol CheckInServiceProtocol {
     
     func save(manager: CheckInManager) async throws
     
-    func addCheckInDeletes(to batch: WriteBatch, for hike: Hike) async throws
+    func addCheckInDeletes(to batch: WriteBatch, for hike: Journal) async throws
 }
 
 class CheckInService: CheckInServiceProtocol {
@@ -120,7 +120,7 @@ class CheckInService: CheckInServiceProtocol {
         try await db.collection(collectionName).document(id).setData(checkIn.toDictionary(), merge: true)
     }
     
-    func addCheckInDeletes(to batch: WriteBatch, for hike: Hike) async throws {
+    func addCheckInDeletes(to batch: WriteBatch, for hike: Journal) async throws {
         guard let id = hike.id else { return }
         
         let uid = hike.uid
@@ -216,7 +216,7 @@ extension CheckInService {
             return ""
         }
         
-        func addCheckInDeletes(to batch: WriteBatch, for hike: Hike) async throws {
+        func addCheckInDeletes(to batch: WriteBatch, for hike: Journal) async throws {
             return
         }
         

@@ -32,7 +32,7 @@ protocol StorageServiceProtocol {
     /**
      Delete all the images for all the CheckIns for the Hike
      */
-    func deleteImages(for hike: Hike) async throws
+    func deleteImages(for hike: Journal) async throws
 }
 
 class StorageService: StorageServiceProtocol {
@@ -56,7 +56,7 @@ class StorageService: StorageServiceProtocol {
         try await storageRef.delete()
     }
     
-    func deleteImages(for hike: Hike) async throws {
+    func deleteImages(for hike: Journal) async throws {
         
     }
 }
@@ -71,7 +71,7 @@ extension StorageService {
             // do nothing
         }
         
-        func deleteImages(for hike: Hike) async throws {
+        func deleteImages(for hike: Journal) async throws {
             guard let id = hike.id else { return }
             
             let service = CheckInService()

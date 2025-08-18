@@ -11,35 +11,36 @@ import FirebaseAuth
 extension HomeView {
     
     protocol ViewModelProtocol: ObservableObject {
-        init(hikeService: JournalServiceProtocol)
-        var hikes: [Hike] { get }
-        func loadHikes() async throws
+        
+        init(journalService: JournalServiceProtocol)
+        var journals: [Journal] { get }
+        func loadJournals() async throws
+        
         /**
          Deletes the Journal and all JournalEntries
          */
-        func deleteHike(hike: Hike) async throws
-        
+        func deleteJournal(journal: Journal) async throws
     }
     
     class ViewModel: ViewModelProtocol {
-        private var hikeService: JournalServiceProtocol
+        private var journalService: JournalServiceProtocol
         
-        @Published var hikes: [Hike] = []
+        @Published var journals: [Journal] = []
         
-        required init(hikeService: JournalServiceProtocol) {
-            self.hikeService = hikeService
+        required init(journalService: JournalServiceProtocol) {
+            self.journalService = journalService
         }
         
-        func loadHikes() async throws {
-            let result = try await hikeService.getHikes()
+        func loadJournals() async throws {
+            let result = try await journalService.getJournals()
             
             await MainActor.run {
-                self.hikes = result
-            }            
+                self.journals = result
+            }
         }
         
-        func deleteHike(hike: Hike) async throws {
-            
+        func deleteJournal(journal: Journal) async throws {
+            try await journalService.deleteJournal(journal: journal, cascade: true)
         }
         
     }

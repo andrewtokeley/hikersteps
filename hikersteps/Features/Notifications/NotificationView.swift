@@ -65,7 +65,7 @@ struct NotificationView: View {
         case .systemMessage(let message):
             MessageView(message: message)
         case .newCheckIn(_):
-            HikeView(hike: Hike.sample)
+            HikeView(hike: Journal.sample)
         }
     }
 }
