@@ -66,7 +66,7 @@ struct NewJournalStep1View: View {
                 List {
                     ForEach(trails) { trail in
                         NavigationLink {
-                            SelectStartView(trail: trail)
+                            NewJournalStep2View(trail: trail)
                         } label: {
                             HStack {
                                 Text(CountryManager.country(for: trail.countryCode)?.flag ?? "")

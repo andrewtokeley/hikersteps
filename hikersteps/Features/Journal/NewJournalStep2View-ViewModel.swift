@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseAuth
 
-extension SelectStartView {
+extension NewJournalStep2View {
     
     protocol ViewModelProtocol: ObservableObject {
         

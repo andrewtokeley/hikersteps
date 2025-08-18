@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SelectStartView: View {
+struct NewJournalStep2View: View {
     @Environment(\.dismiss) private var dismiss
     
     @StateObject var viewModel: ViewModel
@@ -76,5 +76,5 @@ struct SelectStartView: View {
 }
 
 #Preview {
-    SelectStartView(trail: Trail.sample, viewModel: SelectStartView.ViewModel(hikeService: HikerServiceMock(), checkInService: CheckInServiceMock()))
+    NewJournalStep2View(trail: Trail.sample, viewModel: NewJournalStep2View.ViewModel(hikeService: HikerServiceMock(), checkInService: CheckInServiceMock()))
 }
