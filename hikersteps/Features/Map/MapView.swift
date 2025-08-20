@@ -8,6 +8,9 @@
 import SwiftUI
 import MapboxMaps
 
+/**
+ The MapView represents the map, annotations and interactions of your journal
+ */
 struct MapView: View {
     
     /// Annotations for each saved checkin
@@ -18,9 +21,10 @@ struct MapView: View {
     
     @State private var viewport = Viewport.camera(center: .init(latitude: Coordinate.wellington.latitude, longitude: Coordinate.wellington.longitude), zoom: 10, bearing: 0, pitch: 0)
     
+    // Toggle to determine whether a change in selected annotation is a result of a user tap or from the selectedAnnotationIndex binding changing.
     @State private var isTapNavigation: Bool
     
-    // Annotation that should be rendered as a dropped-pin
+    // Annotation that describes where to render a dropped pin
     @Binding var droppedPinAnnotation: CheckInAnnotation?
     
     var annotationSafeArea: CGRect
@@ -38,6 +42,7 @@ struct MapView: View {
         _annotations = annotations
         _selectedAnnotationIndex = selectedAnnotationIndex
         _droppedPinAnnotation = droppedPinAnnotation
+        
         _isTapNavigation = State(initialValue: false)
         
         self.annotationSafeArea = annotationSafeArea
@@ -66,7 +71,13 @@ struct MapView: View {
                         MapViewAnnotation(coordinate: annotation.coordinate.clLocationCoordinate2D) {
                             PinView(label: annotation.title ?? "", state: pinState(annotation, index), showLabel: false)
                                 .onTapGesture {
-                                    isTapNavigation = true
+                                    
+                                    // if we've tapped on a new annotation, mark this as a tapNavigation, otherwise clear the flag so that when we programmatically navigate away from the re-selected annotation, we follow it!
+                                    if (selectedAnnotationIndex != index) {
+                                        isTapNavigation = true
+                                    } else {
+                                        isTapNavigation = false
+                                    }
                                     
                                     ensureAnnotationVisible(proxy: proxy, annotation: annotation)
                                 
@@ -98,22 +109,21 @@ struct MapView: View {
                 .ignoresSafeArea()
                 .onChange(of: self.selectedAnnotationIndex, { oldValue, newValue in
                     guard !self.annotations.isEmpty else { return }
+                    
+                    // unless the user has tapped on an annotation make sure the selected annotation is visible.
                     if !isTapNavigation && newValue >= 0 {
                         
                         let annotation = self.annotations[newValue]
-                        
                         animateToAnnotation(proxy, annotation)
-                        
-                        
                     }
                     isTapNavigation = false
                 })
-                .onChange(of: self.annotations) { oldValue, newValue in
-                    if let first = self.annotations.first {
-                        animateToAnnotation(proxy, first)
-                        onDidSelectAnnotation?(first)
-                    }
-                }
+//                .onChange(of: self.annotations) { oldValue, newValue in
+//                    if let first = self.annotations.first {
+//                        animateToAnnotation(proxy, first)
+//                        onDidSelectAnnotation?(first)
+//                    }
+//                }
         }
     }
     

@@ -11,7 +11,7 @@ import FirebaseAuth
 extension NewCheckInDialog {
     
     protocol ViewModelProtocol: ObservableObject {
-        func addCheckIn(title: String, date: Date, notes: String, journalId: String) async throws -> CheckIn
+        func addCheckIn(title: String, date: Date, notes: String, journalId: String, location: Coordinate) async throws -> CheckIn
     }
     
     class ViewModel: ViewModelProtocol {
@@ -21,12 +21,12 @@ extension NewCheckInDialog {
             self.checkInService = checkInService
         }
         
-        func addCheckIn(title: String, date: Date, notes: String, journalId: String) async throws -> CheckIn {
+        func addCheckIn(title: String, date: Date, notes: String, journalId: String, location: Coordinate) async throws -> CheckIn {
             guard let uid = Auth.auth().currentUser?.uid else {
                 throw ServiceError.unauthenticateUser
             }
             
-            var new = CheckIn(uid: uid, adventureId: journalId)
+            var new = CheckIn(uid: uid, adventureId: journalId, location: location)
             new.title = title
             new.notes = notes
             new.date = date

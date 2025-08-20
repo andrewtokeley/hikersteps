@@ -9,7 +9,9 @@ import Foundation
 import FirebaseFirestore
 
 /**
- A Trail represents one of the available thru-hikes that users can chose to record their hikes on. For example, the Pacific Coast Trail or Te Araroa
+ A Trail represents a thru-hike that a user's Journal describes. For example, the Pacific Coast Trail or Te Araroa.
+ 
+ - Important: all properties (apare
  */
 import SwiftUI
 import FirebaseFirestore

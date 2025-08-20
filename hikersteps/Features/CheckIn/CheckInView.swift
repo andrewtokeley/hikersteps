@@ -22,10 +22,12 @@ struct CheckInView: View {
     
     @Binding var checkIn: CheckIn
     var dayDescription: String
+    var totalDistanceDescription: String
     
-    init(checkIn: Binding<CheckIn>, dayDescription: String) {
+    init(checkIn: Binding<CheckIn>, dayDescription: String, totalDistanceDescription: String) {
         _checkIn = checkIn
         self.dayDescription = dayDescription
+        self.totalDistanceDescription = totalDistanceDescription
     }
     
     var body: some View {
@@ -47,7 +49,7 @@ struct CheckInView: View {
                                 }
                                 .style(.filled)
                             }
-                            Text(dayDescription)
+                            Text(checkIn.date.formatted(.dateTime.weekday().day().month().year()))
                                 .font(.title2)
                             
                         }
@@ -59,13 +61,13 @@ struct CheckInView: View {
                             .fontWeight(.bold)
                             .padding(.bottom, 2)
                         
-                        Text(checkIn.date.formatted(.dateTime.weekday().day().month().year()))
+                        Text(dayDescription)
                         
                         ZStack {
                             HStack {
                                 Text(checkIn.distance.description).bold() + Text(" hike").foregroundColor(.gray)
                                 Spacer()
-                                Text("total ").foregroundColor(.gray) + Text("3226km").bold()
+                                Text("total ").foregroundColor(.gray) + Text(totalDistanceDescription).bold()
                             }
                             
                             if checkIn.accommodation != LookupItem.noSelection() {
@@ -179,5 +181,5 @@ struct CheckInView: View {
 
 #Preview {
     @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", adventureId: "1", id: "111", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
-    CheckInView(checkIn: $checkIn, dayDescription: "Day 12")
+    CheckInView(checkIn: $checkIn, dayDescription: "Day 12", totalDistanceDescription: "1234")
 }

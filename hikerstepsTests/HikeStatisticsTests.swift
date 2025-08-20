@@ -46,7 +46,7 @@ struct HikeStatisticsTests {
                 date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!
             ),
         ]
-        let statistics = HikeStatistics(checkIns: checkIns)
+        let statistics = JournalStatistics(checkIns: checkIns)
         
         #expect(statistics.totalDistanceWalked.number == 35)
         #expect(statistics.totalDays.number == 3)
@@ -63,7 +63,7 @@ struct HikeStatisticsTests {
                 date: Date(),
             )
         ]
-        let statistics = HikeStatistics(checkIns: checkIns)
+        let statistics = JournalStatistics(checkIns: checkIns)
         
         #expect(statistics.totalDays.number == 0)
         #expect(statistics.totalDistanceWalked.number == 0)
@@ -80,7 +80,7 @@ struct HikeStatisticsTests {
                 date: Date(),
             )
         ]
-        let statistics = HikeStatistics(checkIns: checkIns)
+        let statistics = JournalStatistics(checkIns: checkIns)
         
         #expect(statistics.totalDays.number == 1)
         #expect(statistics.totalDistanceWalked.number == 20)
@@ -101,7 +101,7 @@ struct HikeStatisticsTests {
                 date: Date(),
             )
         ]
-        let statistics = HikeStatistics(checkIns: checkIns)
+        let statistics = JournalStatistics(checkIns: checkIns)
         
         #expect(statistics.totalDays.number == 1)
         #expect(statistics.totalDistanceWalked.number == 20)

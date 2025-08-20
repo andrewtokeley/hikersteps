@@ -1,5 +1,5 @@
 //
-//  HikeService.swift
+//  journalService.swift
 //  hikersteps
 //
 //  Created by Andrew Tokeley on 01/07/2025.
@@ -15,13 +15,13 @@ protocol JournalServiceProtocol {
      Update the statistics for the Journal. If there are no statistics for the Journal, they will be added, otherwise merged with the statistics that exist.
      
      - Parameters:
-        - hikeId: id of the Journal
-        - statistics: a ``HikeStatistics`` value
+        - journalId: id of the Journal
+        - statistics: a ``JournalStatistics`` value
      
      - Throws:
         - `ServiceError.unauthenticatedUser` if the caller is not authenticated
      */
-    func updateStatistics(journalId: String, statistics: HikeStatistics) async throws
+    func updateStatistics(journalId: String, statistics: JournalStatistics) async throws
     
     /**
      Updates the Journal with a url of the image to be presented in the app for the Journal.
@@ -57,7 +57,7 @@ protocol JournalServiceProtocol {
      
      - Returns: the id of the new Journal
      - Parameters:
-        - journal: represents the `Hike` to add
+        - journal: represents the ``Journal`` to add
      - Throws: a `ServiceError.unauthenticatedUser` if the caller is not authenticated
      */
     func addJournal(journal: Journal) async throws -> String
@@ -81,6 +81,11 @@ protocol JournalServiceProtocol {
     func deleteJournal (journal: Journal, cascade: Bool) async throws
 }
 
+/**
+ The Journal service enabled create/update/delete operations on a Journal entity.
+ 
+ - Important: Within Firestore a Journal is recorded within the `adventures` collection for historic reasons.
+ */
 class JournalService: JournalServiceProtocol {
     let db = Firestore.firestore()
     let collectionName = "adventures"
@@ -110,7 +115,7 @@ class JournalService: JournalServiceProtocol {
         try await docRef.setData(["heroImageUrl": urlString], merge: true)
     }
     
-    func updateStatistics(journalId: String, statistics: HikeStatistics) async throws {
+    func updateStatistics(journalId: String, statistics: JournalStatistics) async throws {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticateUser }
         
         let docRef = db.collection(collectionName).document(journalId)
@@ -159,7 +164,7 @@ class JournalService: JournalServiceProtocol {
     
     func deleteJournal (journal: Journal, cascade: Bool = true) async throws {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticateUser }
-        guard let id = journal.id else { throw ServiceError.missingField("Hike id") }
+        guard let id = journal.id else { throw ServiceError.missingField("Journal id") }
 
         let batch = db.batch()
         
@@ -202,7 +207,7 @@ extension JournalService {
             return
         }
         
-        func updateStatistics(journalId: String, statistics: HikeStatistics) async throws {
+        func updateStatistics(journalId: String, statistics: JournalStatistics) async throws {
             return
         }
         
@@ -211,7 +216,7 @@ extension JournalService {
             hike1.uid = "abc"
             hike1.id = "1"
             hike1.description = "Let's do this!"
-            hike1.statistics = HikeStatistics.sample
+            hike1.statistics = JournalStatistics.sample
             return [hike1, Journal.sample]
         }
         

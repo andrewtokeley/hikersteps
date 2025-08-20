@@ -28,7 +28,7 @@ struct NewJournalStep2View: View {
     @State private var navigateToHikeView: Bool = false
     
     init(trail: Trail) {
-        self.init(trail: trail, viewModel: ViewModel(hikeService: JournalService(), checkInService: CheckInService()))
+        self.init(trail: trail, viewModel: ViewModel(journalService: JournalService(), checkInService: CheckInService()))
     }
     
     init(trail: Trail, viewModel: ViewModel) {
@@ -69,7 +69,7 @@ struct NewJournalStep2View: View {
             .padding(.horizontal, 20)
             .navigationDestination(isPresented: $navigateToHikeView) {
                 if let hike = self.newHike {
-                    HikeView(hike: hike)
+                    JournalView(hike: hike)
                 }
             }
         }
@@ -78,5 +78,5 @@ struct NewJournalStep2View: View {
 }
 
 #Preview {
-    NewJournalStep2View(trail: Trail.sample, viewModel: NewJournalStep2View.ViewModel(hikeService: JournalService.Mock(), checkInService: CheckInService.Mock()))
+    NewJournalStep2View(trail: Trail.sample, viewModel: NewJournalStep2View.ViewModel(journalService: JournalService.Mock(), checkInService: CheckInService.Mock()))
 }

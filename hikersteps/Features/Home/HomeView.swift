@@ -50,7 +50,7 @@ struct HomeView: View {
                     ScrollView {
                         ForEach(viewModel.journals) { journal in
                             NavigationLink {
-                                HikeView(hike: journal)
+                                JournalView(hike: journal)
                             } label: {
                                 HikeCard(hike: journal)
                                     .onDeleteRequest { journal in

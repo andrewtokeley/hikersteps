@@ -11,10 +11,56 @@ import Foundation
 
 struct CheckInManagerTests {
     let checkIns = [
-        CheckIn(uid: "1", adventureId: "1", id: "1", title: "Title1", notes: "Some notes 1", distance: DistanceUnit(20, .km), date: Date())
-        , CheckIn(uid: "1", adventureId: "1", id: "2", title: "Title2", notes: "Some notes 2", distance: DistanceUnit(30, .km), date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
-        , CheckIn(uid: "1", adventureId: "1", id: "3", title: "Title3", notes: "Some notes 3", distance: DistanceUnit(40, .km), numberOfRestDays: 2, numberOfOffTrailDays: 1, date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
+        CheckIn(uid: "1", adventureId: "1", id: "1", title: "Title1", notes: "Some notes 1",
+                distance: DistanceUnit(20, .km),
+                date: Date())
+        , CheckIn(uid: "1", adventureId: "1", id: "2", title: "Title2", notes: "Some notes 2",
+                  distance: DistanceUnit(30, .km),
+                  date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
+        , CheckIn(uid: "1", adventureId: "1", id: "3", title: "Title3", notes: "Some notes 3",
+                  distance: DistanceUnit(40, .km), numberOfRestDays: 2, numberOfOffTrailDays: 1,
+                  date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!)
     ]
+    
+    @Test func isDateAvailable() async throws {
+        
+        let checkIns = [
+            CheckIn(uid: "1", adventureId: "1", id: "a", title: "Title1", notes: "Some notes 1",
+                    distance: DistanceUnit(20, .km),
+                    date: Date())
+            , CheckIn(uid: "1", adventureId: "1", id: "b", title: "Title2", notes: "Some notes 2",
+                      distance: DistanceUnit(30, .km),
+                      numberOfRestDays: 1,
+                      date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
+            , CheckIn(uid: "1", adventureId: "1", id: "c", title: "Title3", notes: "Some notes 3",
+                      distance: DistanceUnit(40, .km), numberOfRestDays: 1, numberOfOffTrailDays: 1,
+                      date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
+            , CheckIn(uid: "1", adventureId: "1", id: "d", title: "Title3", notes: "Some notes 3",
+                      distance: DistanceUnit(40, .km),
+                      date: Calendar.current.date(byAdding: .day, value: 6, to: Date())!)
+        ]
+        
+        let manager = CheckInManager(checkIns: checkIns)
+        
+        //        Date()        Journal Day
+        //        Date() + 1    Journal Day
+        //        Date() + 2    Rest/Off
+        //        Date() + 3    Journal Day
+        //        Date() + 4    Rest/Off
+        //        Date() + 5    Rest/Off
+        //        Date() + 6    Journal Day
+        //        Date() + 7    FREE!
+        
+        #expect(manager.isDateAvailable(Date()) == .entryExists)
+        #expect(manager.isDateAvailable(Calendar.current.date(byAdding: .day, value: 1, to: Date())!) == .entryExists)
+        #expect(manager.isDateAvailable(Calendar.current.date(byAdding: .day, value: 2, to: Date())!) == .restOrOffTrailDaysExist)
+        #expect(manager.isDateAvailable(Calendar.current.date(byAdding: .day, value: 3, to: Date())!) == .entryExists)
+        #expect(manager.isDateAvailable(Calendar.current.date(byAdding: .day, value: 4, to: Date())!) == .restOrOffTrailDaysExist)
+        #expect(manager.isDateAvailable(Calendar.current.date(byAdding: .day, value: 5, to: Date())!) == .restOrOffTrailDaysExist)
+        #expect(manager.isDateAvailable(Calendar.current.date(byAdding: .day, value: 6, to: Date())!) == .entryExists)
+        #expect(manager.isDateAvailable(Calendar.current.date(byAdding: .day, value: 7, to: Date())!) == .available)
+        
+    }
     
     @Test func nextAvailableDateForFirstCheckIn() async throws {
         let manager = CheckInManager(checkIns: checkIns)

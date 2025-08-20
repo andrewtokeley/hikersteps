@@ -14,9 +14,13 @@ extension Comparable {
 }
 
 extension Date {
-    func asDateString() -> String {
+    func asDateString(withYear: Bool = true) -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE d MMM yyyy"
+        if withYear {
+            dateFormatter.dateFormat = "EEEE d MMM yyyy"
+        } else {
+            dateFormatter.dateFormat = "EEEE d MMM"
+        }
         return dateFormatter.string(from: self)
     }
 }

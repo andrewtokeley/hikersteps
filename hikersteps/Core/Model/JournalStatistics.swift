@@ -7,7 +7,7 @@
 
 import Foundation
 
-class HikeStatistics: Codable, FirestoreEncodable  {
+class JournalStatistics: Codable, FirestoreEncodable  {
     
     enum CodingKeys: String, CodingKey {
         case totalDays
@@ -98,8 +98,8 @@ class HikeStatistics: Codable, FirestoreEncodable  {
         
     }
     
-    static var sample: HikeStatistics {
-        return HikeStatistics(checkIns: [
+    static var sample: JournalStatistics {
+        return JournalStatistics(checkIns: [
             CheckIn.sample(id: "1", distance: DistanceUnit(24, .km), numberOfRestDays: 0),
             CheckIn.sample(id: "2", distance: DistanceUnit(52, .km), numberOfRestDays: 1),
             CheckIn.sample(id: "3", distance: DistanceUnit(33, .km), numberOfRestDays: 0),

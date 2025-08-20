@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct HikeStatisticsView: View {
+struct JournalStatisticsView: View {
     
     let hike: Journal
     
@@ -45,7 +45,7 @@ struct PreviewWrapper2: View {
     var body: some View {
         VStack {
             if show {
-                HikeStatisticsView(hike: hike)
+                JournalStatisticsView(hike: hike)
             }
             Spacer()
         }

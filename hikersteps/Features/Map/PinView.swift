@@ -13,9 +13,9 @@ enum PinViewState {
         switch self {
         case .selected: return .orange
         case .normal: return .blue
-        case .dropped: return .red
-        case .start: return .green
-        case .end: return .red
+        case .dropped: return .green
+        case .start: return .blue
+        case .end: return .blue
         }
     }
 }

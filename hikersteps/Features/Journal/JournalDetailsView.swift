@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct HikeDetailsView: View {
+struct JournalDetailsView: View {
     
     @State private var showShare = false
     @State private var topSectionHeight: CGFloat = 200
@@ -48,7 +48,7 @@ struct HikeDetailsView: View {
                     List {
                         HStack {
                             NavigationLink {
-                                HikeView(hike: hike)
+                                JournalView(hike: hike)
                                 //HikeView(hike: hike, showCheckIn: hike.statistics.latestCheckIn)
                             } label: {
                                 Text("Latest Entry")
@@ -113,5 +113,5 @@ struct HikeDetailsView: View {
 }
 
 #Preview {
-    HikeDetailsView(hike: Journal.sample)
+    JournalDetailsView(hike: Journal.sample)
 }

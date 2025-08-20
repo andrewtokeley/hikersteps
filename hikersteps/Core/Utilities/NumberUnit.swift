@@ -73,38 +73,18 @@ class NumberUnit<T>: Codable, NumberUnitProtocol where T: Numeric, T: Codable, T
         return .init(0, unit)
     }
     
-    var description: String {
-        if unit == .days || unit == .weeks {
-            return String(format: "%.0f", number) + unit.rawValue
-        }
-        return String(format: "%.1f", number) + unit.rawValue
+    func formatNumber(decimalPlaces: Int) -> String {
+        // Convert to Double so we can format
+        let doubleValue = (number as? Double) ?? Double("\(number)") ?? 0.0
+        return String(format: "%.\(decimalPlaces)f", doubleValue)
     }
     
-    
-//    static func == (lhs: NumberUnit<T>, rhs: NumberUnit<T>) -> Bool {
-//        return lhs.number == rhs.number && lhs.unit == rhs.unit
-//    }
-//    
-//    static func + (lhs: NumberUnit<T>, rhs: NumberUnit<T>) -> NumberUnit<T> {
-//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-//        return .init(lhs.number + rhs.number, lhs.unit)
-//    }
-//    
-//    static func - (lhs: NumberUnit<T>, rhs: NumberUnit<T>) -> NumberUnit<T>  {
-//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-//        return .init(lhs.number - rhs.number, lhs.unit)
-//    }
-//    
-//    static func += (lhs: inout NumberUnit<T>, rhs: NumberUnit<T>) {
-//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-//        lhs.number += rhs.number
-//    }
-//    
-//    static func -= (lhs: inout NumberUnit<T>, rhs: NumberUnit<T>) {
-//        guard lhs.unit == rhs.unit else { fatalError("Mismatched Units") }
-//        lhs.number -= rhs.number
-//    }
-    
+    var description: String {
+        if unit == .days || unit == .weeks {
+            return formatNumber(decimalPlaces: 1) + unit.rawValue
+        }
+        return formatNumber(decimalPlaces: 0) + unit.rawValue
+    }
 }
 
 class DistanceUnit: NumberUnit<Int> {

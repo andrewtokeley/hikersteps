@@ -13,9 +13,21 @@ struct NewCheckInDialog: View {
     private var onCancel: (() -> Void)?
     private var onConfirm: ((Date) -> Void)?
     private var onCreated: ((CheckIn) -> Void)?
-    private var isDateAvailable: ((Date) -> Bool)?
+    private var isDateAvailable: ((Date) -> DateAvailabilityResult) = { _ in .available }
+
+//    private var isValidDate: Bool {
+//        if let _ = isDateAvailable {
+//            return isDateAvailable!(journalDate) == .available
+//        }
+//        return false
+//    }
     
-    @State private var canConfirm: Bool = false
+    /**
+     Can confirm if there's both a valid date and a title
+     */
+    private var canConfirm: Bool {
+        return isDateAvailable(journalDate) == .available && title.isEmpty == false
+    }
     
     @StateObject private var viewModel: ViewModel
     
@@ -55,7 +67,6 @@ struct NewCheckInDialog: View {
         VStack (alignment: .leading) {
             HStack (alignment: .top) {
                 TextField("Add Title", text: $title)
-                    .padding(.bottom)
                     .font(.title)
                 Spacer()
                 Button(action: {
@@ -74,20 +85,17 @@ struct NewCheckInDialog: View {
                     .datePickerStyle(.compact)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(canConfirm ? .gray : .red, lineWidth: 1)
+                            .strokeBorder(isDateAvailable(journalDate) == .available ? Color(.appLightGray) : .red, lineWidth: 1)
                     )
-                    .onChange(of: journalDate) {
-                        // check if this date is available
-                        self.canConfirm = isDateAvailable?(journalDate) ?? false
+                Group {
+                    if (isDateAvailable(journalDate) == .entryExists) {
+                        Text("Another journal entry exists for this day.")
+                    } else if (isDateAvailable(journalDate) == .restOrOffTrailDaysExist) {
+                        Text("Another journal entry included this day as a rest, or off trail, day.")
                     }
-                    .onAppear {
-                        self.canConfirm = isDateAvailable?(journalDate) ?? false
-                    }
-                if (!canConfirm) {
-                    Text("You've already written a journal entry for that day.")
-                        .font(.caption)
-                        .foregroundStyle(.red)
                 }
+                .font(.caption)
+                .foregroundStyle(.red)
             }
             AppTextEditor(text: $notes, placeholder: "Thoughts of the day...")
                 .frame(height: 150)
@@ -111,7 +119,7 @@ struct NewCheckInDialog: View {
                     Task {
                         do {
                             if let journalId = journal.id {
-                                self.checkIn = try await viewModel.addCheckIn(title: title, date: journalDate, notes: notes, journalId: journalId)
+                                self.checkIn = try await viewModel.addCheckIn(title: title, date: journalDate, notes: notes, journalId: journalId, location: location)
                                 onCreated?(self.checkIn)
                                 dismiss()
                             }
@@ -148,7 +156,7 @@ struct NewCheckInDialog: View {
         return copy
     }
     
-    func isDateAvailable(_ handler: ((Date) -> Bool)?) -> NewCheckInDialog {
+    func isDateAvailable(_ handler: @escaping ((Date) -> DateAvailabilityResult)) -> NewCheckInDialog {
         var copy = self
         copy.isDateAvailable = handler
         return copy
@@ -158,6 +166,9 @@ struct NewCheckInDialog: View {
 #Preview {
     NewCheckInDialog(viewModel: NewCheckInDialog.ViewModel(checkInService: CheckInService.Mock()))
         .isDateAvailable { date in
-            return date.compare(Date()) == .orderedAscending
+            if date.compare(Date()) == .orderedAscending {
+                return .available
+            }
+            return .entryExists
     }
 }

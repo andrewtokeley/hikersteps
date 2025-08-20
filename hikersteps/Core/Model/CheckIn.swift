@@ -116,11 +116,10 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
      */
     init(uid: String, adventureId: String, id: String? = nil, type: String = "day", location: Coordinate = Coordinate.zero, title: String = "", notes: String = "", distance: DistanceUnit = DistanceUnit.zero(.km), numberOfRestDays: Int = 0, numberOfOffTrailDays: Int = 0, date: Date = Date(), images: [StorageImage] = [], isHeroImage: Bool = false, accommodation: LookupItem = LookupItem.noSelection()) {
         
-        self.init(uid: uid, adventureId: adventureId)
+        self.init(uid: uid, adventureId: adventureId, location: location)
         
         self.id = id
         self.type = type
-        self.locationAsGeoPoint = location.geoPoint
         self.title = title
         self.notes = notes
         self.distance = distance.convertTo(.km)
@@ -133,15 +132,17 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
     }
     
     /**
-     This is the primary initialiser. Both uid and adventureId are mandatory fields to persist data about a CheckIn and should be presented as the context for the CheckIn.
+     This is the primary initialiser. uid, adventureId and coordinate are mandatory fields to persist data about a CheckIn and should be presented as the context for the CheckIn.
      
      - Parameters
         - uid: uid of the currently logged in user
         - adventureId: id of the journal the checkIn is associated with
+        - location: coordinates of the journal entry, typically defining where you finished the day
      */
-    init(uid: String, adventureId: String) {
+    init(uid: String, adventureId: String, location: Coordinate) {
         self.uid = uid
         self.adventureId = adventureId
+        self.location = location
     }
     
     /**

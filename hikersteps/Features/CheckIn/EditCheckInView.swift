@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+/**
+ EditCheckInView is responsible for updating a single day of a Journal
+ */
 struct EditCheckInView: View {
     @Environment(\.dismiss) private var dismiss
     
@@ -41,13 +44,18 @@ struct EditCheckInView: View {
         case resupplyNotes
     }
     
+    /**
+     Initialise the View with a binding to a checkin that should be edited. This may be a new checkin (no id) or an existing CheckIn.
+     
+     Note, the viewmodel maintains a copy of the bound wrapped value which the view binds to. If the edit is saved the edited copy is copied back to the bound value provided by the parent.
+     */
     init(checkIn: Binding<CheckIn>) {
-        // we pass in the wrapped value to the viewmodel so that we can choose whether to copy the changes back to the parent depending on whether changes are saved or canceled.
         self.init(checkIn: checkIn,
                   viewModel: ViewModel(checkIn: checkIn.wrappedValue,
                                        checkInService: CheckInService(),
                                        lookupService: LookupService(),
                                       storageService: StorageService()))
+        self.focusedView = .title
     }
     
     init(checkIn: Binding<CheckIn>, viewModel: ViewModel) {
@@ -61,33 +69,27 @@ struct EditCheckInView: View {
                 
                 VStack (alignment: .leading) {
                     
-                    TextField("Name of where you stayed", text: $viewModel.checkIn.title)
+                    TextField("Where Are You Staying", text: $viewModel.checkIn.title)
                         .padding()
                         .styleBorderLight(focused: focusedView == .title)
                         .focused($focusedView, equals: .title)
+                        .padding(.vertical)
+                    
+                    AppTextEditor(text: $viewModel.checkIn.notes, placeholder: "How did it go?")
+                        .frame(height: 300)
                         .padding(.bottom)
-
+                    
                     Button {
                         showAccommodationSelect = true
                     } label: {
                         HStack {
                             Image(systemName: viewModel.checkIn.accommodation.imageName)
-                            Text(viewModel.checkIn.accommodation.name)
-                            Spacer()
-                            Image(systemName: "chevron.down")
-                        }
-                        .padding()
-                        .styleBorderLight()
-                        .foregroundStyle(Color(.appText))
-                    }
-                    .padding(.bottom)
-                    
-                    Button {
-                        showDateSelector = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "calendar")
-                            Text(viewModel.checkIn.date.asDateString())
+                            if (viewModel.checkIn.accommodation == LookupItem.noSelection()) {
+                                Text("Sleeping arrangements?")
+                                    .foregroundColor(Color(.appPlaceholder))
+                            } else {
+                                Text(viewModel.checkIn.accommodation.name)
+                            }
                             Spacer()
                             Image(systemName: "chevron.down")
                         }
@@ -104,7 +106,7 @@ struct EditCheckInView: View {
                             HStack {
                                 Image(systemName: "figure.walk")
                                 Text(viewModel.checkIn.distance.description)
-                                    .foregroundStyle(viewModel.checkIn.distance.number > 0 ? .primary : .secondary )
+                                    .foregroundStyle(viewModel.checkIn.distance.number > 0 ? .primary : Color(.appPlaceholder) )
                                 Spacer()
                                 Image(systemName: "chevron.down")
                             }
@@ -118,7 +120,7 @@ struct EditCheckInView: View {
                             HStack {
                                 Image(systemName: "zzz")
                                 Text("\(viewModel.checkIn.numberOfRestDays) days")
-                                    .foregroundStyle(viewModel.checkIn.numberOfRestDays > 0 ? .primary : .secondary )
+                                    .foregroundStyle(viewModel.checkIn.numberOfRestDays > 0 ? .primary : Color(.appPlaceholder) )
                                 Spacer()
                                 Image(systemName: "chevron.down")
                             }
@@ -128,15 +130,6 @@ struct EditCheckInView: View {
                         }
                     }
                     .padding(.bottom)
-                    .onChange(of: viewModel.checkIn.numberOfRestDays) { oldValue, newValue in
-                        // update the date range this checkin covers
-                        if newValue > 0 {
-                            dateDescription = "date span changed"
-                        }
-                        else {
-                            dateDescription = nil
-                        }
-                    }
                     
                     // We aren't binding to anything here since the image we browse to needs to be persisted to Storage only if we save.
                     StorageImageEditorView(imageURL: viewModel.checkIn.images.first?.storageUrl)
@@ -159,10 +152,6 @@ struct EditCheckInView: View {
                             viewModel.newImageContentType = nil
                         }
                      
-                    AppTextEditor(text: $viewModel.checkIn.notes, placeholder: "Write something about your day :)")
-                        .frame(height: 300)
-                        .padding(.bottom)
-                    
                     Text("Resupply")
                         .font(.title)
                     
@@ -198,6 +187,16 @@ struct EditCheckInView: View {
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.immediately)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        Text(viewModel.checkIn.date.asDateString(withYear: false))
+                        Button {
+                            showDateSelector = true
+                        } label: {
+                            Image(systemName: "ellipsis.circle").rotationEffect(Angle(degrees: 90))
+                        }
+                    }
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -226,6 +225,7 @@ struct EditCheckInView: View {
                     .disabled(self.isSaving)
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showAccommodationSelect) {
                 NavigationStack {
                     AppListSelector(
@@ -251,7 +251,7 @@ struct EditCheckInView: View {
             }
             
             .sheet(isPresented: $showZeroDaysSelector) {
-                AppNumberPicker(title: "Zero Days", number: $viewModel.checkIn.numberOfRestDays, subTitle: dateDescription, units: [.days])
+                AppNumberPicker(title: "Zero Days", number: $viewModel.checkIn.numberOfRestDays, subTitle: "Are you taking a rest day (or more!) tomorrow?", units: [.days])
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.height(350)])
             }

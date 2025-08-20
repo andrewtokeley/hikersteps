@@ -18,6 +18,13 @@ enum NavigationDirection {
     case toIndex(index: Int)
 }
 
+enum DateAvailabilityResult: Int {
+    case available = 0
+    case entryExists
+    case restOrOffTrailDaysExist
+    case unknown
+}
+
 let nilIndex: Int = -1
 
 /**
@@ -111,11 +118,31 @@ class CheckInManager: ObservableObject {
     /**
      Returns whether the given date is available for a new journal entry. We only allow one entry per day.
      */
-    func isDateAvailable(_ date: Date) -> Bool {
+    func isDateAvailable(_ date: Date) -> DateAvailabilityResult {
+        print("Checking date \(date.formatted())")
+        
+        // check if any journal entries exist
         if let _ = checkIns.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-            return false
+            print(".entryExists")
+            return .entryExists
         }
-        return true
+        
+        // get the checkin that's closest to the date but still less than it
+        let descendingOrder = checkIns.sorted { $0.date > $1.date }
+        if let closestCheckIn = descendingOrder.first(where: { $0.date < date }) {
+            print("closest checkin \(closestCheckIn.date.formatted())")
+            let dateOffset = closestCheckIn.numberOfRestDays + closestCheckIn.numberOfOffTrailDays
+            if let mustByAfterDate = Calendar.current.date(byAdding: .day, value: dateOffset, to: closestCheckIn.date) {
+                print("must be after \(mustByAfterDate.formatted())")
+                let compare = Calendar.current.compare(date, to: mustByAfterDate, toGranularity: .day)
+                if compare == .orderedAscending || compare == .orderedSame {
+                    print(".restOrOffTrailDaysExist")
+                    return .restOrOffTrailDaysExist
+                }
+            }
+        }
+        print(".available")
+        return .available
     }
     
     func addCheckIn(_ new: CheckIn) {
@@ -152,10 +179,14 @@ class CheckInManager: ObservableObject {
         checkIns.remove(at: index)
         annotations.remove(at: index)
         
-        // if the last chechin was removed then make sure the selectedIndex isn't out of range
+        // if the last chechin was removed then move to the last checkIn
         if selectedIndex > (checkIns.count - 1) {
-            selectedIndex = checkIns.count - 1
+            move(.latest)
+        } else {
+            // reselect the current index
+            move(.toIndex(index: index))
         }
+            
     }
     
     //MARK: - UItilities

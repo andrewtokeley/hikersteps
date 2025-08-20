@@ -38,4 +38,8 @@ struct NumberUnitTests {
         
     }
     
+    @Test func descriptions() async throws {
+        #expect(NumberUnit(20, .km).description == "20km")
+        #expect(DistanceUnit(20, .km).description == "20km")
+    }
 }

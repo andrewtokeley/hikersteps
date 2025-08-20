@@ -7,19 +7,19 @@
 
 import Foundation
 
-extension EditHikeView {
+extension EditJournalView {
     
     protocol ViewModelProtocol: ObservableObject {
         
         /**
          Initialise a new ViewModel for EditHikeView
          */
-        init(hike: Journal, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol)
+        init(journal: Journal, journalService: any JournalServiceProtocol, trailService: TrailServiceProtocol)
                 
         /**
         This is a copy of the hike being edited - we publsh changes so the parent can copy back to the master hike record that's being updated.
         */
-        var hike: Journal { get }
+        var journal: Journal { get }
 
         /**
          Updates changes to the hike
@@ -38,23 +38,23 @@ extension EditHikeView {
     
     class ViewModel: ViewModelProtocol {
 
-        @Published var hike: Journal
+        @Published var journal: Journal
 
-        private var hikeService: JournalServiceProtocol
+        private var journalService: JournalServiceProtocol
         private var trailService: TrailServiceProtocol
         
-        required init(hike: Journal, hikeService: any JournalServiceProtocol, trailService: TrailServiceProtocol) {
-            self.hike = hike
-            self.hikeService = hikeService
+        required init(journal: Journal, journalService: any JournalServiceProtocol, trailService: TrailServiceProtocol) {
+            self.journal = journal
+            self.journalService = journalService
             self.trailService = trailService
         }
         
         func addCheckIn() async throws -> String {
-            return try await hikeService.addJournal(journal: hike)
+            return try await journalService.addJournal(journal: journal)
         }
         
         func updateCheckIn() async throws {
-            try await hikeService.updateJournal(journal: self.hike)
+            try await journalService.updateJournal(journal: self.journal)
         }
         
         func fetchTrails() async throws -> [Trail] {

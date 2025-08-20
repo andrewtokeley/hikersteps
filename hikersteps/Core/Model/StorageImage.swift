@@ -6,7 +6,9 @@
 //
 
 import Foundation
-
+/*
+ A StorageImage is how images are defined on a CheckIn document. They contain all the information required to display via a url and locate the data in Storage.
+ */
 struct StorageImage:Codable, Equatable, FirestoreEncodable  {
     /**
      The name of the file in Storage, including it's extension.
@@ -21,7 +23,11 @@ struct StorageImage:Codable, Equatable, FirestoreEncodable  {
     var caption: String?
     
     /**
-     Full Path to the location in Firebase Storage where the image is saved, in the format images/{userId}/{adventureId}/{checkInId}/${imageId} - where the imageId is currently always 1.
+     Full path to the location in Firebase Storage where the image is saved.
+     
+     - SeeAlso: to get the folder where images for a checkin are stored use, `CheckIn.getStorageFolder()`
+     
+     - SeeAlso: to get the path where a number image should be stored, user `getStoragePathForImage(_ index: Int)`
      */
     var storagePath: String?
     

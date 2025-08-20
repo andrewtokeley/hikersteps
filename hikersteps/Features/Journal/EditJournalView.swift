@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EditHikeView: View {
+struct EditJournalView: View {
     @Environment(\.dismiss) private var dismiss
     
     @Binding var hike: Journal
@@ -30,8 +30,8 @@ struct EditHikeView: View {
     init(hike: Binding<Journal>) {
         // we pass in the wrapped value to the viewmodel so that we can choose whether to copy the changes back to the parent depending on whether changes are saved or canceled.
         self.init(hike: hike,
-                  viewModel: ViewModel(hike: hike.wrappedValue,
-                                       hikeService: JournalService(),
+                  viewModel: ViewModel(journal: hike.wrappedValue,
+                                       journalService: JournalService(),
                                        trailService: TrailService()))
     }
     
@@ -63,7 +63,7 @@ struct EditHikeView: View {
 //                
                 ScrollView {
                     VStack {
-                        TextField("Journal Name", text: $viewModel.hike.name)
+                        TextField("Journal Name", text: $viewModel.journal.name)
                             .padding()
                             .styleBorderLight(focused: focusedView == .name)
                             .focused($focusedView, equals: .name)
@@ -74,7 +74,7 @@ struct EditHikeView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "calendar")
-                                Text(viewModel.hike.startDate.asDateString())
+                                Text(viewModel.journal.startDate.asDateString())
                                 Spacer()
                                 Image(systemName: "chevron.down")
                             }
@@ -84,7 +84,7 @@ struct EditHikeView: View {
                         }
                         .padding(.bottom)
                         
-                        AppTextEditor(text: $viewModel.hike.description, placeholder: "Summary of your journal")
+                        AppTextEditor(text: $viewModel.journal.description, placeholder: "Summary of your journal")
                             .frame(height: 300)
                             .padding(.bottom)
                     }
@@ -115,7 +115,7 @@ struct EditHikeView: View {
                                 let _ = try await viewModel.updateCheckIn()
                                 
                                 //copy changes back to the bound checkIn to refresh the parent view
-                                self.hike = viewModel.hike
+                                self.hike = viewModel.journal
                                 self.isSaving = false
                                 dismiss()
                             } catch {
@@ -128,7 +128,7 @@ struct EditHikeView: View {
                 }
             }
             .sheet(isPresented: $showDateSelector) {
-                AppDateSelect(selectedDate: $viewModel.hike.startDate, title: "Start Date")
+                AppDateSelect(selectedDate: $viewModel.journal.startDate, title: "Start Date")
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.medium])
             }
@@ -137,7 +137,7 @@ struct EditHikeView: View {
         
     }
         
-    func onSaved(_ handler: (() -> Void)?) -> EditHikeView {
+    func onSaved(_ handler: (() -> Void)?) -> EditJournalView {
         var copy = self
         copy.onSaved = handler
         return copy
@@ -152,9 +152,9 @@ struct EditHikeView: View {
 
 #Preview {
     @Previewable @State var hike = Journal.sample
-    EditHikeView(hike: $hike,
-                 viewModel: EditHikeView.ViewModel(
-                        hike: hike,
-                        hikeService: JournalService.Mock(),
+    EditJournalView(hike: $hike,
+                 viewModel: EditJournalView.ViewModel(
+                        journal: hike,
+                        journalService: JournalService.Mock(),
                         trailService: TrailService.Mock()))
 }

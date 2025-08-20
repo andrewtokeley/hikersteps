@@ -6,12 +6,15 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 /**
- The HikeView is the root view that shows the users checkins on a map with their trail.
+ The JournalView is the root view that shows the users checkins on a map with their trail.
  */
-struct HikeView: View {
+struct JournalView: View {
     @EnvironmentObject var auth: AuthenticationManager
+    
+    @State private var selectedDetent: PresentationDetent = .medium
     
     /// ViewModel to enable the view to access and persist model data.
     @StateObject var viewModel: ViewModel
@@ -38,7 +41,7 @@ struct HikeView: View {
      Constructs a new HikeView from a hike instance and using the default ViewModel
      */
     init(hike: Journal) {
-        let viewModel = ViewModel(checkInService: CheckInService(), hikeService: JournalService())
+        let viewModel = ViewModel(checkInService: CheckInService(), journalService: JournalService())
         self.init(hike: hike, viewModel: viewModel)
     }
     
@@ -75,8 +78,15 @@ struct HikeView: View {
                     }
                     .onMapLongPress({ location in
                         self.checkInManager.addDropInAnnotation(location: location.coordinate)
-                        showAddCheckInSheet = true
-                        showCheckInDetails = false
+                        
+                        // add a temporary checkIn to populate for the new entry
+                        if let uid = auth.loggedInUser?.uid, let hikeId = self.hike.id {
+                            self.newCheckIn = CheckIn(uid: uid, adventureId: hikeId, location: location.coordinate, date: checkInManager.nextAvailableDate)
+                            showAddCheckInSheet = true
+                            showCheckInDetails = false
+                        } else {
+                            print("unaith")
+                        }
                     })
                     .onDidSelectAnnotation({ annotation in
                         if let checkInId = annotation.checkInId {
@@ -89,7 +99,7 @@ struct HikeView: View {
             }
         }
         .navigationDestination(isPresented: $navigateToStats) {
-            HikeDetailsView(hike: hike)
+            JournalDetailsView(hike: hike)
                 .onDisappear {
                     if self.reOpenCheckInDetailsSheet {
                         self.showCheckInDetails = true
@@ -101,10 +111,12 @@ struct HikeView: View {
                 if let uid = auth.loggedInUser?.uid {
                     Task {
                         do {
-                            let checkIns = try await viewModel.loadCheckIns(uid: uid, hike: hike)
-                            self.checkInManager.initialise(checkIns: checkIns)
-                            
-                            self.checkInManager.move(.latest)
+                            let checkIns = try await viewModel.loadCheckIns(uid: uid, journal: hike)
+                            if checkIns.isEmpty == false {
+                                self.checkInManager.initialise(checkIns: checkIns)
+                                self.checkInManager.move(.latest)
+                                self.showCheckInDetails = true
+                            } 
                             self.hasLoaded = true
                         } catch {
                             print(error)
@@ -114,38 +126,58 @@ struct HikeView: View {
             }
         }
         .sheet(isPresented: $showEditCheckIn) {
-            if newCheckIn != CheckIn.nilValue {
-                EditCheckInView(checkIn: $newCheckIn)
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.hidden)
-                    .interactiveDismissDisabled(true)
-                    .presentationBackgroundInteraction(.disabled)
-            } else {
-                EmptyView()
-            }
+            EditCheckInView(checkIn: $checkInManager.selectedCheckIn)
+                .onDisappear {
+                    if self.reOpenCheckInDetailsSheet {
+                        self.showCheckInDetails = true
+                    }
+                }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled(true)
+                .presentationBackgroundInteraction(.disabled)
         }
         
         .sheet(isPresented: $showAddCheckInSheet) {
-            if let location = checkInManager.droppedPinAnnotation?.coordinate {
-                NewCheckInDialog(journal: self.hike, proposedDate: checkInManager.nextAvailableDate, location: location)
-                    .isDateAvailable({ date in
-                        return checkInManager.isDateAvailable(date)
-                    })
-                    .onCancel {
-                        self.checkInManager.removeDropInAnnotation()
-                    }
-                    // The user has selected a date and ready to create the entry
-                    .onCreated() { newCheckIn in
-                        self.checkInManager.addCheckIn(newCheckIn)
-                        checkInManager.move(.to(id: newCheckIn.id!))
-                        self.showEditCheckIn = true
-                        self.checkInManager.removeDropInAnnotation()
-                    }
-                .presentationDetents([.fraction(0.5)])
-                .presentationDragIndicator(.hidden)
-                .interactiveDismissDisabled(true)
-                .presentationBackgroundInteraction(.enabled)
-            }
+            EditCheckInView(checkIn: $newCheckIn)
+                .onSaved({
+                    self.checkInManager.addCheckIn(newCheckIn)
+                    checkInManager.move(.to(id: newCheckIn.id!))
+                    self.checkInManager.removeDropInAnnotation()
+                    
+                    // after we've edited we want to show the view sheet
+                    self.reOpenCheckInDetailsSheet = true
+                })
+                .onDisappear {
+                    self.showCheckInDetails = true
+                }
+                .presentationDetents([.fraction(0.5), .large])
+                .presentationDragIndicator(.visible)
+                .interactiveDismissDisabled(false)
+                .presentationBackgroundInteraction(.disabled)
+//            if let location = checkInManager.droppedPinAnnotation?.coordinate {
+//                NewCheckInDialog(journal: self.hike, proposedDate: checkInManager.nextAvailableDate, location: location)
+//                    .isDateAvailable({ date in
+//                        return checkInManager.isDateAvailable(date)
+//                    })
+//                    .onCancel {
+//                        self.checkInManager.removeDropInAnnotation()
+//                    }
+//                    // A new checkIn has been created
+//                    .onCreated() { newCheckIn in
+//                        self.checkInManager.addCheckIn(newCheckIn)
+//                        checkInManager.move(.to(id: newCheckIn.id!))
+//                        self.checkInManager.removeDropInAnnotation()
+//                        // after we've edited we want to show the view sheet
+//                        self.reOpenCheckInDetailsSheet = true
+//                        self.showEditCheckIn = true
+//                        
+//                    }
+//                .presentationDetents([.fraction(0.5), .large])
+//                .presentationDragIndicator(.visible)
+//                .interactiveDismissDisabled(true)
+//                .presentationBackgroundInteraction(.enabled)
+//            }
                 
         }
         
@@ -154,7 +186,7 @@ struct HikeView: View {
             
             TabView(selection: $checkInManager.selectedIndex) {
                 ForEach(Array(checkInManager.checkIns.enumerated()), id: \.element.id) { index, checkIn in
-                    CheckInView(checkIn: $checkInManager.checkIns[index], dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]))
+                    CheckInView(checkIn: $checkInManager.checkIns[index], dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]), totalDistanceDescription: hike.statistics.totalDistanceWalked.description)
                         .onNavigate({ direction in
                             self.checkInManager.move(direction)
                         })
@@ -163,7 +195,7 @@ struct HikeView: View {
                                 self.checkInManager.removeCheckIn(id: id)
                                 Task {
                                     do {
-                                        try await self.viewModel.saveChanges(self.checkInManager)
+                                      try await self.viewModel.deleteCheckIn(checkIn)
                                     } catch {
                                         ErrorLogger.shared.log(error)
                                     }
@@ -221,8 +253,8 @@ struct HikeView: View {
 
 #Preview {
     let authMock = AuthenticationManagerMock() as AuthenticationManager
-    HikeView(hike: Journal.nilValue,
-             viewModel: HikeView.ViewModel(checkInService: CheckInService.Mock(), hikeService: JournalService.Mock())
+    JournalView(hike: Journal.sample,
+             viewModel: JournalView.ViewModel(checkInService: CheckInService.Mock(), journalService: JournalService.Mock())
         )
         .environmentObject(authMock)
 }

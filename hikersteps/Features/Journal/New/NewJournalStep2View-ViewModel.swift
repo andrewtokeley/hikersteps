@@ -12,7 +12,7 @@ extension NewJournalStep2View {
     
     protocol ViewModelProtocol: ObservableObject {
         
-        init(hikeService: JournalServiceProtocol, checkInService: CheckInServiceProtocol)
+        init(journalService: JournalServiceProtocol, checkInService: CheckInServiceProtocol)
         
         func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Journal
     }
@@ -21,11 +21,11 @@ extension NewJournalStep2View {
      The ViewModel for HikeView controls interacting with the model to retrieve hike details including the checkins for the hike.
      */
     class ViewModel: ViewModelProtocol {
-        var hikeService: JournalServiceProtocol
+        var journalService: JournalServiceProtocol
         var checkInService: CheckInServiceProtocol
         
-        required init(hikeService: JournalServiceProtocol, checkInService: CheckInServiceProtocol) {
-            self.hikeService = hikeService
+        required init(journalService: JournalServiceProtocol, checkInService: CheckInServiceProtocol) {
+            self.journalService = journalService
             self.checkInService = checkInService
         }
         
@@ -37,7 +37,7 @@ extension NewJournalStep2View {
             hike.trail = trail
             hike.uid = uid
             
-            let id = try await hikeService.addJournal(journal: hike)
+            let id = try await journalService.addJournal(journal: hike)
             hike.id = id
             
             // Add the 'start' checkin

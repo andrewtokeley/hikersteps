@@ -9,9 +9,10 @@ import Foundation
 import FirebaseFirestore
 
 /**
- A Journal contains the entries recorded on a user's walk.
+ A Journal is the top level structure that includes information about a user's walk. The Journal id is used to associate `CheckIn` records to daily entries in the journal.
  */
 struct Journal: Codable, Identifiable, FirestoreEncodable  {
+    
     var id: String? = nil
     var description: String = ""
     var name: String = ""
@@ -20,7 +21,7 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
     var uid: String = ""
     var userName: String = ""
     var trail: Trail = Trail()
-    var statistics: HikeStatistics = HikeStatistics()
+    var statistics: JournalStatistics = JournalStatistics()
     var heroImageUrl: String = ""
     
     enum CodingKeys: String, CodingKey {
@@ -50,21 +51,9 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
         self.name = name
         self.startDate = startDate
     }
-    
-//
-//    init() {
-//        self.id = UUID().uuidString
-//    }
-//    
-//    init(name: String, description: String, startDate: Date) {
-//        self.id = UUID().uuidString
-//        self.name = name
-//        self.description = description
-//        self.startDate = startDate
-//    }
-    
+        
     /**
-     Used by Firestore to create a new instance of Hike from data returned from a service call.
+     Used by Firestore to create  new Journal records from data returned from service calls.
      
      This is required to set defaults for values not returned by service calls. All Hike's properties are non-optional to allow direct binding in Views.
      */
@@ -78,7 +67,7 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
         self.uid = try container.decodeIfPresent(String.self, forKey: .uid) ?? ""
         self.userName = try container.decodeIfPresent(String.self, forKey: .userName) ?? ""
         self.trail = try container.decodeIfPresent(Trail.self, forKey: .trail) ?? Trail()
-        self.statistics = try container.decodeIfPresent(HikeStatistics.self, forKey: .statistics) ?? HikeStatistics()
+        self.statistics = try container.decodeIfPresent(JournalStatistics.self, forKey: .statistics) ?? JournalStatistics()
         self.heroImageUrl = try container.decodeIfPresent(String.self, forKey: .heroImageUrl) ?? ""
     }
     
@@ -89,7 +78,7 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
         var hike = Journal(uid: "abc", name: "Bibb 2025", startDate: Calendar.current.date(from: DateComponents(year: 2021, month: 9, day: 28))!)
         hike.id = "23"
         hike.description = "Amazing trip!"
-        hike.statistics = HikeStatistics.sample
+        hike.statistics = JournalStatistics.sample
         hike.heroImageUrl = StorageImage.sample.storageUrl ?? ""
         return hike
     }

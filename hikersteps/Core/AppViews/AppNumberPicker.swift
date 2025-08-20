@@ -66,10 +66,12 @@ struct AppNumberPicker: View {
                 })
                 {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.gray)
+                        .imageScale(.medium)
+                        .font(.system(size: 30, weight: .thin))
+                        .foregroundColor(.secondary)
                 }
             }
-            .padding()
+            .padding(.top)
             
             if let subTitle = subTitle {
                 Text(subTitle)

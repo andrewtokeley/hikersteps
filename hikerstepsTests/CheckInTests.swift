@@ -11,7 +11,7 @@ import FirebaseAuth
 @testable import hikersteps
 
 struct CheckInTests {
-    let hikeService = JournalService()
+    let journalService = JournalService()
     let checkInService = CheckInService()
     var uid: String
     var adventureId: String
