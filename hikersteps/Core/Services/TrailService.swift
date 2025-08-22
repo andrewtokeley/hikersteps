@@ -16,6 +16,9 @@ protocol TrailServiceProtocol {
     func getTrails() async throws -> [Trail]
 }
 
+/**
+ Manages retrieving and administering the trails that users can record their Journals on.
+ */
 class TrailService: TrailServiceProtocol {
     private let db = Firestore.firestore()
     private let collection = "trails"

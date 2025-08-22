@@ -231,7 +231,10 @@ struct EditCheckInView: View {
                     AppListSelector(
                         items: viewModel.accommodationLookups,
                         selectedItem: $viewModel.checkIn.accommodation,
-                        title: "Where did you sleep?", noSelection: true)
+                        title: "Where did you sleep?", noSelection: true) { item in
+                            SelectableItem(id: item.id ?? UUID().uuidString, name: item.name, order: item.order, imageName: item.imageName)
+                        }
+                    
                         .presentationDragIndicator(.visible)
                         .presentationDetents([.medium])
                 }

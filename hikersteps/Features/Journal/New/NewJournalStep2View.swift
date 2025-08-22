@@ -69,7 +69,7 @@ struct NewJournalStep2View: View {
             .padding(.horizontal, 20)
             .navigationDestination(isPresented: $navigateToHikeView) {
                 if let hike = self.newHike {
-                    JournalView(hike: hike)
+                    JournalView(journal: hike)
                 }
             }
         }

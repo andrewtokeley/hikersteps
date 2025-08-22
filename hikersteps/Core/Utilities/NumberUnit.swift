@@ -45,8 +45,8 @@ protocol NumberUnitProtocol {
     var description: String { get }
 }
 
-class NumberUnit<T>: Codable, NumberUnitProtocol where T: Numeric, T: Codable, T: CVarArg {
-    
+class NumberUnit<T>: Codable, Identifiable, CustomDebugStringConvertible, NumberUnitProtocol where T: Numeric, T: Codable, T: CVarArg {
+    var id: String { return "\(number)\(unit)"}
     var number: T = 0
     var unit: Unit = .none
     
@@ -63,6 +63,9 @@ class NumberUnit<T>: Codable, NumberUnitProtocol where T: Numeric, T: Codable, T
         self.unit = try container.decodeIfPresent(Unit.self, forKey: .unit) ?? .none
     }
     
+    var debugDescription: String {
+        return description
+    }
     
     required init(_ number: T, _ unit: Unit) {
         self.number = number

@@ -34,22 +34,22 @@ struct JournalView: View {
     @State private var showAddCheckInSheet = false
     @State private var showEditCheckIn = false
     
-    /// The hike this view is representing
-    var hike: Journal
+    /// The Journal that is being viewed
+    var journal: Journal
 
     /**
-     Constructs a new HikeView from a hike instance and using the default ViewModel
+     Constructs a new JournalView from a Journal instance and using the default ViewModel
      */
-    init(hike: Journal) {
+    init(journal: Journal) {
         let viewModel = ViewModel(checkInService: CheckInService(), journalService: JournalService())
-        self.init(hike: hike, viewModel: viewModel)
+        self.init(journal: journal, viewModel: viewModel)
     }
     
     /**
-     Construct a new HikeView, and pass in a ViewModel - used by previewer to use a mock service.
+     Construct a new JournalView, and pass in a ViewModel - used by previewer to inject a mock service.
      */
-    init(hike: Journal, viewModel: ViewModel) {
-        self.hike = hike
+    init(journal: Journal, viewModel: ViewModel) {
+        self.journal = journal
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
@@ -80,8 +80,8 @@ struct JournalView: View {
                         self.checkInManager.addDropInAnnotation(location: location.coordinate)
                         
                         // add a temporary checkIn to populate for the new entry
-                        if let uid = auth.loggedInUser?.uid, let hikeId = self.hike.id {
-                            self.newCheckIn = CheckIn(uid: uid, adventureId: hikeId, location: location.coordinate, date: checkInManager.nextAvailableDate)
+                        if let hikeId = self.journal.id {
+                            self.newCheckIn = CheckIn(uid: auth.user.uid, adventureId: hikeId, location: location.coordinate, date: checkInManager.nextAvailableDate)
                             showAddCheckInSheet = true
                             showCheckInDetails = false
                         } else {
@@ -99,7 +99,7 @@ struct JournalView: View {
             }
         }
         .navigationDestination(isPresented: $navigateToStats) {
-            JournalDetailsView(hike: hike)
+            JournalDetailsView(journal: journal)
                 .onDisappear {
                     if self.reOpenCheckInDetailsSheet {
                         self.showCheckInDetails = true
@@ -108,19 +108,17 @@ struct JournalView: View {
         }
         .task {
             if !hasLoaded {
-                if let uid = auth.loggedInUser?.uid {
-                    Task {
-                        do {
-                            let checkIns = try await viewModel.loadCheckIns(uid: uid, journal: hike)
-                            if checkIns.isEmpty == false {
-                                self.checkInManager.initialise(checkIns: checkIns)
-                                self.checkInManager.move(.latest)
-                                self.showCheckInDetails = true
-                            } 
-                            self.hasLoaded = true
-                        } catch {
-                            print(error)
+                Task {
+                    do {
+                        let checkIns = try await viewModel.loadCheckIns(uid: auth.user.uid, journal: journal)
+                        if checkIns.isEmpty == false {
+                            self.checkInManager.initialise(checkIns: checkIns)
+                            self.checkInManager.move(.latest)
+                            self.showCheckInDetails = true
                         }
+                        self.hasLoaded = true
+                    } catch {
+                        print(error)
                     }
                 }
             }
@@ -186,7 +184,7 @@ struct JournalView: View {
             
             TabView(selection: $checkInManager.selectedIndex) {
                 ForEach(Array(checkInManager.checkIns.enumerated()), id: \.element.id) { index, checkIn in
-                    CheckInView(checkIn: $checkInManager.checkIns[index], dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]), totalDistanceDescription: hike.statistics.totalDistanceWalked.description)
+                    CheckInView(checkIn: $checkInManager.checkIns[index], dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]), totalDistanceDescription: journal.statistics.totalDistanceWalked.description)
                         .onNavigate({ direction in
                             self.checkInManager.move(direction)
                         })
@@ -203,7 +201,7 @@ struct JournalView: View {
                             }
                         })
                         .onHeroImageUpdated({ urlString in
-                            if let id = self.hike.id {
+                            if let id = self.journal.id {
                                 Task {
                                     do {
                                         try await viewModel.updateHeroImage(hikeId: id, urlString: urlString)
@@ -252,9 +250,11 @@ struct JournalView: View {
 }
 
 #Preview {
-    let authMock = AuthenticationManagerMock() as AuthenticationManager
-    JournalView(hike: Journal.sample,
+    JournalView(journal: Journal.sample,
              viewModel: JournalView.ViewModel(checkInService: CheckInService.Mock(), journalService: JournalService.Mock())
         )
-        .environmentObject(authMock)
+    .environmentObject(AuthenticationManager(
+        authProvider: AuthProviderMock(),
+        userService: UserService.Mock(),
+        userSettingsService: UserSettingsService.Mock()))
 }

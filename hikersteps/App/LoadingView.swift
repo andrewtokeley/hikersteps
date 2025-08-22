@@ -13,7 +13,26 @@ struct LoadingView: View {
     
     @State private var scale: CGFloat = 1.0
     @State private var message: String = "loading..."
-
+    
+    var userService: UserServiceProtocol
+    var userSettingsService: UserSettingsServiceProtocol
+    
+    /**
+     Main initialiser
+     */
+    init() {
+        self.userService = UserService()
+        self.userSettingsService = UserSettingsService()
+    }
+    
+    /**
+     Used to inject mock services to the view
+     */
+    init(userService: UserServiceProtocol, userSettingsService: UserSettingsServiceProtocol) {
+        self.userService = userService
+        self.userSettingsService = userSettingsService
+    }
+    
     var body: some View {
         ZStack {
             Color(.appPrimary)
@@ -24,25 +43,23 @@ struct LoadingView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(Color(.appOrange))
                     .scaleEffect(scale)
                     .onAppear {
                         withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) {
                             scale = scale == 1.0 ? 1.2 : 1.0
                         }
-                        
-                        Task {
-                            await loadData()
-                        }
                     }
                 Text(message)
                     .padding()
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(Color(.appOrange))
                 }
+        }
+        .task {
+            await loadData()
         }
     }
     
-    @MainActor
     func setLoadingMessage(_ message: String) {
         self.message = message
     }
@@ -50,56 +67,27 @@ struct LoadingView: View {
     func loadData() async {
         
         // Simulate loading
-        
-        // Will be a different level of leading if the user is logged in
-        setLoadingMessage("core data...")
-        try? await Task.sleep(nanoseconds: 2_000_000_000)
-        if auth.isLoggedIn {
-            setLoadingMessage("user data...")
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
-        }
-        
-        await MainActor.run {
-            appState.phase = .loadingComplete
+        do {
+            if auth.isLoggedIn {
+                try await auth.loadUserAndSettings()
+            }
+            
+            // This will navigate us to the next view
+            await MainActor.run {
+                appState.phase = .loadingComplete
+            }
+            
+        } catch {
+            ErrorLogger.shared.log(error)
         }
     }
-//    @MainActor
-//    func animate() {
-//        guard isAnimating else { return }
-//
-//        withAnimation(.easeInOut(duration: 0.6)) {
-//            scale = scale == 1.0 ? 1.2 : 1.0
-//        }
-//        
-//        // Schedule next animation frame
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//            animate()
-//        }
-//    }
-    
-//    func loadData() async {
-//        // kick off animation
-//        print("Start...")
-//        animate()
-//        
-//        Task {
-//            // do some pre-launch operations - data loading etc.
-//            try? await Task.sleep(nanoseconds: 5_000_000_000) // 2 seconds
-//            
-//            await MainActor.run {
-//                appState.phase = .loadingComplete
-//                isAnimating = false
-//                print("Stop.")
-//            }
-//        }
-//        
-//    }
 }
 
 #Preview {
-    let mock = AuthenticationManagerMock() as AuthenticationManager
-    mock.isLoggedIn = true
-    return LoadingView()
+    LoadingView(userService: UserService.Mock(), userSettingsService: UserSettingsService.Mock())
         .environmentObject(AppState())
-        .environmentObject(mock)
+        .environmentObject(AuthenticationManager(
+            authProvider: AuthProviderMock(),
+            userService: UserService.Mock(),
+            userSettingsService: UserSettingsService.Mock()))
 }

@@ -27,7 +27,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct hikerstepsApp: App {
     // Register app delegate for Firebase setup
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var auth = AuthenticationManager()
+    @StateObject private var auth = AuthenticationManager(authProvider: AuthProvider(), userService: UserService(), userSettingsService: UserSettingsService())
     
     var body: some Scene {
         WindowGroup {

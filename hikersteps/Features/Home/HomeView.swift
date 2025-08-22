@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     // Access to the authentication state, user info etc.
     @EnvironmentObject var auth: AuthenticationManager
+    
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) private var dismiss
     
@@ -50,9 +51,9 @@ struct HomeView: View {
                     ScrollView {
                         ForEach(viewModel.journals) { journal in
                             NavigationLink {
-                                JournalView(hike: journal)
+                                JournalView(journal: journal)
                             } label: {
-                                HikeCard(hike: journal)
+                                JournalCardView(journal: journal)
                                     .onDeleteRequest { journal in
                                         Task {
                                             do {
@@ -72,9 +73,11 @@ struct HomeView: View {
                     Spacer()
                     
                     VStack {
-                        Text("\(auth.loggedInUser?.displayName ?? "Unknown User")")
+                        Text("\(auth.user.displayName)")
                         Button("Log Out") {
-                            auth.logout()
+                            Task {
+                                try? await auth.logout()
+                            }
                         }
                     }
                 } else {
@@ -149,7 +152,9 @@ struct HomeView: View {
 }
 
 #Preview {
-    let mock = AuthenticationManagerMock() as AuthenticationManager
-    return HomeView(viewModel: HomeView.ViewModel(journalService: JournalService.Mock()))
-        .environmentObject(mock)
+    HomeView(viewModel: HomeView.ViewModel(journalService: JournalService.Mock()))
+        .environmentObject(AuthenticationManager(
+            authProvider: AuthProviderMock(),
+            userService: UserService.Mock(),
+            userSettingsService: UserSettingsService.Mock()))
 }

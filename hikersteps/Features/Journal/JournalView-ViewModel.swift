@@ -35,7 +35,9 @@ extension JournalView {
         }
         
         /**
-         Loads checkins for the given hike and returns the results through the trailing closure
+         Returns an array of checkins for the given journal.
+         
+         Whenever this func is called, the statistics about the Journal are recalculated and saved to the firestore Journal document.
          */
         func loadCheckIns(uid: String, journal: Journal) async throws -> [CheckIn] {
             if let journalId = journal.id {

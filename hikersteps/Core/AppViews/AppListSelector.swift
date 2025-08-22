@@ -7,18 +7,55 @@
 
 import SwiftUI
 
-struct AppListSelector: View {
+struct SelectableItem: Identifiable {
+    var id: String
+    var name: String
+    var order: Double = 0.0
+    var imageName: String? = nil
+    
+    static var noSelection: SelectableItem {
+        .init(id: UUID().uuidString, name: "No Selection")
+    }
+    
+    init(id: String, name: String, order: Double = 0.0, imageName: String? = nil) {
+        self.id = id
+        self.order = order
+        self.name = name
+        self.imageName = imageName
+    }
+    
+    /**
+     Custom equatable implementation that ignores the tag
+     */
+//    static func == (lhs: SelectableItem, rhs: SelectableItem) -> Bool {
+//        return
+//            lhs.id == rhs.id &&
+//            lhs.order == rhs.order &&
+//            lhs.name == rhs.name &&
+//            lhs.imageName == rhs.imageName
+//    }
+    
+}
+
+struct AppListSelector<T: Identifiable>: View {
     @Environment(\.dismiss) private var dismiss
     
     /**
      Bound item that is selected - this item will always appear at the top of the list regardless of the order of the items the view is instantiated with
      */
-    @Binding var selectedItem: LookupItem
+    @Binding var selectedItem: T
+    
+    @State private var selectedIndex: Int = -1
     
     /**
-     Items to be displayed for the user to select from. Set by the caller when constructing the view
+     Raw items supplied by the client
      */
-    var items: [LookupItem]
+    var items: [T]
+    
+    /**
+     Internal representation for the list - constructed using the closure provided in init.
+     */
+    private var _items: [SelectableItem]
     
     /**
      Optional title to display at the top of the view
@@ -30,28 +67,27 @@ struct AppListSelector: View {
      */
     var noSelection: Bool = false
     
-    /**
-     Returns a reordered list with the selectedItem at the top of the list. The remaining items are in the order as specified by the order property
-     */
-    private var itemsInternal: [LookupItem] {
-        var reordered = items.sorted { $0.order < $1.order }
-        if let selectedIndex = items.firstIndex(of: selectedItem) {
-            let element = reordered.remove(at: selectedIndex)
-            reordered.insert(element, at: 0)
-        }
-        
-        if noSelection {
-            reordered.insert(LookupItem.noSelection(), at: 0)
-        }
-        
-        return reordered
-    }
-    
-    init(items: [LookupItem], selectedItem: Binding<LookupItem>, title: String = "", noSelection: Bool = false) {
+    init(items: [T], selectedItem: Binding<T>, title: String = "", noSelection: Bool = false, itemsConverter: @escaping (T) -> SelectableItem) {
+
         self.items = items
+        
+        // create internal representation of items using converter
+        self._items = items.map { itemsConverter($0) }
+        
+        // order by the internal representation and keep the order of the raw items in sync
+        let combined = zip(self.items, self._items).sorted { $0.1.order < $1.1.order }
+        
+        // copy ordered sets back
+        self.items = combined.map { $0.0 }
+        self._items = combined.map { $0.1 }
+        
         self.title = title
         self.noSelection = noSelection
         _selectedItem = selectedItem
+        
+        if let initialIndex = items.firstIndex(where: { $0.id == selectedItem.id }) {
+            self._selectedIndex = State(initialValue: initialIndex)
+        }
     }
     
     /**
@@ -78,30 +114,36 @@ struct AppListSelector: View {
             Divider()
             
             ScrollView {
-                ForEach(itemsInternal) { item in
-                    if let id = item.id {
-                        HStack {
-                            
-                            Image(systemName: item.imageName)
+                ForEach(Array(_items.enumerated()), id: \.offset) { index, item in
+                    HStack {
+                        if let imageName = item.imageName {
+                            Image(systemName: imageName)
+                            .frame(width: 25) }
+                        else {
+                            EmptyView()
                                 .frame(width: 25)
+                        }
                         
-                            
-                            Text(item.name)
+                        Text(item.name)
+                        
+                        Spacer()
+                        
+                        if index == selectedIndex {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                    .foregroundStyle(index == selectedIndex ? .orange : .primary)
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        // select the item's index
+                        self.selectedIndex = index
+                        
+                        // select the selected item
+                        self.selectedItem = self.items[index]
 
-                            Spacer()
-                            
-                            if id == selectedItem.id {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                        .foregroundStyle(id == selectedItem.id ? .orange : .primary)
-                        .padding(.horizontal)
-                        .padding(.bottom)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedItem = item
-                            dismiss()
-                        }
+                        dismiss()
                     }
                 }
                 .padding(.top)
@@ -112,26 +154,75 @@ struct AppListSelector: View {
     }
 }
 
-struct PreviewWrapper: View {
-    @State var selectedItem: LookupItem = LookupItem.noSelection()
-    @State var items: [LookupItem] = []
-    @State var service = LookupService.Mock()
-    
-    var body: some View {
-        AppListSelector(items: self.items, selectedItem: $selectedItem, title: "Select a Lookup Item", noSelection: true)
-            .onAppear {
-                Task {
-                    do {
-                        self.items = try await service.getAccommodationLookups()
-                    } catch {
-                        ErrorLogger.shared.log(error)
-                    }
-                }
-            }
-    }
-        
-}
+//struct AppListSelector_Previews: PreviewProvider {
+//
+//    static var previews: some View {
+//
+//        @State var selectedItem: LookupItem = LookupItem(id: "2", name: "Second")
+//        @State var items: [LookupItem] = [
+//            LookupItem(id: "1", name: "First"),
+//            LookupItem(id: "2", name: "Second"),
+//            LookupItem(id: "3", name: "Third"),
+//            LookupItem(id: "4", name: "Fourth"),
+//            LookupItem(id: "5", name: "Fifth"),
+//        ]
+//        
+//        return VStack {
+//            Text(selectedItem.name)
+//            AppListSelector<LookupItem>(
+//                items: items,
+//                selectedItem: $selectedItem,
+//                title: "Select a Disance",
+//                noSelection: true
+//            ) {
+//                return SelectableItem(id: $0.id!, name: $0.name)
+//            }
+//        }
+//    }
+//}
 
 #Preview {
-   PreviewWrapper()
+//    @Previewable @State var selectedItem: LookupItem = LookupItem(id: "2", name: "Second")
+//    @Previewable @State var items: [LookupItem] = [
+//        LookupItem(id: "1", name: "First"),
+//        LookupItem(id: "2", name: "Second"),
+//        LookupItem(id: "3", name: "Third"),
+//        LookupItem(id: "4", name: "Fourth"),
+//        LookupItem(id: "5", name: "Fifth")
+//    ]
+//    
+//    VStack {
+//        Text(selectedItem.name)
+//        AppListSelector<LookupItem>(
+//            items: items,
+//            selectedItem: $selectedItem,
+//            title: "Select a lookup",
+//            noSelection: true
+//        )
+//        {
+//            return SelectableItem(id: $0.id!, name: $0.name)
+//        }
+//    }
+//    
+
+    @Previewable @State var selectedItem: DistanceUnit = DistanceUnit(20, .km)
+    @Previewable @State var items: [DistanceUnit] = [
+        DistanceUnit(20, .km),
+        DistanceUnit(30, .km),
+        DistanceUnit(40, .km),
+        DistanceUnit(50, .km)
+    ]
+    
+    VStack {
+        Text(selectedItem.description)
+        AppListSelector<DistanceUnit>(
+            items: items,
+            selectedItem: $selectedItem,
+            title: "Select a Disance",
+            noSelection: true
+        )
+        {
+            return SelectableItem(id: UUID().uuidString, name: $0.description)
+        }
+    }
 }

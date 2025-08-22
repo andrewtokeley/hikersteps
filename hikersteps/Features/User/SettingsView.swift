@@ -6,40 +6,59 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var auth: AuthenticationManager
-    @EnvironmentObject var appState: AppState
     
     @State private var showDistanceSelector: Bool = false
-    @State private var userSettings: UserSettings = UserSettings.sample()
     
-    // Set when the user selects a preferred distance unit
-    @State private var selectedDistanceUnitLookup: LookupItem = LookupItem.noSelection()
+    @State private var viewModel: ViewModel
     
-    // Conversion of lookup item into Unit
-    private func selectedDistanceUnit() -> Unit? {
-        return Unit(rawValue: selectedDistanceUnitLookup.id ?? "mi")
+    init(viewModel: ViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
     
     init() {
-        _selectedDistanceUnitLookup = State(initialValue: LookupItem(id: userSettings.preferredDistanceUnit.rawValue, name: userSettings.preferredDistanceUnit.properName, imageName: ""))
+        self.init(viewModel: ViewModel(userService: UserService(), userSettingsService: UserSettingsService()))
     }
     
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
-                if (auth.isLoggedIn) {
-                    if let user = auth.loggedInUser {
-                        Text(user.displayName!)
+                
+                HStack {
+                    VStack {
+                        Text(auth.user.displayName)
                             .bold()
-                        Text(user.email!)
+                        Text(auth.userSettings.email.isEmpty ? "(no email))" : auth.userSettings.email)
                             .foregroundStyle(.secondary)
                     }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "person.circle")
+                        .font(.system(size: 50, weight: .thin))
                 }
+                
                 Divider()
                     .padding(.bottom)
+                
+                NavigationLink {
+                    EmptyView()
+                } label: {
+                    HStack {
+                        Text("Username")
+                            .padding(.leading, 40)
+                        Spacer()
+                        Text(auth.user.username)
+                            .foregroundStyle(.secondary)
+                        Image(systemName: "chevron.right")
+                    }
+                    .padding(.vertical)
+                }
+                .buttonStyle(.plain)
                 
                 HStack {
                     Button {
@@ -50,7 +69,7 @@ struct SettingsView: View {
                                 .frame(width: 30)
                             Text("Preferred distance unit")
                             Spacer()
-                            Text("\(selectedDistanceUnit()?.properName ?? "not selected" )").foregroundStyle(.secondary)
+                            Text(auth.userSettings.preferredDistanceUnit.properName).foregroundStyle(.secondary)
                             Image(systemName: "chevron.down")
                         }
                         .padding(.vertical)
@@ -74,11 +93,15 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                 }
                 
+                Divider()
+                
                 HStack {
                     Button {
                         // logout - this will change the app's phase to unautenticated and redirect to Home
-                        auth.logout()
-                        dismiss()
+                        Task {
+                            try? await auth.logout()
+                        }
+                        
                     } label: {
                         HStack {
                             Image(systemName: "arrow.left.square")
@@ -92,7 +115,7 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                 }
                 
-                if auth.loggedInUser?.email == "andrewtokeley@gmail.com" {
+                if auth.userSettings.email == "andrewtokeley@gmail.com" {
                     Button("Add Trails") {
                         Task {
                             do {
@@ -108,8 +131,12 @@ struct SettingsView: View {
                 
                 HStack {
                     Spacer()
-                    Text("version 1.3")
+                    VStack {
+                        Text("version 1.3")
+                        Text(viewModel.statusMessage ?? "")
+                    }
                     Spacer()
+                    
                 }
             }
         }
@@ -130,20 +157,30 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showDistanceSelector) {
-            AppListSelector(
-                items: [
-                LookupItem(id: Unit.mi.rawValue, name: Unit.mi.properName, imageName: ""),
-                LookupItem(id: Unit.km.rawValue, name: Unit.km.properName, imageName: "")
-                ],
-                selectedItem: $selectedDistanceUnitLookup,
-                title: "Distance Unit")
+            AppListSelector<Unit>(
+                items: [Unit.km, Unit.mi],
+                selectedItem: $auth.userSettings.preferredDistanceUnit,
+                title: "Preferred Unit") {
+                    SelectableItem(id: UUID().uuidString, name: $0.properName)
+                }
                 .presentationDetents([.height(200)])
         }
-        
+        .onDisappear {
+            Task {
+                do {
+                    try await auth.persistUserAndSettings()
+                } catch {
+                    ErrorLogger.shared.log(error)
+                }
+            }
+        }
     }
 }
 
 #Preview {
-    let mock = AuthenticationManagerMock() as AuthenticationManager
-    SettingsView().environmentObject(mock)
+    SettingsView(viewModel: SettingsView.ViewModel(userService: UserService.Mock(), userSettingsService: UserSettingsService.Mock()))
+        .environmentObject(AuthenticationManager(
+            authProvider: AuthProviderMock(),
+            userService: UserService.Mock(),
+            userSettingsService: UserSettingsService.Mock()))
 }

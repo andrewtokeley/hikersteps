@@ -10,7 +10,7 @@ import SwiftUI
 struct EditJournalView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @Binding var hike: Journal
+    @Binding var journal: Journal
     
     @FocusState private var focusedView: FocusableViews?
 
@@ -27,40 +27,22 @@ struct EditJournalView: View {
         case resupplyNotes
     }
     
-    init(hike: Binding<Journal>) {
+    init(journal: Binding<Journal>) {
         // we pass in the wrapped value to the viewmodel so that we can choose whether to copy the changes back to the parent depending on whether changes are saved or canceled.
-        self.init(hike: hike,
-                  viewModel: ViewModel(journal: hike.wrappedValue,
+        self.init(journal: journal,
+                  viewModel: ViewModel(journal: journal.wrappedValue,
                                        journalService: JournalService(),
                                        trailService: TrailService()))
     }
     
-    init(hike: Binding<Journal>, viewModel: ViewModel) {
-        _hike = hike
+    init(journal: Binding<Journal>, viewModel: ViewModel) {
+        _journal = journal
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
         NavigationStack {
             VStack {
-//                ZStack (alignment: .bottom) {
-//                    Image("hiker-journal")
-//                        .resizable()
-//                        .scaledToFill()
-//                        .frame(height: topSectionHeight + topSafeAreaInset())
-//                    
-//                    Text("New Journal")
-//                        .foregroundStyle(.white)
-//                        .font(.title)
-//                        .bold()
-//                        .padding(.bottom, 20)
-//                        .shadow(color: .black.opacity(0.7), radius: 2, x: 1, y: 1)
-//                }
-//                .clipped()
-//                .ignoresSafeArea(edges: .top)
-//                .frame(height: topSectionHeight)
-//                .background(.red)
-//                
                 ScrollView {
                     VStack {
                         TextField("Journal Name", text: $viewModel.journal.name)
@@ -115,7 +97,7 @@ struct EditJournalView: View {
                                 let _ = try await viewModel.updateCheckIn()
                                 
                                 //copy changes back to the bound checkIn to refresh the parent view
-                                self.hike = viewModel.journal
+                                self.journal = viewModel.journal
                                 self.isSaving = false
                                 dismiss()
                             } catch {
@@ -152,7 +134,7 @@ struct EditJournalView: View {
 
 #Preview {
     @Previewable @State var hike = Journal.sample
-    EditJournalView(hike: $hike,
+    EditJournalView(journal: $hike,
                  viewModel: EditJournalView.ViewModel(
                         journal: hike,
                         journalService: JournalService.Mock(),

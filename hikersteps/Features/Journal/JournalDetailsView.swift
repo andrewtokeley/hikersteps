@@ -12,13 +12,13 @@ struct JournalDetailsView: View {
     @State private var showShare = false
     @State private var topSectionHeight: CGFloat = 200
     
-    let hike: Journal
+    let journal: Journal
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
 
-                if let url = URL(string: hike.heroImageUrl) {
+                if let url = URL(string: journal.heroImageUrl) {
                     AsyncImage(url: url) { image in
                         image
                             .resizable()
@@ -44,16 +44,15 @@ struct JournalDetailsView: View {
                         .frame(height: topSectionHeight)
                 }
                 VStack {
-                    Text("he")
                     List {
                         HStack {
                             NavigationLink {
-                                JournalView(hike: hike)
+                                JournalView(journal: journal)
                                 //HikeView(hike: hike, showCheckIn: hike.statistics.latestCheckIn)
                             } label: {
                                 Text("Latest Entry")
                                 Spacer()
-                                Text(hike.statistics.latestCheckInDate.formatted(.dateTime.weekday().day().month().year()))
+                                Text(journal.statistics.latestCheckInDate.formatted(.dateTime.weekday().day().month().year()))
                                 Image("chevron.right")
                             }
                         }
@@ -113,5 +112,5 @@ struct JournalDetailsView: View {
 }
 
 #Preview {
-    JournalDetailsView(hike: Journal.sample)
+    JournalDetailsView(journal: Journal.sample)
 }

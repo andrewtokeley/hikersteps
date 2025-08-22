@@ -11,31 +11,157 @@ import GoogleSignInSwift
 import SwiftUI
 import UIKit
 
-struct AuthenticatedUser {
-    var uid: String?
-    var displayName: String?
-    var email: String?
+protocol AuthProviderProtocol {
+    var isLoggedIn: Bool { get }
+    var uid: String? { get }
+    var displayName: String? { get }
+    var email: String? { get }
+    func signIn(with credentials: AuthCredential) async throws
+    func signOut() throws
+}
+
+class AuthProvider: AuthProviderProtocol {
+    var isLoggedIn: Bool {
+        return Auth.auth().currentUser != nil
+    }
+    
+    var uid: String? {
+        return Auth.auth().currentUser?.uid
+    }
+    
+    var displayName: String? {
+        return Auth.auth().currentUser?.displayName
+    }
+    
+    var email: String? {
+        return Auth.auth().currentUser?.email
+    }
+    
+    func signIn(with credentials: AuthCredential) async throws {
+        return Auth.auth().signIn(with: credentials)
+    }
+    
+    func signOut() throws {
+        try Auth.auth().signOut()
+    }
+}
+
+class AuthProviderMock: AuthProviderProtocol {
+    var isLoggedIn: Bool = true
+    
+    var uid: String? = "abs"
+    
+    var displayName: String? = "Andrew Tokeley (display)"
+    
+    var email: String? = "andrewtokeley@gmail.com"
+    
+    func signIn(with credentials: AuthCredential) async throws {
+    }
+    
+    func signOut() throws {
+        isLoggedIn = false
+    }
 }
 
 protocol AuthenticationManagerProtocol: ObservableObject {
+    
     var isLoggedIn: Bool { get }
-    var loggedInUser: AuthenticatedUser?  { get }
+    
+    /**
+     Non optional settings so that we can bind to it directly in views
+     */
+    var userSettings: UserSettings { get set }
+    
+    /**
+     Non optional user so that we can bind to it directly in views. If the user is not logged in User will return an empty instance with User.isAnonymous
+     */
+    var user: User { get set }
+    
     func handleSignIn() async
+    
+    /**
+     Persist any changes to the User and UserSettings
+     */
+    func persistUserAndSettings() async throws
 }
 
 class AuthenticationManager: AuthenticationManagerProtocol {
-    @Published var isLoggedIn: Bool = false
-    @Published var loggedInUser: AuthenticatedUser?
-    
-    init() {
-        isLoggedIn = Auth.auth().currentUser != nil
-        loggedInUser = AuthenticatedUser(
-            uid: Auth.auth().currentUser?.uid,
-            displayName: Auth.auth().currentUser?.displayName ?? "Unknown",
-            email: Auth.auth().currentUser?.email ?? nil
-        )
+
+    var isLoggedIn: Bool {
+        return authProvider.isLoggedIn
     }
     
+    var userSettings: UserSettings
+    internal var userSettings_original: UserSettings
+    
+    var user: User
+    internal var user_original: User
+    
+    internal var userService: UserServiceProtocol
+    internal var userSettingsService: UserSettingsServiceProtocol
+    internal var authProvider: AuthProviderProtocol
+    
+    required init(authProvider: AuthProviderProtocol, userService: UserServiceProtocol, userSettingsService: UserSettingsServiceProtocol) {
+        
+        self.authProvider = authProvider
+        self.userService = userService
+        self.userSettingsService = userSettingsService
+
+        // default to anonymous until we log in
+        user = User.anonymousUser
+        user_original = user
+        
+        userSettings = UserSettings.defaultSettings
+        userSettings_original = userSettings
+    }
+    
+    private func loadUser() async throws {
+        guard authProvider.isLoggedIn else { return }
+        
+        var user: User?
+        user = try await UserService().getUser()
+        
+        // if no document exists, this is the first time the user has signed in - create a User document
+        if user == nil {
+            if let uid = authProvider.uid, let displayName = authProvider.displayName {
+                user = User(uid: uid, username: "", displayName: displayName, isActive: true)
+                let _ = try await UserService().addUser(user!)
+            } else {
+                throw ServiceError.generalError("Can't add User - authProvider invalid")
+            }
+        }
+        self.user = user!
+        self.user_original = user!
+    }
+    
+    private func loadUserSettings() async throws {
+        var settings: UserSettings?
+        settings = try await UserSettingsService().getUserSettings()
+        if settings == nil {
+            // this is the first time the user has signed in - create some default settings for them
+            settings = UserSettings.defaultSettings
+            let newId = try await userSettingsService.addUserSettings(settings!)
+            settings?.id = newId
+        }
+        self.userSettings = settings!
+        self.userSettings_original = settings!
+    }
+    
+    func loadUserAndSettings() async throws {
+        try await loadUser()
+        try await loadUserSettings()
+    }
+    
+    func persistUserAndSettings() async throws {
+        if user != user_original {
+            try await UserService().updateUser(self.user)
+            user_original = user
+        }
+        if userSettings != userSettings_original {
+            try await UserSettingsService().updateUserSettings(self.userSettings)
+            userSettings_original = userSettings
+        }
+    }
     
     func handleSignIn() async {
         guard let topVC = await UIApplication.shared.topViewController() else { return }
@@ -52,37 +178,15 @@ class AuthenticationManager: AuthenticationManagerProtocol {
                 accessToken: result.user.accessToken.tokenString
             )
             
-            let _ = try await Auth.auth().signIn(with: credential)
-            
-            await MainActor.run {
-                self.isLoggedIn = true
-                self.loggedInUser = AuthenticatedUser(
-                    uid: Auth.auth().currentUser?.uid,
-                    displayName: Auth.auth().currentUser?.displayName ?? "Unknown",
-                    email: Auth.auth().currentUser?.email ?? nil
-                )
-            }
+            let _ = try await authProvider.signIn(with: credential)
+
         } catch {
             print("Google Sign-In error: \(error.localizedDescription)")
         }
     }
     
-    func logout() {
-        try? Auth.auth().signOut()
-        isLoggedIn = false
-    }
-}
-
-class AuthenticationManagerMock: AuthenticationManager {
-    
-    override init() {
-        super.init()
-        self.isLoggedIn = true
-        self.loggedInUser = AuthenticatedUser(uid: "123", displayName: "Tokes (Mock)", email: "andrewtokeley+mock@gmail.com")
-    }
-    
-    override func handleSignIn() async {
-        //
+    func logout() async throws {
+        try Auth.auth().signOut()
     }
 }
 

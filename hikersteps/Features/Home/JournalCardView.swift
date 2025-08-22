@@ -7,23 +7,23 @@
 
 import SwiftUI
 
-struct HikeCard: View {
+struct JournalCardView: View {
     @Environment(\.dismiss) private var dismiss
     
-    var hike: Journal
+    var journal: Journal
     
     @State private var showContextMenu: Bool = false
     @State private var showDeleteConfirmation: Bool = false
     
     private var onDeleteRequest: ((Journal) -> Void)? = nil
 
-    init(hike: Journal) {
-        self.hike = hike
+    init(journal: Journal) {
+        self.journal = journal
     }
     
     var body: some View {
         HStack {
-            if let url = URL(string: hike.heroImageUrl) {
+            if let url = URL(string: journal.heroImageUrl) {
                 Group {
                     AsyncImage(url: url) { image in
                         image
@@ -51,17 +51,17 @@ struct HikeCard: View {
             }
             
             VStack(alignment: .leading) {
-                Text(hike.name)
+                Text(journal.name)
                     .foregroundStyle(.primary)
                     .font(.headline)
-                Text(hike.startDate.formatted(.dateTime.day().month().year()))
+                Text(journal.startDate.formatted(.dateTime.day().month().year()))
                     .foregroundStyle(.primary)
                 Group {
                     Text("Completed")
                     HStack {
-                        Text(hike.statistics.totalDistanceWalked.description)
+                        Text(journal.statistics.totalDistanceWalked.description)
                         Text(" in ")
-                        Text(hike.statistics.totalDays.description)
+                        Text(journal.statistics.totalDays.description)
                     }
                 }
                 .foregroundStyle(.secondary)
@@ -80,19 +80,19 @@ struct HikeCard: View {
             }
             Button("Cancel", role: .cancel) { }
         }
-        .alert("Delete \(hike.name)", isPresented: $showDeleteConfirmation) {
+        .alert("Delete \(journal.name)", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) {
                 dismiss()
             }
             Button("Delete", role: .destructive) {
-                onDeleteRequest?(self.hike)
+                onDeleteRequest?(self.journal)
             }
         } message: {
             Text("Are you sure you want to delete this Journal, including all journal entries and photos?. You can't undo this!")
         }
     }
     
-    func onDeleteRequest(_ handler: ((Journal) -> Void)?) -> HikeCard {
+    func onDeleteRequest(_ handler: ((Journal) -> Void)?) -> JournalCardView {
         var copy = self
         copy.onDeleteRequest = handler
         return copy
@@ -102,5 +102,5 @@ struct HikeCard: View {
 
 #Preview {
     @Previewable @State var hike = Journal(uid: "abc", name: "TA 2021/22", description: "This is a test hike", startDate: Date())
-    HikeCard(hike: hike)
+    JournalCardView(journal: hike)
 }
