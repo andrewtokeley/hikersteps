@@ -9,6 +9,9 @@ import SwiftUI
 
 struct CheckInView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var auth: AuthenticationManager
+
+    @Binding var checkIn: CheckIn
     
     @State var isPresentingEdit = false
     @State var showEditCheckIn = false
@@ -20,7 +23,7 @@ struct CheckInView: View {
     
     private var onHeroImageUpdated: ((String) -> Void)? = nil
     
-    @Binding var checkIn: CheckIn
+    
     var dayDescription: String
     var totalDistanceDescription: String
     
@@ -28,6 +31,7 @@ struct CheckInView: View {
         _checkIn = checkIn
         self.dayDescription = dayDescription
         self.totalDistanceDescription = totalDistanceDescription
+        
     }
     
     var body: some View {
@@ -60,12 +64,12 @@ struct CheckInView: View {
                             .font(.title)
                             .fontWeight(.bold)
                             .padding(.bottom, 2)
-                        
+                        Text(auth.userSettings.preferredDistanceUnit.properName)
                         Text(dayDescription)
                         
                         ZStack {
                             HStack {
-                                Text(checkIn.distance.description).bold() + Text(" hike").foregroundColor(.gray)
+                                Text(checkIn.distance.convertTo(auth.userSettings.preferredDistanceUnit).description).bold() + Text(" hike").foregroundColor(.gray)
                                 Spacer()
                                 Text("total ").foregroundColor(.gray) + Text(totalDistanceDescription).bold()
                             }
@@ -180,6 +184,7 @@ struct CheckInView: View {
 
 
 #Preview {
-    @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", adventureId: "1", id: "111", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", date: Date(), images: [StorageImage.sample])
-    CheckInView(checkIn: $checkIn, dayDescription: "Day 12", totalDistanceDescription: "1234")
+    @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", adventureId: "1", id: "111", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distance: DistanceUnit(20, .km), date: Date(), images: [StorageImage.sample])
+    CheckInView(checkIn: $checkIn, dayDescription: "Day 13", totalDistanceDescription: "1234")
+        .environmentObject(AuthenticationManager.forPreview())
 }

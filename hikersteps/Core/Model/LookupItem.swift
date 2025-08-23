@@ -98,14 +98,11 @@ struct LookupItem:Codable, Identifiable, Hashable, FirestoreEncodable  {
      Converts an imageName as received from firestore into an SF Symbol name.
      */
     private func safeConvert(_ imageName: String) -> String {
-        print("from \(imageName)...")
         // First see if this is an SFSymbolName
         if (UIImage(systemName: imageName) != nil) {
-            print("to \(imageName)...")
             return imageName
             // Or maybe it's a Material Icon name we can convert
         } else if let converted = self.convertToSFSymbol(imageName) {
-            print("to \(converted)...")
             return converted
             // If all else fails us leave it blank
         } else {

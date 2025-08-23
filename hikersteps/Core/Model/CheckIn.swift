@@ -34,8 +34,11 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
     var date = Calendar.current.startOfDay(for: Date())
     var type: String = "day"
     var nearestTrailMarker: Double = 0
-
+    
+    // The firestore value for distance is always in km.
     private var distanceWalkedKm: Int = 0
+    
+    // The distance property is what the app uses and regardless of the unit that is set, it sets the distanceWalkedKm property appropriately. The value returned by the property is always in the unit of the user's preference.
     var distance: DistanceUnit {
         get { DistanceUnit(distanceWalkedKm, .km) }
         set { distanceWalkedKm = Int(newValue.convertTo(.km).number) }

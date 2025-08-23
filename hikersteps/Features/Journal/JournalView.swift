@@ -253,8 +253,5 @@ struct JournalView: View {
     JournalView(journal: Journal.sample,
              viewModel: JournalView.ViewModel(checkInService: CheckInService.Mock(), journalService: JournalService.Mock())
         )
-    .environmentObject(AuthenticationManager(
-        authProvider: AuthProviderMock(),
-        userService: UserService.Mock(),
-        userSettingsService: UserSettingsService.Mock()))
+    .environmentObject(AuthenticationManager.forPreview())
 }

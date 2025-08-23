@@ -26,7 +26,7 @@ struct UserTests {
             #expect(Bool(true))
         } else {
             // add some
-            let settings = UserSettings.defaultSettings
+            let settings = UserSettings.defaultSettings()
             let newId = try await userSettingsService.addUserSettings(settings)
             #expect(newId == uid)
             

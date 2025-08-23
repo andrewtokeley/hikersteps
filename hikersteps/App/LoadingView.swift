@@ -66,7 +66,6 @@ struct LoadingView: View {
     
     func loadData() async {
         
-        // Simulate loading
         do {
             if auth.isLoggedIn {
                 try await auth.loadUserAndSettings()
@@ -86,8 +85,5 @@ struct LoadingView: View {
 #Preview {
     LoadingView(userService: UserService.Mock(), userSettingsService: UserSettingsService.Mock())
         .environmentObject(AppState())
-        .environmentObject(AuthenticationManager(
-            authProvider: AuthProviderMock(),
-            userService: UserService.Mock(),
-            userSettingsService: UserSettingsService.Mock()))
+        .environmentObject(AuthenticationManager.forPreview())
 }

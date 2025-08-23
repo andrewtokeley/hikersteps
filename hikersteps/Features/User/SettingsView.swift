@@ -179,8 +179,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView(viewModel: SettingsView.ViewModel(userService: UserService.Mock(), userSettingsService: UserSettingsService.Mock()))
-        .environmentObject(AuthenticationManager(
-            authProvider: AuthProviderMock(),
-            userService: UserService.Mock(),
-            userSettingsService: UserSettingsService.Mock()))
+        .environmentObject(AuthenticationManager.forPreview())
 }

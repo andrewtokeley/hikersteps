@@ -153,8 +153,5 @@ struct HomeView: View {
 
 #Preview {
     HomeView(viewModel: HomeView.ViewModel(journalService: JournalService.Mock()))
-        .environmentObject(AuthenticationManager(
-            authProvider: AuthProviderMock(),
-            userService: UserService.Mock(),
-            userSettingsService: UserSettingsService.Mock()))
+        .environmentObject(AuthenticationManager.forPreview())
 }

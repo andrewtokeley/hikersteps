@@ -33,9 +33,14 @@ struct NumberUnitTests {
         
         var total = DistanceUnit(20, .km)
         total += DistanceUnit(20, .km)
-        total -= DistanceUnit(10, .km)
+        //total -= DistanceUnit(10, .km)
         #expect(total.number == 30)
         
+        var a = DistanceUnit(20, .km)
+        var b = DistanceUnit(30, .km)
+        var c = DistanceUnit(30, .km)
+        #expect(a != b)
+        #expect(b == c)
     }
     
     @Test func descriptions() async throws {

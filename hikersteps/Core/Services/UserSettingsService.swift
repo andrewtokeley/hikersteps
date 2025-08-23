@@ -78,7 +78,11 @@ class UserSettingsService: UserSettingsServiceProtocol {
 extension UserSettingsService {
     class Mock: UserSettingsServiceProtocol {
         
-        private var userSettings: UserSettings = .defaultSettings
+        private var userSettings: UserSettings
+        
+        init(metric: Bool = true) {
+            self.userSettings = .defaultSettings(metric)
+        }
         
         func getUserSettings() async throws -> UserSettings? {
             return userSettings

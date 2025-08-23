@@ -12,6 +12,7 @@ import SwiftUI
  */
 struct EditCheckInView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var auth: AuthenticationManager
     
     @Binding var checkIn: CheckIn
     
@@ -22,7 +23,7 @@ struct EditCheckInView: View {
     @State private var showDistanceSelector = false
     @State private var showZeroDaysSelector = false
     @State private var dateDescription: String? = nil
-    
+    @State var localDistance: DistanceUnit = DistanceUnit.zero(.km)
     @State private var isSaving: Bool = false
     
     @FocusState private var focusedView: FocusableViews?
@@ -56,6 +57,7 @@ struct EditCheckInView: View {
                                        lookupService: LookupService(),
                                       storageService: StorageService()))
         self.focusedView = .title
+        
     }
     
     init(checkIn: Binding<CheckIn>, viewModel: ViewModel) {
@@ -68,7 +70,8 @@ struct EditCheckInView: View {
             ScrollView {
                 
                 VStack (alignment: .leading) {
-                    
+                    Text(localDistance.description)
+                    Text(checkIn.distance.description)
                     TextField("Where Are You Staying", text: $viewModel.checkIn.title)
                         .padding()
                         .styleBorderLight(focused: focusedView == .title)
@@ -105,8 +108,8 @@ struct EditCheckInView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "figure.walk")
-                                Text(viewModel.checkIn.distance.description)
-                                    .foregroundStyle(viewModel.checkIn.distance.number > 0 ? .primary : Color(.appPlaceholder) )
+                                Text(localDistance.description)
+                                    .foregroundStyle(localDistance.number > 0 ? .primary : Color(.appPlaceholder) )
                                 Spacer()
                                 Image(systemName: "chevron.down")
                             }
@@ -248,9 +251,12 @@ struct EditCheckInView: View {
             
             .sheet(isPresented: $showDistanceSelector) {
                 // Need to handle units
-                AppNumberPicker(title: "Distance Walked", number: $viewModel.checkIn.distance.number, units: [.km, .mi], unit: $viewModel.checkIn.distance.unit)
+                AppNumberUnitPicker<DistanceUnit, Int>(title: "Distance Walked", numberUnit: $localDistance)
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.height(350)])
+                    .onChange(of: localDistance.description) { old, new in
+                        print("value changed \(new)")
+                    }
             }
             
             .sheet(isPresented: $showZeroDaysSelector) {
@@ -261,10 +267,13 @@ struct EditCheckInView: View {
             
             
             .onAppear {
-                // get accommodation looks
+                // prepare the view
                 Task {
                     do {
                         try await viewModel.loadAccommodationLookups()
+                        
+                        // create a distance value that is in the user's preferred distance unit. We'll bind this to our picker control and when updated set back on the checkIn.distance binding.
+                        localDistance = checkIn.distance.convertTo(auth.userSettings.preferredDistanceUnit)
                     } catch {
                         ErrorLogger.shared.log(error)
                     }
@@ -283,10 +292,13 @@ struct EditCheckInView: View {
 
 #Preview {
     @Previewable @State var checkIn = CheckIn.sample()
-    EditCheckInView(checkIn: $checkIn,
-                    viewModel: EditCheckInView.ViewModel(
-                        checkIn: checkIn,
-                        checkInService: CheckInService.Mock(),
-                        lookupService: LookupService.Mock(),
-                        storageService: StorageService.Mock()))
+    VStack {
+        EditCheckInView(checkIn: $checkIn,
+                        viewModel: EditCheckInView.ViewModel(
+                            checkIn: checkIn,
+                            checkInService: CheckInService.Mock(),
+                            lookupService: LookupService.Mock(),
+                            storageService: StorageService.Mock()))
+        .environmentObject(AuthenticationManager.forPreview())
+    }
 }

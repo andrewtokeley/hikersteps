@@ -11,58 +11,6 @@ import GoogleSignInSwift
 import SwiftUI
 import UIKit
 
-protocol AuthProviderProtocol {
-    var isLoggedIn: Bool { get }
-    var uid: String? { get }
-    var displayName: String? { get }
-    var email: String? { get }
-    func signIn(with credentials: AuthCredential) async throws
-    func signOut() throws
-}
-
-class AuthProvider: AuthProviderProtocol {
-    var isLoggedIn: Bool {
-        return Auth.auth().currentUser != nil
-    }
-    
-    var uid: String? {
-        return Auth.auth().currentUser?.uid
-    }
-    
-    var displayName: String? {
-        return Auth.auth().currentUser?.displayName
-    }
-    
-    var email: String? {
-        return Auth.auth().currentUser?.email
-    }
-    
-    func signIn(with credentials: AuthCredential) async throws {
-        return Auth.auth().signIn(with: credentials)
-    }
-    
-    func signOut() throws {
-        try Auth.auth().signOut()
-    }
-}
-
-class AuthProviderMock: AuthProviderProtocol {
-    var isLoggedIn: Bool = true
-    
-    var uid: String? = "abs"
-    
-    var displayName: String? = "Andrew Tokeley (display)"
-    
-    var email: String? = "andrewtokeley@gmail.com"
-    
-    func signIn(with credentials: AuthCredential) async throws {
-    }
-    
-    func signOut() throws {
-        isLoggedIn = false
-    }
-}
-
 protocol AuthenticationManagerProtocol: ObservableObject {
     
     var isLoggedIn: Bool { get }
@@ -111,21 +59,26 @@ class AuthenticationManager: AuthenticationManagerProtocol {
         user = User.anonymousUser
         user_original = user
         
-        userSettings = UserSettings.defaultSettings
+        userSettings = UserSettings.defaultSettings()
         userSettings_original = userSettings
+    }
+    
+    func loadUserAndSettings() async throws {
+        try await loadUser()
+        try await loadUserSettings()
     }
     
     private func loadUser() async throws {
         guard authProvider.isLoggedIn else { return }
         
         var user: User?
-        user = try await UserService().getUser()
+        user = try await userService.getUser()
         
         // if no document exists, this is the first time the user has signed in - create a User document
         if user == nil {
             if let uid = authProvider.uid, let displayName = authProvider.displayName {
                 user = User(uid: uid, username: "", displayName: displayName, isActive: true)
-                let _ = try await UserService().addUser(user!)
+                let _ = try await userService.addUser(user!)
             } else {
                 throw ServiceError.generalError("Can't add User - authProvider invalid")
             }
@@ -135,22 +88,20 @@ class AuthenticationManager: AuthenticationManagerProtocol {
     }
     
     private func loadUserSettings() async throws {
+        print("loadUserSettings")
         var settings: UserSettings?
-        settings = try await UserSettingsService().getUserSettings()
+        settings = try await userSettingsService.getUserSettings()
         if settings == nil {
             // this is the first time the user has signed in - create some default settings for them
-            settings = UserSettings.defaultSettings
+            settings = UserSettings.defaultSettings()
             let newId = try await userSettingsService.addUserSettings(settings!)
             settings?.id = newId
         }
+        print("mmm - \(settings!.preferredDistanceUnit)")
         self.userSettings = settings!
         self.userSettings_original = settings!
     }
     
-    func loadUserAndSettings() async throws {
-        try await loadUser()
-        try await loadUserSettings()
-    }
     
     func persistUserAndSettings() async throws {
         if user != user_original {
@@ -186,7 +137,30 @@ class AuthenticationManager: AuthenticationManagerProtocol {
     }
     
     func logout() async throws {
-        try Auth.auth().signOut()
+        try authProvider.signOut()
+    }
+}
+
+/**
+ This extension allows Views to inject the manager as an EnvironmentObject and have it be pre-loaded to simulate the app flow.
+ */
+extension AuthenticationManager {
+    static func forPreview() -> AuthenticationManager {
+        let manager = AuthenticationManager(
+            authProvider: AuthProvider.Mock(),
+            userService: UserService.Mock(),
+            userSettingsService: UserSettingsService.Mock(metric: false)
+        )
+        Task {
+            do {
+                try await manager.loadUserAndSettings()
+                print(manager.userSettings.preferredDistanceUnit)
+            } catch {
+                print(error)
+            }
+            
+        }
+        return manager
     }
 }
 

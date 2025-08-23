@@ -57,8 +57,8 @@ extension SettingsView {
                 retValue = settings
             } else {
                 // add default settings and return these
-                var settings = UserSettings.defaultSettings
-                let id = try await userSettingsService.addUserSettings(UserSettings.defaultSettings)
+                var settings = UserSettings.defaultSettings()
+                let id = try await userSettingsService.addUserSettings(settings)
                 settings.id = id
                 retValue = settings
             }

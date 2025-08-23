@@ -36,13 +36,16 @@ struct UserSettings: FirestoreEncodable, Codable, Identifiable, Equatable {
             lastLoggedIn: Date(),
             lastJournalId: nil)
     }
-    
-    static var defaultSettings: UserSettings {
+
+    /**
+     Returns default settings in either metric (default) or imperial
+     */
+    static func defaultSettings(_ metric: Bool = true) -> UserSettings {
         return UserSettings(
             id: "",
             email: "",
             lastLoggedIn: Date(),
-            preferredDistanceUnit: .km)
+            preferredDistanceUnit: metric ? .km : .mi)
     }
     
     /**
