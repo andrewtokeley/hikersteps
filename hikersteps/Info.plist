@@ -2,12 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need to write photos</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.957994145536-jhpoj91q7cnnree15o30r8tk0223mfm8</string>
+				<string>com.googleusercontent.apps.416305513049-fccde6eeg3670qjjunhr7sg27juie26d</string>
 			</array>
 		</dict>
 	</array>

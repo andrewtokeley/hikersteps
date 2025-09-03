@@ -11,7 +11,7 @@ enum ServiceError: Error {
     case missingDocumentID
     case unknownError
     case dataConversionError
-    case unauthenticateUser
+    case unauthenticatedUser
     case generalError(String)
     case missingField(String)
     }

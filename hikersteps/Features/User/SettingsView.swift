@@ -7,19 +7,25 @@
 
 import SwiftUI
 import FirebaseAuth
+import NukeUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var auth: AuthenticationManager
     
     @State private var showDistanceSelector: Bool = false
-    
     @State private var viewModel: ViewModel
     
+    /**
+     Initialiser used only for testing to inject a test ViewModel
+     */
     init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
     
+    /**
+     Main initializer that creates an instance of ViewModel
+     */
     init() {
         self.init(viewModel: ViewModel(userService: UserService(), userSettingsService: UserSettingsService()))
     }
@@ -29,28 +35,43 @@ struct SettingsView: View {
             VStack(alignment: .leading) {
                 
                 HStack {
-                    VStack {
+                    VStack(alignment: .leading) {
                         Text(auth.user.displayName)
                             .bold()
-                        Text(auth.userSettings.email.isEmpty ? "(no email))" : auth.userSettings.email)
+                        Text(auth.user.email.isEmpty ? "(no email))" : auth.user.email)
                             .foregroundStyle(.secondary)
                     }
                     
                     Spacer()
                     
-                    Image(systemName: "person.circle")
-                        .font(.system(size: 50, weight: .thin))
+                    if let profileUrl = auth.user.profileUrl {
+                        LazyImage(source: profileUrl) { state in
+                            if let image = state.image {
+                                image
+                                    .resizingMode(.aspectFill)
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "person.circle")
+                                    .font(.system(size: 50, weight: .thin))
+                            }
+                        }
+                    } else {
+                        Image(systemName: "person.circle")
+                            .font(.system(size: 50, weight: .thin))
+                    }
                 }
                 
                 Divider()
                     .padding(.bottom)
                 
                 NavigationLink {
-                    EmptyView()
+                    UsernameView(username: $auth.user.username)
                 } label: {
                     HStack {
+                        Image(systemName: "person.fill")
+                            .frame(width: 30)
                         Text("Username")
-                            .padding(.leading, 40)
                         Spacer()
                         Text(auth.user.username)
                             .foregroundStyle(.secondary)
@@ -143,6 +164,7 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .padding()
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -157,13 +179,22 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showDistanceSelector) {
-            AppListSelector<Unit>(
-                items: [Unit.km, Unit.mi],
+            AppListSelector<UnitLength>(
+                items: [UnitLength.kilometers, UnitLength.miles],
                 selectedItem: $auth.userSettings.preferredDistanceUnit,
-                title: "Preferred Unit") {
-                    SelectableItem(id: UUID().uuidString, name: $0.properName)
-                }
-                .presentationDetents([.height(200)])
+                title: "Prefered Distance Unit",
+                noSelection: false
+            )
+            {
+                return SelectableItem(id: UUID().uuidString, name: $0.properName)
+            }
+//            AppListSelector<Unit>(
+//                items: [Unit.km, Unit.mi],
+//                selectedItem: $auth.userSettings.preferredDistanceUnit,
+//                title: "Preferred Unit") {
+//                    SelectableItem(id: UUID().uuidString, name: $0.properName)
+//                }
+//                .presentationDetents([.height(200)])
         }
         .onDisappear {
             Task {

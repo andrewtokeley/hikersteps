@@ -25,7 +25,7 @@ protocol AuthenticationManagerProtocol: ObservableObject {
      */
     var user: User { get set }
     
-    func handleSignIn() async
+    func handleSignIn() async -> Bool
     
     /**
      Persist any changes to the User and UserSettings
@@ -68,16 +68,23 @@ class AuthenticationManager: AuthenticationManagerProtocol {
         try await loadUserSettings()
     }
     
+    @MainActor
     private func loadUser() async throws {
         guard authProvider.isLoggedIn else { return }
         
         var user: User?
         user = try await userService.getUser()
         
+        // in case we haven't added this before now
+        if user?.profileUrl == nil {
+            user?.profileUrl = authProvider.photoUrl
+        }
+        
         // if no document exists, this is the first time the user has signed in - create a User document
         if user == nil {
             if let uid = authProvider.uid, let displayName = authProvider.displayName {
                 user = User(uid: uid, username: "", displayName: displayName, isActive: true)
+                user?.profileUrl = authProvider.photoUrl
                 let _ = try await userService.addUser(user!)
             } else {
                 throw ServiceError.generalError("Can't add User - authProvider invalid")
@@ -97,7 +104,11 @@ class AuthenticationManager: AuthenticationManagerProtocol {
             let newId = try await userSettingsService.addUserSettings(settings!)
             settings?.id = newId
         }
-        print("mmm - \(settings!.preferredDistanceUnit)")
+        
+        // update last logged in date
+        settings?.lastLoggedIn = Date()
+        try await userSettingsService.updateUserSettings(settings!)
+        
         self.userSettings = settings!
         self.userSettings_original = settings!
     }
@@ -114,14 +125,15 @@ class AuthenticationManager: AuthenticationManagerProtocol {
         }
     }
     
-    func handleSignIn() async {
-        guard let topVC = await UIApplication.shared.topViewController() else { return }
+    @MainActor
+    func handleSignIn() async -> Bool {
+        guard let topVC = await UIApplication.shared.topViewController() else { return false }
         
         do {
             let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: topVC)
             
             guard let idToken = result.user.idToken?.tokenString else {
-                return
+                return false
             }
             
             let credential = GoogleAuthProvider.credential(
@@ -130,9 +142,10 @@ class AuthenticationManager: AuthenticationManagerProtocol {
             )
             
             let _ = try await authProvider.signIn(with: credential)
+            return true
 
         } catch {
-            print("Google Sign-In error: \(error.localizedDescription)")
+            return false
         }
     }
     
@@ -145,16 +158,16 @@ class AuthenticationManager: AuthenticationManagerProtocol {
  This extension allows Views to inject the manager as an EnvironmentObject and have it be pre-loaded to simulate the app flow.
  */
 extension AuthenticationManager {
-    static func forPreview() -> AuthenticationManager {
+    static func forPreview(metric: Bool = true) -> AuthenticationManager {
         let manager = AuthenticationManager(
             authProvider: AuthProvider.Mock(),
             userService: UserService.Mock(),
-            userSettingsService: UserSettingsService.Mock(metric: false)
+            userSettingsService: UserSettingsService.Mock(metric: metric)
         )
         Task {
             do {
                 try await manager.loadUserAndSettings()
-                print(manager.userSettings.preferredDistanceUnit)
+                print("loadedd settings")
             } catch {
                 print(error)
             }

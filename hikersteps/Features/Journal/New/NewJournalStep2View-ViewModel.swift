@@ -14,7 +14,7 @@ extension NewJournalStep2View {
         
         init(journalService: JournalServiceProtocol, checkInService: CheckInServiceProtocol)
         
-        func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Journal
+        func addJournal(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Journal
     }
     
     /**
@@ -29,26 +29,25 @@ extension NewJournalStep2View {
             self.checkInService = checkInService
         }
         
-        func addHike(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Journal {
-            guard let uid = Auth.auth().currentUser?.uid else { throw AuthErrorCode.nullUser }
+        func addJournal(trail: Trail, startLocation: CheckInAnnotation?) async throws -> Journal {
+            guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
             
-            // Create the Journal
-            var hike = Journal(uid: "abc", name: trail.name)
-            hike.trail = trail
-            hike.uid = uid
+            // Add a new Journal
+            var journal = Journal(uid: uid, name: trail.name)
+            journal.trail = trail
             
-            let id = try await journalService.addJournal(journal: hike)
-            hike.id = id
+            let id = try await journalService.addJournal(journal: journal)
+            journal.id = id
             
             // Add the 'start' checkin
             if let location = startLocation?.coordinate {
-                var startCheckIn = CheckIn(uid: uid, adventureId: id, location: location)
+                var startCheckIn = CheckIn(uid: uid, journalId: id, location: location)
                 startCheckIn.type = "start"
                 startCheckIn.title = trail.name
-                let _ = try await checkInService.updateCheckIn(checkIn: startCheckIn)
+                let _ = try await checkInService.addCheckIn(checkIn: startCheckIn)
             }
             
-            return hike
+            return journal
         }
         
     }

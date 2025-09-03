@@ -18,6 +18,10 @@ protocol UserServiceProtocol {
      */
     func getUser() async throws -> User?
     
+    func getUser(username: String) async throws -> User?
+    
+    func searchUsersByUsername(prefix: String) async throws -> [User]
+    
     /**
      Save a user document, including any settings.
      */
@@ -48,7 +52,7 @@ class UserService: UserServiceProtocol {
     private let privateSubCollectionName = "private"
 
     func updateUser(_ user: User) async throws {
-        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
+        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
         
         try await db.collection(collectionName)
             .document(uid)
@@ -56,7 +60,7 @@ class UserService: UserServiceProtocol {
     }
     
     func addUser(_ user: User) async throws -> String {
-        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
+        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
         guard uid == user.id else { throw ServiceError.generalError("Can't add user with different ID than current user's uid") }
         
         let docRef = db.collection(collectionName).document(uid)
@@ -64,16 +68,50 @@ class UserService: UserServiceProtocol {
         return docRef.documentID
     }
     
+    func getUser(username: String) async throws -> User? {
+        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
+        
+        let snapshot = try await db.collection(collectionName)
+            .whereField("username", isEqualTo: username)
+            .getDocuments()
+        
+        let users = try snapshot.documents.compactMap { doc -> User? in
+            var user = try doc.data(as: User.self)
+            user.id = doc.documentID
+            return user
+        }
+        return users.isEmpty ? nil : users[0]
+    }
+    
+    func searchUsersByUsername(prefix: String) async throws -> [User] {
+        guard !prefix.isEmpty else { return [] }
+        
+        let endPrefix = prefix + "\u{f8ff}" // Highest possible UTF-8 character
+        
+        let snapshot = try await db.collection(collectionName)
+            .whereField("username", isGreaterThanOrEqualTo: prefix)
+            .whereField("username", isLessThanOrEqualTo: endPrefix)
+            .getDocuments()
+        
+        let users = try snapshot.documents.compactMap { doc -> User? in
+            var user = try doc.data(as: User.self)
+            user.id = doc.documentID
+            return user
+        }
+        return users
+    }
+    
     func getUser() async throws -> User? {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            throw ServiceError.unauthenticateUser
+        guard let authUser = Auth.auth().currentUser else {
+            throw ServiceError.unauthenticatedUser
         }
         
-        let docRef = db.collection(collectionName).document(uid)
+        let docRef = db.collection(collectionName).document(authUser.uid)
         let document = try await docRef.getDocument()
         if document.exists {
             var user = try document.data(as: User.self)
             user.id = document.documentID
+            user.email = authUser.email ?? ""
             return user
         }
         return nil
@@ -81,7 +119,7 @@ class UserService: UserServiceProtocol {
     
     func deleteUser(_ user: User) async throws {
         guard let _ = Auth.auth().currentUser?.uid else {
-            throw ServiceError.unauthenticateUser
+            throw ServiceError.unauthenticatedUser
         }
         var copy = user
         copy.isActive = false
@@ -93,6 +131,10 @@ extension UserService {
     class Mock: UserServiceProtocol {
         func getUser() async throws -> User? {
             return User.sample
+        }
+        
+        func getUser(username: String) async throws -> User? {
+            return username == User.sample.username ? User.sample : nil
         }
         
         func updateUser(_ user: User) async throws {
@@ -107,6 +149,8 @@ extension UserService {
             //
         }
         
-        
+        func searchUsersByUsername(prefix: String) async throws -> [User] {
+            return []
+        }
     }
 }

@@ -10,14 +10,9 @@
 		D80918F62E3C3C700096C6BE /* CheckInManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80918F52E3C3C6F0096C6BE /* CheckInManagerTests.swift */; };
 		D81301812E51D17F00EEADE6 /* CheckInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81301802E51D17F00EEADE6 /* CheckInTests.swift */; };
 		D813C45C2E15E88D00264C01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */; };
-		D829B7012E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
-		D829B7022E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
-		D829B7032E1358E00055B789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D829B7002E1358E00055B789 /* GoogleService-Info.plist */; };
 		D829B7172E1367080055B789 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = D829B7162E1367080055B789 /* GoogleSignIn */; };
 		D829B7192E1367080055B789 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D829B7182E1367080055B789 /* GoogleSignInSwift */; };
-		D87E478F2E2F5E7300097AD4 /* NumberUnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87E478E2E2F5E7300097AD4 /* NumberUnitTests.swift */; };
 		D88DB53F2E0CBA49009FC991 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D88DB53E2E0CBA49009FC991 /* Preview Assets.xcassets */; };
-		D88DB54F2E0CBA4A009FC991 /* hikerstepsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB54E2E0CBA4A009FC991 /* hikerstepsTests.swift */; };
 		D88DB5592E0CBA4A009FC991 /* hikerstepsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB5582E0CBA4A009FC991 /* hikerstepsUITests.swift */; };
 		D88DB55B2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88DB55A2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift */; };
 		D89FA8B12E4C801A003B2EB5 /* TrailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89FA8B02E4C801A003B2EB5 /* TrailTests.swift */; };
@@ -29,7 +24,9 @@
 		D8C8D42E2E1293A800E6714F /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D8C8D42D2E1293A800E6714F /* FirebaseStorage */; };
 		D8CA8A482E3B5F5E008348E4 /* HikeStatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CA8A472E3B5F5E008348E4 /* HikeStatisticsTests.swift */; };
 		D8ED7DCD2E2C3807009CC070 /* ServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8ED7DCC2E2C3807009CC070 /* ServiceTests.swift */; };
-		D8F28B8C2E16726C00A10266 /* ModelDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F28B8B2E16726C00A10266 /* ModelDecodingTests.swift */; };
+		D8EF899D2E624D5D00AD0A25 /* FriendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EF899C2E624D5D00AD0A25 /* FriendTests.swift */; };
+		D8FB4D232E63F12B005236F1 /* Zoomable in Frameworks */ = {isa = PBXBuildFile; productRef = D8FB4D222E63F12B005236F1 /* Zoomable */; };
+		D8FB4E072E63FABF005236F1 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = D8FB4E062E63FABF005236F1 /* NukeUI */; };
 		D8FCA8A52E19C89F00736B49 /* MapboxMaps in Frameworks */ = {isa = PBXBuildFile; productRef = D8FCA8A42E19C89F00736B49 /* MapboxMaps */; };
 /* End PBXBuildFile section */
 
@@ -59,13 +56,11 @@
 		D814D80B2E510D300001EBAE /* firestore.indexes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = firestore.indexes.json; sourceTree = "<group>"; };
 		D814D80C2E5115670001EBAE /* .firebaserc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .firebaserc; sourceTree = "<group>"; };
 		D814D80D2E5116390001EBAE /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		D829B7002E1358E00055B789 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		D87E478E2E2F5E7300097AD4 /* NumberUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberUnitTests.swift; sourceTree = "<group>"; };
+		D829B7002E1358E00055B789 /* GoogleService-Info-Dev.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Dev.plist"; sourceTree = "<group>"; };
 		D88DB5342E0CBA47009FC991 /* hikersteps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hikersteps.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88DB53E2E0CBA49009FC991 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D88DB5452E0CBA49009FC991 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D88DB54A2E0CBA4A009FC991 /* hikerstepsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hikerstepsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D88DB54E2E0CBA4A009FC991 /* hikerstepsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsTests.swift; sourceTree = "<group>"; };
 		D88DB5542E0CBA4A009FC991 /* hikerstepsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hikerstepsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88DB5582E0CBA4A009FC991 /* hikerstepsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsUITests.swift; sourceTree = "<group>"; };
 		D88DB55A2E0CBA4A009FC991 /* hikerstepsUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = hikerstepsUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -73,8 +68,9 @@
 		D89FA8B22E4C80E2003B2EB5 /* HikeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeTests.swift; sourceTree = "<group>"; };
 		D8C68A522E56778800466740 /* UserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserTests.swift; sourceTree = "<group>"; };
 		D8CA8A472E3B5F5E008348E4 /* HikeStatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeStatisticsTests.swift; sourceTree = "<group>"; };
+		D8E6C6402E5CE907001FD7BB /* GoogleService-Info-Prod.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Prod.plist"; sourceTree = "<group>"; };
 		D8ED7DCC2E2C3807009CC070 /* ServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceTests.swift; sourceTree = "<group>"; };
-		D8F28B8B2E16726C00A10266 /* ModelDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDecodingTests.swift; sourceTree = "<group>"; };
+		D8EF899C2E624D5D00AD0A25 /* FriendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -90,10 +86,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				D829B7172E1367080055B789 /* GoogleSignIn in Frameworks */,
+				D8FB4D232E63F12B005236F1 /* Zoomable in Frameworks */,
 				D8C8D42A2E1293A800E6714F /* FirebaseCore in Frameworks */,
 				D8C8D42E2E1293A800E6714F /* FirebaseStorage in Frameworks */,
 				D829B7192E1367080055B789 /* GoogleSignInSwift in Frameworks */,
 				D8C8D4282E1293A800E6714F /* FirebaseAuth in Frameworks */,
+				D8FB4E072E63FABF005236F1 /* NukeUI in Frameworks */,
 				D8FCA8A52E19C89F00736B49 /* MapboxMaps in Frameworks */,
 				D8C8D42C2E1293A800E6714F /* FirebaseFirestore in Frameworks */,
 			);
@@ -125,9 +123,12 @@
 				D88DB5352E0CBA47009FC991 /* Products */,
 				D814D80D2E5116390001EBAE /* .gitignore */,
 				D814D80C2E5115670001EBAE /* .firebaserc */,
+				D829B7002E1358E00055B789 /* GoogleService-Info-Dev.plist */,
+				D8E6C6402E5CE907001FD7BB /* GoogleService-Info-Prod.plist */,
 				D814D8092E510D300001EBAE /* firebase.json */,
 				D814D80A2E510D300001EBAE /* firestore.rules */,
 				D814D80B2E510D300001EBAE /* firestore.indexes.json */,
+				D8FB4E052E63FABF005236F1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -148,7 +149,6 @@
 				D829B72F2E13DE9D0055B789 /* App */,
 				D829B7262E13DD190055B789 /* Features */,
 				D829B71F2E13DCE40055B789 /* Core */,
-				D829B7002E1358E00055B789 /* GoogleService-Info.plist */,
 				D88DB5452E0CBA49009FC991 /* Info.plist */,
 				D88DB53D2E0CBA49009FC991 /* Preview Content */,
 				D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */,
@@ -167,16 +167,14 @@
 		D88DB54D2E0CBA4A009FC991 /* hikerstepsTests */ = {
 			isa = PBXGroup;
 			children = (
-				D88DB54E2E0CBA4A009FC991 /* hikerstepsTests.swift */,
-				D8F28B8B2E16726C00A10266 /* ModelDecodingTests.swift */,
 				D8ED7DCC2E2C3807009CC070 /* ServiceTests.swift */,
-				D87E478E2E2F5E7300097AD4 /* NumberUnitTests.swift */,
 				D8CA8A472E3B5F5E008348E4 /* HikeStatisticsTests.swift */,
 				D80918F52E3C3C6F0096C6BE /* CheckInManagerTests.swift */,
 				D89FA8B02E4C801A003B2EB5 /* TrailTests.swift */,
 				D89FA8B22E4C80E2003B2EB5 /* HikeTests.swift */,
 				D81301802E51D17F00EEADE6 /* CheckInTests.swift */,
 				D8C68A522E56778800466740 /* UserTests.swift */,
+				D8EF899C2E624D5D00AD0A25 /* FriendTests.swift */,
 			);
 			path = hikerstepsTests;
 			sourceTree = "<group>";
@@ -190,6 +188,13 @@
 			path = hikerstepsUITests;
 			sourceTree = "<group>";
 		};
+		D8FB4E052E63FABF005236F1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -197,6 +202,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D88DB55E2E0CBA4A009FC991 /* Build configuration list for PBXNativeTarget "hikersteps" */;
 			buildPhases = (
+				D8E6C6422E5CEA6A001FD7BB /* ShellScript */,
 				D88DB5302E0CBA47009FC991 /* Sources */,
 				D88DB5312E0CBA47009FC991 /* Frameworks */,
 				D88DB5322E0CBA47009FC991 /* Resources */,
@@ -288,6 +294,8 @@
 				D8C8D4262E1293A800E6714F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				D829B7152E1367080055B789 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				D8FCA8A32E19C89F00736B49 /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */,
+				D8FB4D212E63F12B005236F1 /* XCRemoteSwiftPackageReference "Zoomable" */,
+				D8FB4E042E63F7B8005236F1 /* XCRemoteSwiftPackageReference "NukeUI" */,
 			);
 			productRefGroup = D88DB5352E0CBA47009FC991 /* Products */;
 			projectDirPath = "";
@@ -307,7 +315,6 @@
 			files = (
 				D88DB53F2E0CBA49009FC991 /* Preview Assets.xcassets in Resources */,
 				D813C45C2E15E88D00264C01 /* LaunchScreen.storyboard in Resources */,
-				D829B7032E1358E00055B789 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,7 +322,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D829B7022E1358E00055B789 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,11 +329,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D829B7012E1358E00055B789 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D8E6C6422E5CEA6A001FD7BB /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(PROJECT_DIR)/GoogleService-Info-Dev.plist",
+				"$(PROJECT_DIR)/GoogleService-Info-Prod.plist",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\n\nCONFIGURATION=\"${CONFIGURATION}\" # This is the current build configuration\n\nif [ \"$CONFIGURATION\" == \"Dev\" ]; then\n    cp \"${PROJECT_DIR}/GoogleService-Info-Dev.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\nelif [ \"$CONFIGURATION\" == \"Prod\" ]; then\n    cp \"${PROJECT_DIR}/GoogleService-Info-Prod.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D88DB5302E0CBA47009FC991 /* Sources */ = {
@@ -341,16 +369,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D87E478F2E2F5E7300097AD4 /* NumberUnitTests.swift in Sources */,
-				D8F28B8C2E16726C00A10266 /* ModelDecodingTests.swift in Sources */,
 				D8C68A532E56778800466740 /* UserTests.swift in Sources */,
 				D8ED7DCD2E2C3807009CC070 /* ServiceTests.swift in Sources */,
 				D89FA8B12E4C801A003B2EB5 /* TrailTests.swift in Sources */,
 				D8CA8A482E3B5F5E008348E4 /* HikeStatisticsTests.swift in Sources */,
-				D88DB54F2E0CBA4A009FC991 /* hikerstepsTests.swift in Sources */,
 				D89FA8B32E4C80E2003B2EB5 /* HikeTests.swift in Sources */,
 				D81301812E51D17F00EEADE6 /* CheckInTests.swift in Sources */,
 				D80918F62E3C3C700096C6BE /* CheckInManagerTests.swift in Sources */,
+				D8EF899D2E624D5D00AD0A25 /* FriendTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -639,6 +665,266 @@
 			};
 			name = Release;
 		};
+		D8E6C6382E5CDE50001FD7BB /* Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Dev;
+		};
+		D8E6C6392E5CDE50001FD7BB /* Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"hikersteps/Preview Content\"";
+				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hikersteps/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your precise location is used to calculate turn-by-turn directions, show your location on the map, and help improve the map.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikersteps;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Dev;
+		};
+		D8E6C63A2E5CDE50001FD7BB /* Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/hikersteps.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/hikersteps";
+			};
+			name = Dev;
+		};
+		D8E6C63B2E5CDE50001FD7BB /* Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = hikersteps;
+			};
+			name = Dev;
+		};
+		D8E6C63C2E5CDE5E001FD7BB /* Prod */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Prod;
+		};
+		D8E6C63D2E5CDE5E001FD7BB /* Prod */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"hikersteps/Preview Content\"";
+				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hikersteps/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your precise location is used to calculate turn-by-turn directions, show your location on the map, and help improve the map.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikersteps;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Prod;
+		};
+		D8E6C63E2E5CDE5E001FD7BB /* Prod */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/hikersteps.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/hikersteps";
+			};
+			name = Prod;
+		};
+		D8E6C63F2E5CDE5E001FD7BB /* Prod */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = hikersteps;
+			};
+			name = Prod;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -646,7 +932,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D88DB55C2E0CBA4A009FC991 /* Debug */,
+				D8E6C6382E5CDE50001FD7BB /* Dev */,
 				D88DB55D2E0CBA4A009FC991 /* Release */,
+				D8E6C63C2E5CDE5E001FD7BB /* Prod */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -655,7 +943,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D88DB55F2E0CBA4A009FC991 /* Debug */,
+				D8E6C6392E5CDE50001FD7BB /* Dev */,
 				D88DB5602E0CBA4A009FC991 /* Release */,
+				D8E6C63D2E5CDE5E001FD7BB /* Prod */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -664,7 +954,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D88DB5622E0CBA4A009FC991 /* Debug */,
+				D8E6C63A2E5CDE50001FD7BB /* Dev */,
 				D88DB5632E0CBA4A009FC991 /* Release */,
+				D8E6C63E2E5CDE5E001FD7BB /* Prod */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -673,7 +965,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D88DB5652E0CBA4A009FC991 /* Debug */,
+				D8E6C63B2E5CDE50001FD7BB /* Dev */,
 				D88DB5662E0CBA4A009FC991 /* Release */,
+				D8E6C63F2E5CDE5E001FD7BB /* Prod */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -695,6 +989,22 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 11.15.0;
+			};
+		};
+		D8FB4D212E63F12B005236F1 /* XCRemoteSwiftPackageReference "Zoomable" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ryohey/Zoomable.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		D8FB4E042E63F7B8005236F1 /* XCRemoteSwiftPackageReference "NukeUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/NukeUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.8.3;
 			};
 		};
 		D8FCA8A32E19C89F00736B49 /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */ = {
@@ -737,6 +1047,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D8C8D4262E1293A800E6714F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		D8FB4D222E63F12B005236F1 /* Zoomable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8FB4D212E63F12B005236F1 /* XCRemoteSwiftPackageReference "Zoomable" */;
+			productName = Zoomable;
+		};
+		D8FB4E062E63FABF005236F1 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8FB4E042E63F7B8005236F1 /* XCRemoteSwiftPackageReference "NukeUI" */;
+			productName = NukeUI;
 		};
 		D8FCA8A42E19C89F00736B49 /* MapboxMaps */ = {
 			isa = XCSwiftPackageProductDependency;

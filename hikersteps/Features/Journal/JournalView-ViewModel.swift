@@ -11,7 +11,7 @@ import CoreLocation
 extension JournalView {
     
     protocol ViewModelProtocol: ObservableObject {
-        init(checkInService: CheckInServiceProtocol, journalService: JournalServiceProtocol)
+        init(checkInService: CheckInServiceProtocol, journalService: JournalServiceProtocol, userSettingsService: UserSettingsServiceProtocol)
         
         func loadCheckIns(uid: String, journal: Journal) async throws -> [CheckIn]
         func saveCheckIn(_ checkIn: CheckIn) async throws
@@ -19,6 +19,8 @@ extension JournalView {
         func deleteCheckIn(_ checkIn: CheckIn) async throws
         func saveChanges(_ manager: CheckInManager) async throws
         func updateHeroImage(hikeId: String, urlString: String) async throws
+        func updateUserSettings(settings: UserSettings) async throws
+        func deleteJournal(journal: Journal) async throws
     }
     
     /**
@@ -28,10 +30,19 @@ extension JournalView {
 
         private var checkInService: CheckInServiceProtocol
         private var journalService: JournalServiceProtocol
+        private var userSettingsService: UserSettingsServiceProtocol
         
-        required init(checkInService: CheckInServiceProtocol, journalService: JournalServiceProtocol) {
+        required init(checkInService: CheckInServiceProtocol, journalService: JournalServiceProtocol, userSettingsService: UserSettingsServiceProtocol) {
             self.checkInService = checkInService
             self.journalService = journalService
+            self.userSettingsService = userSettingsService
+        }
+        
+        /**
+         Update user settings, for example if the lastJournalId has been updated.
+         */
+        func updateUserSettings(settings: UserSettings) async throws {
+            try await userSettingsService.updateUserSettings(settings)
         }
         
         /**
@@ -41,7 +52,7 @@ extension JournalView {
          */
         func loadCheckIns(uid: String, journal: Journal) async throws -> [CheckIn] {
             if let journalId = journal.id {
-                let checkIns = try await checkInService.getCheckIns(uid: uid, adventureId: journalId)
+                let checkIns = try await checkInService.getCheckIns(uid: uid, journalId: journalId)
                 
                 // refresh the hike statistics from the checkins
                 try await journalService.updateStatistics(journalId: journalId, statistics: JournalStatistics(checkIns: checkIns))
@@ -72,6 +83,10 @@ extension JournalView {
         
         func updateHeroImage(hikeId: String, urlString: String) async throws {
             try await journalService.updateHeroImage(journalId: hikeId, urlString: urlString)
+        }
+        
+        func deleteJournal(journal: Journal) async throws {
+            try await journalService.deleteJournal(journal: journal, cascade: true)
         }
     }
 }

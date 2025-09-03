@@ -29,8 +29,8 @@ struct AppCircleButton: View {
         switch style {
         case .filled:
             return (
-                foreground: Color(.black),
-                background: Color.adaptive(light: Color(.systemGray5), dark: Color(.systemGray)),
+                foreground: Color.adaptive(light: .black, dark: .white),
+                background: Color.adaptive(light: Color(.systemGray5), dark: Color(.appDarkGray)),
                 border: false)
         case .filledOnImage:
             return (

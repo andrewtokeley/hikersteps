@@ -19,6 +19,7 @@ struct EditJournalView: View {
     @State private var isSaving: Bool = false
     @State private var topSectionHeight: CGFloat = 260
     private var onSaved: (() -> Void)? = nil
+    
     enum FocusableViews: Hashable {
         case name
         case accommodation

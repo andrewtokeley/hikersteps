@@ -52,9 +52,9 @@ struct NewJournalStep1View: View {
                 }
                 .padding(.top)
                 Group {
-                    Text("Exciting!")
+                    Text("Exciting")
                         .foregroundStyle(.primary)
-                    Text("A New Journal")
+                    Text("A New Adventure!")
                         .foregroundStyle(.primary)
                         .padding(.bottom)
                 }

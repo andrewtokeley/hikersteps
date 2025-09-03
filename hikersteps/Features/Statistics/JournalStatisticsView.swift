@@ -16,15 +16,15 @@ struct JournalStatisticsView: View {
             VStack {
                 Group {
                     HStack {
-                        StatisticView(numberUnit: hike.statistics.totalDays, description: "Days")
+                        StatisticView(statistic: "\(hike.statistics.totalDays) days", description: "Days")
                         Spacer()
-                        StatisticView(numberUnit: hike.statistics.totalRestDays, description: "Rest Days")
+                        StatisticView(statistic: "\(hike.statistics.totalRestDays) days", description: "Rest Days")
                     }
                     
                     HStack {
-                        StatisticView(numberUnit: hike.statistics.totalDistanceWalked, description: "Total Distance")
+                        StatisticView(statistic: hike.statistics.totalDistanceWalked.formatted(), description: "Total Distance")
                         Spacer()
-                        StatisticView(numberUnit: hike.statistics.longestDistance, description: "Longest Day")
+                        StatisticView(statistic: hike.statistics.longestDistance.formatted(), description: "Longest Day")
                     }
                 }
                 .padding()

@@ -7,6 +7,9 @@
 
 import Foundation
 
+/**
+ The User structure defines a user on the platform. It's properties are searchable by other users when searching for people to follow.
+ */
 struct User: FirestoreEncodable, Codable, Identifiable, Equatable {
     
     /**
@@ -32,16 +35,36 @@ struct User: FirestoreEncodable, Codable, Identifiable, Equatable {
     var displayName: String
     
     /**
+     The email the user has used to log in to the app
+     */
+    var email: String = ""
+    
+    /**
      Marks whether the user is active. When a user elects to delete their account this flag is set to false which prevents the user's data from being accessed via the api.
      */
     var isActive: Bool = true
 
     var isAnonymous: Bool { return uid.isEmpty }
     
+    /**
+     Url to the user's' profile picture provided by either google auth or https://ui-avatars.com/api/?name=tokes&background=random
+     */
+    private var profileUrlString: String = ""
+    
+    var profileUrl: URL? {
+        get {
+            URL(string: profileUrlString)
+        }
+        set {
+            profileUrlString = newValue?.absoluteString ?? ""
+        }
+    }
+    
     enum CodingKeys: String, CodingKey {
         case username
         case displayName
         case isActive
+        case profileUrlString
     }
     
     init(from decoder: Decoder) throws {
@@ -49,15 +72,17 @@ struct User: FirestoreEncodable, Codable, Identifiable, Equatable {
         self.username = try container.decodeIfPresent(String.self, forKey: .username) ?? ""
         self.displayName = try container.decodeIfPresent(String.self, forKey: .displayName) ?? ""
         self.isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? true
-        
+        self.profileUrlString = try container.decodeIfPresent(String.self, forKey: .profileUrlString) ?? ""
+
         // this will be set in the service calls
         self.id = ""
     }
     
-    init(uid: String, username: String, displayName: String, isActive: Bool = true) {
+    init(uid: String, username: String, displayName: String, email: String = "", isActive: Bool = true) {
         self.id = uid
         self.username = username
         self.displayName = displayName
+        self.email = email
         self.isActive = isActive
     }
     
@@ -65,7 +90,9 @@ struct User: FirestoreEncodable, Codable, Identifiable, Equatable {
      Sample User, used exclusively for testing.
      */
     static var sample: User {
-        return User(uid: "1", username: "tokes", displayName: "Andrew Tokeley")
+        var user:User = User(uid: "1", username: "tokes", displayName: "Andrew Tokeley (Sample)", email: "andrewtokeley@gmail.com")
+        user.profileUrl = URL(string: "https://ui-avatars.com/api/?name=tokes&background=random")
+        return user
     }
     
     static var anonymousUser: User {

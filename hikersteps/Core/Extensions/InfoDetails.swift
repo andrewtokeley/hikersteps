@@ -21,21 +21,20 @@ struct InfoDetailsModifier: ViewModifier {
     @State private var showingSheet = false
     
     func body(content: Content) -> some View {
-        ZStack (alignment: .topTrailing) {
+        
+        HStack {
             content
             
             Button(action: {
                 showingSheet = true
             }) {
                 Image(systemName: "info.circle")
-            }.offset(x: -12)
+            }
         }
-        .fixedSize()
         .sheet(isPresented: $showingSheet) {
-            NavigationView {
+            NavigationStack {
                 VStack {
                     Text(details)
-                        .font(.body)
                     Spacer()
                 }
                 .navigationTitle(title)
@@ -45,9 +44,13 @@ struct InfoDetailsModifier: ViewModifier {
                         Button {
                             showingSheet = false
                         } label: {
-                            Image(systemName: "xmark.circle")
+                            Image(systemName: "xmark.circle.fill")
+                                .imageScale(.medium)
+                                .font(.system(size: 30, weight: .thin))
+                                .foregroundColor(.secondary)
                         }
                     }
+                    
                 }
             }
             .presentationDetents([.fraction(0.2)])

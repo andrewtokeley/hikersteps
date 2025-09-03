@@ -13,6 +13,7 @@ protocol AuthProviderProtocol {
     var uid: String? { get }
     var displayName: String? { get }
     var email: String? { get }
+    var photoUrl: URL? { get }
     func signIn(with credentials: AuthCredential) async throws
     func signOut() throws
 }
@@ -38,6 +39,18 @@ class AuthProvider: AuthProviderProtocol {
         return Auth.auth().signIn(with: credentials)
     }
     
+    var photoUrl: URL? {
+        if let url = Auth.auth().currentUser?.photoURL {
+            return url
+        } else if let name = displayName,
+            let avatarUrl = URL(string: "https://ui-avatars.com/api/?name=\(name)&background=random") {
+            return avatarUrl
+        } else {
+            return nil
+        }
+        
+    }
+    
     func signOut() throws {
         try Auth.auth().signOut()
     }
@@ -55,6 +68,10 @@ extension AuthProvider {
         var email: String? = "andrewtokeley@gmail.com"
         
         func signIn(with credentials: AuthCredential) async throws {
+        }
+        
+        var photoUrl: URL? {
+            return URL(string: "https://ui-avatars.com/api/?name=Andrew+Tokeley&background=random&rounded=true")
         }
         
         func signOut() throws {

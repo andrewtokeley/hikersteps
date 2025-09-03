@@ -6,8 +6,6 @@
 //
 
 import Foundation
-
-import Foundation
 import CoreLocation
 
 import FirebaseFirestore
@@ -16,7 +14,7 @@ import FirebaseAuth
 
 protocol CheckInServiceProtocol {
     
-    func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn]
+    func getCheckIns(uid: String, journalId: String) async throws -> [CheckIn]
     
     /**
      Updates an existing checkin.
@@ -107,7 +105,7 @@ class CheckInService: CheckInServiceProtocol {
     }
     
     func addCheckIn(checkIn: CheckIn) async throws -> String {
-        guard !checkIn.adventureId.isEmpty else { throw ServiceError.missingField("adventureid") }
+        guard !checkIn.journalId.isEmpty else { throw ServiceError.missingField("journalId") }
         guard !checkIn.uid.isEmpty else { throw ServiceError.missingField("uid") }
         
         let newDocRef = db.collection(collectionName).document()
@@ -117,7 +115,9 @@ class CheckInService: CheckInServiceProtocol {
     
     func updateCheckIn (checkIn: CheckIn) async throws {
         guard let id = checkIn.id else { throw ServiceError.missingField("id") }
-        try await db.collection(collectionName).document(id).setData(checkIn.toDictionary(), merge: true)
+        
+        try await db.collection(collectionName).document(id)
+            .setData(checkIn.toDictionary(), merge: true)
     }
     
     func addCheckInDeletes(to batch: WriteBatch, for hike: Journal) async throws {
@@ -125,7 +125,7 @@ class CheckInService: CheckInServiceProtocol {
         
         let uid = hike.uid
         
-        let checkIns = try await getCheckIns(uid: uid, adventureId: id)
+        let checkIns = try await getCheckIns(uid: uid, journalId: id)
         for checkIn in checkIns {
             guard let id = checkIn.id else { continue }
             let docRef = db.collection(collectionName).document(id)
@@ -167,11 +167,11 @@ class CheckInService: CheckInServiceProtocol {
         try await batch.commit()
     }
     
-    func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn] {
+    func getCheckIns(uid: String, journalId: String) async throws -> [CheckIn] {
         
         let snapshot = try await db.collection(collectionName)
             .whereField("uid", isEqualTo: uid)
-            .whereField("adventureId", isEqualTo: adventureId)
+            .whereField("adventureId", isEqualTo: journalId)
             .order(by: "date", descending: false)
             .getDocuments()
         
@@ -220,13 +220,13 @@ extension CheckInService {
             return
         }
         
-        func getCheckIns(uid: String, adventureId: String) async throws -> [CheckIn] {
+        func getCheckIns(uid: String, journalId: String) async throws -> [CheckIn] {
             return [
-                CheckIn(uid: "123", adventureId: "1", id: "4", location: Coordinate(latitude: -41.12, longitude: 174.7787), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distance: DistanceUnit(10, .km), date: Date(), images: [StorageImage.sample]),
-                CheckIn(uid: "123", adventureId: "1", id: "0", location: Coordinate(latitude: -41.16, longitude: 174.7787), title: "Twolight Campsite", notes: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam",  distance: DistanceUnit(21, .km), date: Date(), accommodation: LookupItem(id: "1", name: "Tent", imageName: "tent")),
-                CheckIn(uid: "123", adventureId: "1", id: "1", location: Coordinate(latitude: -41.19, longitude: 174.7787), title: "Brakenexk Speed Camp",  distance: DistanceUnit(35, .km), numberOfRestDays: 2, date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!),
-                CheckIn(uid: "123", adventureId: "1", id: "24", location: Coordinate(latitude: -41.29, longitude: 174.7787), title: "Wild Camping", distance: DistanceUnit(42, .km), date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!),
-                CheckIn(uid: "123", adventureId: "1", id: "3", location: Coordinate(latitude: -41.39, longitude: 174.7787), title: "Cherokee Point Camp",  distance: DistanceUnit(15, .km), date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!),
+                CheckIn(uid: "123", journalId: "1", id: "4", location: Coordinate(latitude: -41.12, longitude: 174.7787), title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distance: Measurement(value: 10, unit: .kilometers), date: Date(), images: [StorageImage.sample]),
+                CheckIn(uid: "123", journalId: "1", id: "0", location: Coordinate(latitude: -41.16, longitude: 174.7787), title: "Twolight Campsite", notes: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam",  distance: Measurement(value: 21, unit: .kilometers), date: Date(), accommodation: LookupItem(id: "1", name: "Tent", imageName: "tent")),
+                CheckIn(uid: "123", journalId: "1", id: "1", location: Coordinate(latitude: -41.19, longitude: 174.7787), title: "Brakenexk Speed Camp",  distance: Measurement(value: 35, unit: .kilometers), numberOfRestDays: 2, date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!),
+                CheckIn(uid: "123", journalId: "1", id: "24", location: Coordinate(latitude: -41.29, longitude: 174.7787), title: "Wild Camping", distance: Measurement(value: 42, unit: .kilometers), date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!),
+                CheckIn(uid: "123", journalId: "1", id: "3", location: Coordinate(latitude: -41.39, longitude: 174.7787), title: "Cherokee Point Camp",  distance: Measurement(value: 15, unit: .kilometers), date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!),
             ]
         }
         

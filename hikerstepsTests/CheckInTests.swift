@@ -14,11 +14,11 @@ struct CheckInTests {
     let journalService = JournalService()
     let checkInService = CheckInService()
     var uid: String
-    var adventureId: String
+    var journalId: String
 
     init() {
         self.uid = Auth.auth().currentUser?.uid ?? "123"
-        self.adventureId = "1"
+        self.journalId = "1"
     }
 
     @Test func deleteCheckIn() async throws {
@@ -27,19 +27,19 @@ struct CheckInTests {
             return
         }
         // create a checkIn and save
-        let adventureId = UUID().uuidString
-        let new = CheckIn(uid: uid, adventureId: adventureId)
+        let journalId = UUID().uuidString
+        let new = CheckIn(uid: uid, journalId: journalId)
         let _ = try await checkInService.addCheckIn(checkIn: new)
         
         // get the checkins for adventure
-        var checkIns = try await checkInService.getCheckIns(uid: uid, adventureId: adventureId)
+        var checkIns = try await checkInService.getCheckIns(uid: uid, journalId: journalId)
         #expect(checkIns.count == 1)
         
         // delete it
         try await checkInService.deleteCheckIn(checkIn: checkIns[0])
         
         // get the checkins for adventure
-        checkIns = try await checkInService.getCheckIns(uid: uid, adventureId: adventureId)
+        checkIns = try await checkInService.getCheckIns(uid: uid, journalId: journalId)
         #expect(checkIns.count == 0)
 
     }

@@ -11,32 +11,66 @@ import Foundation
 
 struct CheckInManagerTests {
     let checkIns = [
-        CheckIn(uid: "1", adventureId: "1", id: "1", title: "Title1", notes: "Some notes 1",
-                distance: DistanceUnit(20, .km),
+        CheckIn(uid: "1", journalId: "1", id: "1", title: "Title1", notes: "Some notes 1",
+                distance: Measurement(value: 20, unit: .kilometers),
                 date: Date())
-        , CheckIn(uid: "1", adventureId: "1", id: "2", title: "Title2", notes: "Some notes 2",
-                  distance: DistanceUnit(30, .km),
+        , CheckIn(uid: "1", journalId: "1", id: "2", title: "Title2", notes: "Some notes 2",
+                  distance: Measurement(value: 30, unit: .kilometers),
                   date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
-        , CheckIn(uid: "1", adventureId: "1", id: "3", title: "Title3", notes: "Some notes 3",
-                  distance: DistanceUnit(40, .km), numberOfRestDays: 2, numberOfOffTrailDays: 1,
+        , CheckIn(uid: "1", journalId: "1", id: "3", title: "Title3", notes: "Some notes 3",
+                  distance: Measurement(value: 40, unit: .kilometers), numberOfRestDays: 2, numberOfOffTrailDays: 1,
                   date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!)
     ]
+    
+    @Test func dayDescriptions() async throws {
+        let checkIns = [
+            CheckIn(uid: "1", journalId: "1", id: "aa", type: "start", title: "Title1", notes: "Some notes 1",
+                    date: Date())
+            ,CheckIn(uid: "1", journalId: "1", id: "a", title: "Title1", notes: "Some notes 1",
+                    distance: Measurement(value: 20, unit: .kilometers),
+                    date: Date())
+            , CheckIn(uid: "1", journalId: "1", id: "b", title: "Title2", notes: "Some notes 2",
+                      distance: Measurement(value: 30, unit: .kilometers),
+                      numberOfRestDays: 1,
+                      date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
+            , CheckIn(uid: "1", journalId: "1", id: "c", title: "Title3", notes: "Some notes 3",
+                      distance: Measurement(value: 40, unit: .kilometers), numberOfRestDays: 1, numberOfOffTrailDays: 1,
+                      date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
+            , CheckIn(uid: "1", journalId: "1", id: "d", title: "Title3", notes: "Some notes 3",
+                      distance: Measurement(value: 40, unit: .kilometers),
+                      date: Calendar.current.date(byAdding: .day, value: 6, to: Date())!)
+        ]
+        
+        let manager = CheckInManager(checkIns: checkIns)
+        
+        // Start:       Date(), start
+        // Day 1:       Date()
+        // Days 2-3:    (Date() + 1) + (1 Rest)
+        // Day 4-5:       Date() + 3 + 1R + 1OFF
+        // Day 6        Date() + 6 (ignore off trail day)
+        #expect(manager.dayDescription(checkIns[0]) == "Start")
+        #expect(manager.dayDescription(checkIns[1]) == "Day 1")
+        #expect(manager.dayDescription(checkIns[2]) == "Days 2-3")
+        #expect(manager.dayDescription(checkIns[3]) == "Days 4-5")
+        #expect(manager.dayDescription(checkIns[4]) == "Day 6")
+        
+    }
     
     @Test func isDateAvailable() async throws {
         
         let checkIns = [
-            CheckIn(uid: "1", adventureId: "1", id: "a", title: "Title1", notes: "Some notes 1",
-                    distance: DistanceUnit(20, .km),
+            CheckIn(uid: "1", journalId: "1", id: "a", title: "Title1", notes: "Some notes 1",
+                    distance: Measurement(value: 20, unit: .kilometers),
                     date: Date())
-            , CheckIn(uid: "1", adventureId: "1", id: "b", title: "Title2", notes: "Some notes 2",
-                      distance: DistanceUnit(30, .km),
+            , CheckIn(uid: "1", journalId: "1", id: "b", title: "Title2", notes: "Some notes 2",
+                      distance: Measurement(value: 30, unit: .kilometers),
                       numberOfRestDays: 1,
                       date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
-            , CheckIn(uid: "1", adventureId: "1", id: "c", title: "Title3", notes: "Some notes 3",
-                      distance: DistanceUnit(40, .km), numberOfRestDays: 1, numberOfOffTrailDays: 1,
+            , CheckIn(uid: "1", journalId: "1", id: "c", title: "Title3", notes: "Some notes 3",
+                      distance: Measurement(value: 40, unit: .kilometers), numberOfRestDays: 1, numberOfOffTrailDays: 1,
                       date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
-            , CheckIn(uid: "1", adventureId: "1", id: "d", title: "Title3", notes: "Some notes 3",
-                      distance: DistanceUnit(40, .km),
+            , CheckIn(uid: "1", journalId: "1", id: "d", title: "Title3", notes: "Some notes 3",
+                      distance: Measurement(value: 40, unit: .kilometers),
                       date: Calendar.current.date(byAdding: .day, value: 6, to: Date())!)
         ]
         
@@ -78,7 +112,7 @@ struct CheckInManagerTests {
     
     @Test func nextAvailableDateWhenOnlyAStart() async throws {
         let manager = CheckInManager(checkIns: [
-            CheckIn(uid: "abs", adventureId: "123", type: "start", date: Date())
+            CheckIn(uid: "abs", journalId: "123", type: "start", date: Date())
         ])
         // should be on the same day as the start checkin, rather than 1 day after
         #expect(Calendar.current.isDate(Date(), inSameDayAs: manager.nextAvailableDate))
@@ -121,26 +155,73 @@ struct CheckInManagerTests {
     }
 
     @Test func addCheckIn() async throws {
+        
+        let checkIns = [
+            CheckIn(uid: "1", journalId: "1", id: "a", title: "Title1", notes: "Some notes 1",
+                    distance: Measurement(value: 20, unit: .kilometers),
+                    date: Date()),
+            CheckIn(uid: "1", journalId: "1", id: "b", title: "Title2", notes: "Some notes 2",
+                      distance: Measurement(value: 30, unit: .kilometers),
+                      numberOfRestDays: 1,
+                      date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!),
+            CheckIn(uid: "1", journalId: "1", id: "c", title: "Title1", notes: "Some notes 1",
+                    distance: Measurement(value: 20, unit: .kilometers),
+                    date: Calendar.current.date(byAdding: .day, value: 4, to: Date())!),
+            CheckIn(uid: "1", journalId: "1", id: "d", title: "Title2", notes: "Some notes 2",
+                      distance: Measurement(value: 30, unit: .kilometers),
+                      date: Calendar.current.date(byAdding: .day, value: 5, to: Date())!)
+            
+        ]
+        
+        //
+        // 0: Date
+        // 1: Date + 1 + 1
+        // insert here at Date + 3
+        // 2: Date + 4
+        // 3: Date + 5
+        //
         let manager = CheckInManager(checkIns: checkIns)
         manager.move(.start)
         
         // this should add the checkin at index 2 according to dates
-        let new = manager.addCheckIn(hikeId: "1", uid: "4", location: Coordinate.wellington, date: Calendar.current.date(byAdding: .day, value: 2, to: Date())!)
+        let new = manager.addCheckIn(hikeId: "1", uid: "abc", location: Coordinate.wellington, date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!)
         
         // based on date should have been inserted here
         let index = manager.checkIns.firstIndex(of: new)
         #expect(index == 2)
         
+        // should be automatically selected
         #expect(manager.selectedIndex == 2)
-        #expect(manager.checkIns.count == 4)
+        #expect(manager.checkIns.count == 5)
         #expect(manager.isDirty == true)
         #expect(manager.changes.added.count == 1)
-        #expect(manager.changes.added[0].uid == "4")
+        #expect(manager.changes.added[0].uid == "abc")
+    }
+    
+    @Test func removeStartCheckIn() async throws {
+        var checkIns: [CheckIn] = [
+            CheckIn.sample(date: Date()), // START
+            CheckIn.sample(date: Date()) // DAY 1
+        ]
+        checkIns[0].type = "start"
+        
+        let idStart = checkIns[0].id!
+        let idSecond = checkIns[1].id!
+        
+        let manager = CheckInManager(checkIns: checkIns)
+        
+        // remove start
+        manager.removeCheckIn(id: idStart)
+        
+        #expect(manager.checkIns.count == 1)
+        
+        // the second checkin is now the first and marked as start
+        #expect(checkIns[0].id == idSecond)
+        #expect(checkIns[0].type == "start")
     }
     
     @Test func removeCheckIn() async throws {
         let manager = CheckInManager(checkIns: checkIns)
-        
         
         //remove the currently selected checkin
         manager.move(.to(id: "2"))

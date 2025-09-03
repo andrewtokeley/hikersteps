@@ -19,9 +19,13 @@ struct LoginView: View {
             
             GoogleSignInButton {
                 Task {
-                    await auth.handleSignIn()
-                    await MainActor.run {
-                        appState.phase = .authenticated
+                    let result = await auth.handleSignIn()
+                    if result {
+                        await MainActor.run {
+                            appState.phase = .successfulLogin
+                        }
+                    } else {
+                        // display message?
                     }
                 }
             }

@@ -42,6 +42,11 @@ protocol JournalServiceProtocol {
     func getJournal(id: String) async throws -> Journal?
     
     /**
+     Get's the journal marked as current. If no journal is marked as current then the most recent one is display.
+     */
+    func getCurrentJournal() async throws -> Journal?
+    
+    /**
      Save the Journal to firestore. If it exists it's updated, otherwise a new Journal document is created.
      
      - Parameters:
@@ -90,6 +95,12 @@ class JournalService: JournalServiceProtocol {
     let db = Firestore.firestore()
     let collectionName = "adventures"
     
+    func getCurrentJournal() async throws -> Journal? {
+        let journals = try await getJournals()
+        
+        return journals.sorted(by: { $0.startDate > $1.startDate }).first
+    }
+    
     func getJournal(id: String) async throws -> Journal? {
         let docRef = db.collection(collectionName).document(id)
         do {
@@ -108,7 +119,7 @@ class JournalService: JournalServiceProtocol {
     }
     
     func updateHeroImage(journalId: String, urlString: String) async throws {
-        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticateUser }
+        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         
         let docRef = db.collection("adventures").document(journalId)
         
@@ -116,7 +127,7 @@ class JournalService: JournalServiceProtocol {
     }
     
     func updateStatistics(journalId: String, statistics: JournalStatistics) async throws {
-        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticateUser }
+        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         
         let docRef = db.collection(collectionName).document(journalId)
         
@@ -134,27 +145,23 @@ class JournalService: JournalServiceProtocol {
             .whereField("uid", isEqualTo: uid)
             .getDocuments()
         
-        do {
-            let hikes = try snapshot.documents.compactMap { doc -> Journal? in
-                var item = try doc.data(as: Journal.self)
-                item.id = doc.documentID
-                return item
-            }
-            return hikes
-        } catch {
-            throw error
+        let journals = try snapshot.documents.compactMap { doc -> Journal? in
+            var item = try doc.data(as: Journal.self)
+            item.id = doc.documentID
+            return item
         }
+        return journals
     }
 
     func addJournal(journal: Journal) async throws -> String {
-        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticateUser }
+        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         let docRef = db.collection(collectionName).document()
         try await docRef.setData(journal.toDictionary())
         return docRef.documentID
     }
     
     func updateJournal (journal: Journal) async throws {
-        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticateUser }
+        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         guard let id = journal.id else { throw ServiceError.missingField("id") }
         
         try await db.collection(collectionName)
@@ -163,7 +170,7 @@ class JournalService: JournalServiceProtocol {
     }
     
     func deleteJournal (journal: Journal, cascade: Bool = true) async throws {
-        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticateUser }
+        guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         guard let id = journal.id else { throw ServiceError.missingField("Journal id") }
 
         let batch = db.batch()
@@ -172,7 +179,7 @@ class JournalService: JournalServiceProtocol {
             let checkInService = CheckInService()
             
             // delete all the images across all checkins (we can't do these in the batch)
-            let checkIns = try await checkInService.getCheckIns(uid: journal.uid, adventureId: id)
+            let checkIns = try await checkInService.getCheckIns(uid: journal.uid, journalId: id)
             for checkIn in checkIns {
                 try await checkInService.deleteAllImages(from: checkIn)
             }
@@ -191,6 +198,17 @@ class JournalService: JournalServiceProtocol {
 
 extension JournalService {
     class Mock: JournalServiceProtocol {
+        
+        init(newUser: Bool = false) {
+            self.newUser = newUser
+        }
+        
+        var newUser: Bool = false
+        
+        func getCurrentJournal() async throws -> Journal? {
+            return nil
+        }
+        
         func updateJournal(journal: Journal) async throws {
             //
         }
@@ -200,7 +218,7 @@ extension JournalService {
         }
         
         func getJournal(id: String) async throws -> Journal? {
-            return nil
+            return Journal.sample
         }
         
         func updateHeroImage(journalId: String, urlString: String) async throws {
@@ -212,12 +230,16 @@ extension JournalService {
         }
         
         func getJournals() async throws -> [Journal] {
-            var hike1 = Journal(uid: "abc", name: "Tokes on the TA")
-            hike1.uid = "abc"
-            hike1.id = "1"
-            hike1.description = "Let's do this!"
-            hike1.statistics = JournalStatistics.sample
-            return [hike1, Journal.sample]
+            if newUser {
+                return []
+            } else {
+                var journal = Journal(uid: "abc", name: "Tokes on the TA")
+                journal.uid = "abc"
+                journal.id = "1"
+                journal.description = "Let's do this!"
+                journal.statistics = JournalStatistics.sample
+                return [journal, Journal.sample]
+            }
         }
         
         func deleteJournal (journal: Journal, cascade: Bool) async throws {

@@ -75,7 +75,7 @@ extension StorageService {
             guard let id = hike.id else { return }
             
             let service = CheckInService()
-            let checkIns = try await service.getCheckIns(uid: hike.uid, adventureId: id)
+            let checkIns = try await service.getCheckIns(uid: hike.uid, journalId: id)
             for checkIn in checkIns {
                 for image in checkIn.images {
                     if let path = image.storagePath {

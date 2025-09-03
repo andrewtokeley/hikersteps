@@ -82,13 +82,12 @@ struct LookupItem:Codable, Identifiable, Hashable, FirestoreEncodable  {
     }
     
     
-    var isNoSelection: Bool { return self.id == LookupItem.noSelectionID }
+    var isNoSelection: Bool { return self == LookupItem.noSelection() }
     
-    static private let noSelectionID = "none"
-    static func noSelection(_ imageName: String = "") -> LookupItem {
+    static func noSelection() -> LookupItem {
         var lookup = LookupItem()
-        lookup.id = noSelectionID
-        lookup.imageName = imageName
+        lookup.id = nil
+        lookup.imageName = ""
         lookup.name = "No Selection"
         lookup.order = -999
         return lookup

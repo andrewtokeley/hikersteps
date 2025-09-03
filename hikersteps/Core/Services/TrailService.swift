@@ -30,7 +30,7 @@ class TrailService: TrailServiceProtocol {
             name: "Appalachian Trail",
             country: "USA",
             countryCode: "US",
-            length: DistanceUnit(3537, .km),
+            length: Measurement(value: 3537, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 45.909, longitude: -68.109), title: "Mount Katahdin, Maine"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 34.990, longitude: -83.492), title: "Springer Mountain, Georgia")
@@ -41,7 +41,7 @@ class TrailService: TrailServiceProtocol {
             name: "Pacific Crest Trail",
             country: "USA",
             countryCode: "US",
-            length: DistanceUnit(4265, .km),
+            length: Measurement(value: 4265, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 49.000, longitude: -120.000), title: "Canada - US Border"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 32.645, longitude: -116.466), title: "Mexico - US Border")
@@ -52,7 +52,7 @@ class TrailService: TrailServiceProtocol {
             name: "Continental Divide Trail",
             country: "USA",
             countryCode: "US",
-            length: DistanceUnit(4418, .km),
+            length: Measurement(value: 4418, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 49.000, longitude: -104.000), title: "Waterton Lakes NP, Alberta"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 32.000, longitude: -108.000), title: "Crazy Cook Monument, New Mexico")
@@ -63,7 +63,7 @@ class TrailService: TrailServiceProtocol {
             name: "Te Araroa",
             country: "New Zealand",
             countryCode: "NZ",
-            length: DistanceUnit(3000, .km),
+            length: Measurement(value: 3000, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: -45.000, longitude: 170.000), title: "Cape Reinga"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: -34.000, longitude: 172.000), title: "Bluff, Sterling Point")
@@ -74,7 +74,7 @@ class TrailService: TrailServiceProtocol {
             name: "Sentiero Italia",
             country: "Italy",
             countryCode: "IT",
-            length: DistanceUnit(6000, .km),
+            length: Measurement(value: 6000, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 47.000, longitude: 10.000), title: "San Bartolomeo near Trieste"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 36.000, longitude: 14.000), title: "Santa Teresa Gallura")
@@ -85,7 +85,7 @@ class TrailService: TrailServiceProtocol {
             name: "Israel National Trail",
             country: "Israel",
             countryCode: "IS",
-            length: DistanceUnit(1013, .km),
+            length: Measurement(value: 1013, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 33.000, longitude: 35.000), title: "Kibbutz Dan"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 29.500, longitude: 34.750), title: "Eilat")
@@ -96,7 +96,7 @@ class TrailService: TrailServiceProtocol {
             name: "South West Coast Path",
             country: "United Kingdom",
             countryCode: "GB",
-            length: DistanceUnit(1014, .km),
+            length: Measurement(value: 1014, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 51.210, longitude: -4.116), title: "Minehead, Somerset"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 50.717, longitude: -1.978), title: "Poole Harbour, Dorset")
@@ -107,7 +107,7 @@ class TrailService: TrailServiceProtocol {
             name: "Great Divide Trail",
             country: "Canada",
             countryCode: "CA",
-            length: DistanceUnit(1113, .km),
+            length: Measurement(value: 1113, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 60.000, longitude: -114.000), title: "Waterton Lake, Alberta"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 49.000, longitude: -114.000), title: "Kakwa Lake, Kakwa Provincial Park, British Columbia")
@@ -118,7 +118,7 @@ class TrailService: TrailServiceProtocol {
             name: "HexaTrek",
             country: "France",
             countryCode: "FR",
-            length: DistanceUnit(3034, .km),
+            length: Measurement(value: 3034, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: 48.960, longitude: 7.435), title: "Wissembourg, Alsace"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: 43.370, longitude: -1.780), title: "Hendaye, French Basque Country")
@@ -129,7 +129,7 @@ class TrailService: TrailServiceProtocol {
             name: "Bibbulmun Track",
             country: "Australia",
             countryCode: "AU",
-            length: DistanceUnit(1004, .km),
+            length: Measurement(value: 1004, unit: .kilometers),
             startLocations: [
                 CheckInAnnotation(coordinate: Coordinate(latitude: -31.980, longitude: 116.070), title: "Kalamunda"),
                 CheckInAnnotation(coordinate: Coordinate(latitude: -35.020, longitude: 117.880), title: "Albany")

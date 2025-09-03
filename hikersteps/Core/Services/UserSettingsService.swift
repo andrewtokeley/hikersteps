@@ -42,8 +42,12 @@ class UserSettingsService: UserSettingsServiceProtocol {
     private let db = Firestore.firestore()
     private let collectionName = "user-settings"
     
+//    func updateLastViewedJournal(journalId: String) async throws {
+//        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
+//    }
+    
     func updateUserSettings(_ settings: UserSettings) async throws {
-        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
+        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
         guard uid == settings.id else { throw ServiceError.missingField("Can't update someone else's settings") }
         
         let docRef = db.collection(collectionName).document(uid)
@@ -51,7 +55,7 @@ class UserSettingsService: UserSettingsServiceProtocol {
     }
     
     func addUserSettings(_ settings: UserSettings) async throws -> String {
-        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
+        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
 
         let docRef = db.collection(collectionName).document(uid)
         try await docRef.setData(settings.toDictionary())
@@ -61,7 +65,7 @@ class UserSettingsService: UserSettingsServiceProtocol {
     
     func getUserSettings() async throws -> UserSettings? {
         guard let uid = Auth.auth().currentUser?.uid else {
-            throw ServiceError.unauthenticateUser
+            throw ServiceError.unauthenticatedUser
         }
         
         let docRef = db.collection(collectionName).document(uid)
@@ -82,8 +86,11 @@ extension UserSettingsService {
         
         init(metric: Bool = true) {
             self.userSettings = .defaultSettings(metric)
+            self.userSettings.lastJournalId = "123"
         }
-        
+        func updateLastViewedJournal(journalId: String) async throws {
+            
+        }
         func getUserSettings() async throws -> UserSettings? {
             return userSettings
         }

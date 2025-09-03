@@ -109,7 +109,7 @@ class CheckInManager: ObservableObject {
         
         if let latestCheckIn = checkIns.last {
             // offset the latest checkin date by the number of rest days, off trail days and one more
-            let offSet = latestCheckIn.numberOfRestDays + latestCheckIn.numberOfOffTrailDays + 1
+            let offSet = Int(latestCheckIn.numberOfRestDays + latestCheckIn.numberOfOffTrailDays) + 1
             return Calendar.current.date(byAdding: .day, value: offSet, to: latestDate) ?? Date()
         }
         return Date()
@@ -131,7 +131,7 @@ class CheckInManager: ObservableObject {
         let descendingOrder = checkIns.sorted { $0.date > $1.date }
         if let closestCheckIn = descendingOrder.first(where: { $0.date < date }) {
             print("closest checkin \(closestCheckIn.date.formatted())")
-            let dateOffset = closestCheckIn.numberOfRestDays + closestCheckIn.numberOfOffTrailDays
+            let dateOffset = Int(closestCheckIn.numberOfRestDays + closestCheckIn.numberOfOffTrailDays)
             if let mustByAfterDate = Calendar.current.date(byAdding: .day, value: dateOffset, to: closestCheckIn.date) {
                 print("must be after \(mustByAfterDate.formatted())")
                 let compare = Calendar.current.compare(date, to: mustByAfterDate, toGranularity: .day)
@@ -166,7 +166,7 @@ class CheckInManager: ObservableObject {
      The new instance is returned.
      */
     func addCheckIn(hikeId: String, uid: String, location: Coordinate, date: Date) -> CheckIn {
-        let new = CheckIn(uid: uid, adventureId: hikeId, location: location, date: date)
+        let new = CheckIn(uid: uid, journalId: hikeId, location: location, date: date)
         
         addCheckIn(new)
         
@@ -193,6 +193,8 @@ class CheckInManager: ObservableObject {
     
     /**
      Returns a string representation for the day. Typically this is in the format "Day 21", but for the first day it will return "Start"
+     
+     Note the day number is based on dates and rest days, but ignoring off trail days. For example,
      */
     func dayDescription(_ checkIn: CheckIn) -> String {
         var description = ""
@@ -201,10 +203,33 @@ class CheckInManager: ObservableObject {
             if index == 0 {
                 description = "Start"
             } else {
-                description = "Day \(index)"
+                
+                let checkInsToDate = checkIns.filter { $0.date < checkIn.date }
+                let totalOffTrailData = checkInsToDate.reduce(0) { total, checkIn in
+                    total + checkIn.numberOfOffTrailDays
+                }
+                if let startDate = checkIns.first?.date {
+                    let dateDiffInDays = Calendar.current.dateComponents([.day], from: startDate, to: checkIn.date).day ?? 0
+                    let actualDays = (dateDiffInDays + 1) - totalOffTrailData
+                    
+                    if checkIn.numberOfRestDays > 0 {
+                        description += "Days \(actualDays)-\(actualDays + checkIn.numberOfRestDays)"
+                    } else {
+                        description = "Day \(actualDays)"
+                    }
+                }
+                
             }
         }
         return description
+    }
+    
+    func distanceToDate(_ checkIn: CheckIn) -> Measurement<UnitLength> {
+        let checkInsSoFar = checkIns.filter { $0.date <= checkIn.date }
+        let total = checkInsSoFar.reduce(0) { total, checkIn in
+            total + Int(checkIn.distanceWalked.converted(to: .kilometers).value)
+        }
+        return Measurement(value: Double(total), unit: .kilometers)
     }
     
     func clearSelectedCheckIn() {

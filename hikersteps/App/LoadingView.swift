@@ -12,7 +12,8 @@ struct LoadingView: View {
     @EnvironmentObject var auth: AuthenticationManager
     
     @State private var scale: CGFloat = 1.0
-    @State private var message: String = "loading..."
+    @State private var message: String
+    @State private var authenticated: Bool
     
     var userService: UserServiceProtocol
     var userSettingsService: UserSettingsServiceProtocol
@@ -20,17 +21,18 @@ struct LoadingView: View {
     /**
      Main initialiser
      */
-    init() {
-        self.userService = UserService()
-        self.userSettingsService = UserSettingsService()
+    init(authenticated: Bool) {
+        self.init(authenticated: authenticated, userService: UserService(), userSettingsService: UserSettingsService())
     }
     
     /**
      Used to inject mock services to the view
      */
-    init(userService: UserServiceProtocol, userSettingsService: UserSettingsServiceProtocol) {
+    init(authenticated: Bool, userService: UserServiceProtocol, userSettingsService: UserSettingsServiceProtocol) {
         self.userService = userService
         self.userSettingsService = userSettingsService
+        self.authenticated = authenticated
+        self.message = authenticated ? "loading..." : "logging in..."
     }
     
     var body: some View {
@@ -55,8 +57,12 @@ struct LoadingView: View {
                     .foregroundColor(Color(.appOrange))
                 }
         }
-        .task {
-            await loadData()
+        .onAppear {
+            Task {
+                if authenticated {
+                    await loadData()
+                }
+            }
         }
     }
     
@@ -65,25 +71,18 @@ struct LoadingView: View {
     }
     
     func loadData() async {
-        
         do {
-            if auth.isLoggedIn {
-                try await auth.loadUserAndSettings()
-            }
-            
-            // This will navigate us to the next view
-            await MainActor.run {
-                appState.phase = .loadingComplete
-            }
-            
+            try await auth.loadUserAndSettings()
+            appState.phase = .loadingComplete
         } catch {
             ErrorLogger.shared.log(error)
+            appState.phase = .crash("Can't load user data. Try again.")
         }
     }
 }
 
 #Preview {
-    LoadingView(userService: UserService.Mock(), userSettingsService: UserSettingsService.Mock())
+    LoadingView(authenticated: false, userService: UserService.Mock(), userSettingsService: UserSettingsService.Mock())
         .environmentObject(AppState())
         .environmentObject(AuthenticationManager.forPreview())
 }

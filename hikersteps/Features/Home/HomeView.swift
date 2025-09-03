@@ -11,12 +11,12 @@ struct HomeView: View {
     // Access to the authentication state, user info etc.
     @EnvironmentObject var auth: AuthenticationManager
     
-    @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) private var dismiss
     
     // The ViewModel for this view.
     @StateObject private var viewModel: ViewModel
     @State private var showNewHike: Bool = false
+    @State private var selectedJournalIndex: String?
     
     @State private var selectedTrailForNewJournal: Trail?
     
@@ -37,61 +37,25 @@ struct HomeView: View {
     var body: some View {
         NavigationStack() {
             VStack (alignment: .leading) {
-                if auth.isLoggedIn {
-                    Group {
-                        if (hasLoaded) {
-                            Text("Journals")
-                        } else {
-                            Text("Journals - Loading...")
-                        }
-                    }
-                    .foregroundStyle(.primary)
-                    .font(.title)
-                    
-                    ScrollView {
-                        ForEach(viewModel.journals) { journal in
-                            NavigationLink {
-                                JournalView(journal: journal)
-                            } label: {
+                if viewModel.journals.count > 0 {
+                    TabView(selection: $selectedJournalIndex) {
+                        ForEach(Array(viewModel.journals.enumerated()), id: \.element.id) { index, journal in
+                            
+                            NavigationLink(destination: JournalView(journal: journal)
+                            ) {
                                 JournalCardView(journal: journal)
-                                    .onDeleteRequest { journal in
-                                        Task {
-                                            do {
-                                                hasLoaded = false
-                                                try await viewModel.deleteJournal(journal: journal)
-                                                try await viewModel.loadJournals()
-                                                hasLoaded = true
-                                            } catch {
-                                                ErrorLogger.shared.log(error)
-                                            }
-                                        }
-                                    }
-                                    .foregroundColor(Color(UIColor.label))
-                            }
-                        }
-                    }.scrollIndicators(.hidden)
-                    Spacer()
-                    
-                    VStack {
-                        Text("\(auth.user.displayName)")
-                        Button("Log Out") {
-                            Task {
-                                try? await auth.logout()
                             }
                         }
                     }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
                 } else {
-                    NavigationLink {
-                        LoginView()
-                            .environmentObject(appState)
-                    } label: {
-                        Text("Login...")
-                    }
+                    JournalCardView(journal: nil)
+                        .onCreateRequest {
+                            showNewHike = true
+                        }
                 }
             }
             .padding()
-            .navigationTitle("Home")
-            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(item: $selectedTrailForNewJournal) { trail in
                 NewJournalStep2View(trail: trail)
                     .navigationBarBackButtonHidden(true)
@@ -130,6 +94,9 @@ struct HomeView: View {
             if (!hasLoaded) {
                 do {
                     try await viewModel.loadJournals()
+                    if let lastJournalIndex = auth.userSettings.lastJournalId {
+                        selectedJournalIndex = lastJournalIndex
+                    }
                     hasLoaded = true
                 } catch {
                     ErrorLogger.shared.log(error)
@@ -152,6 +119,6 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView(viewModel: HomeView.ViewModel(journalService: JournalService.Mock()))
+    HomeView(viewModel: HomeView.ViewModel(journalService: JournalService.Mock(newUser: true)))
         .environmentObject(AuthenticationManager.forPreview())
 }

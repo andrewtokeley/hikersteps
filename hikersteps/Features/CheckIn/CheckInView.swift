@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NukeUI
 
 struct CheckInView: View {
     @Environment(\.dismiss) private var dismiss
@@ -17,6 +18,10 @@ struct CheckInView: View {
     @State var showEditCheckIn = false
     @State var showDeleteConfirmation = false
     @State var showMenu = false
+    @State var showShareView = false
+    @State var shareItems: [Any] = []
+    @State var showImageFullScreen: Bool = false
+    @Namespace private var animationNamespace
     
     private var onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil
     private var onDeleteRequest: ((CheckIn) -> Void )? = nil
@@ -25,12 +30,12 @@ struct CheckInView: View {
     
     
     var dayDescription: String
-    var totalDistanceDescription: String
+    var totalDistanceToDate: Measurement<UnitLength>
     
-    init(checkIn: Binding<CheckIn>, dayDescription: String, totalDistanceDescription: String) {
+    init(checkIn: Binding<CheckIn>, dayDescription: String, totalDistanceToDate: Measurement<UnitLength>) {
         _checkIn = checkIn
         self.dayDescription = dayDescription
-        self.totalDistanceDescription = totalDistanceDescription
+        self.totalDistanceToDate = totalDistanceToDate
         
     }
     
@@ -48,13 +53,28 @@ struct CheckInView: View {
                                 
                                 Spacer()
                                 
+                                AppCircleButton(size: 30, imageSystemName: "square.and.arrow.up",bottomNudge: 3) {
+                                    Task {
+                                        let options = ShareOptions(
+                                            viewportCentre: .checkIn,
+                                            zoomLevel: 10,
+                                            isShare: true)
+                                        let share = await ShareActivities.createForJournal(username: auth.user.username, journalId: checkIn.journalId, checkIn: checkIn, shareOptions: options)
+                                        self.shareItems = share.items
+                                        self.showShareView = true
+                                    }
+                                }
+                                .style(.filled)
+                                
                                 AppCircleButton(size: 30,imageSystemName: "applepencil.gen1") {
                                     isPresentingEdit = true
                                 }
                                 .style(.filled)
+                                .padding(.leading, 5)
                             }
+                            // centred in ZStack
                             Text(checkIn.date.formatted(.dateTime.weekday().day().month().year()))
-                                .font(.title2)
+                                .font(.title3)
                             
                         }
                         
@@ -64,51 +84,49 @@ struct CheckInView: View {
                             .font(.title)
                             .fontWeight(.bold)
                             .padding(.bottom, 2)
-                        Text(auth.userSettings.preferredDistanceUnit.properName)
-                        Text(dayDescription)
+                        
                         
                         ZStack {
-                            HStack {
-                                Text(checkIn.distance.convertTo(auth.userSettings.preferredDistanceUnit).description).bold() + Text(" hike").foregroundColor(.gray)
+                            HStack(alignment: .center) {
+                                Text(checkIn.distanceWalked.converted(to: auth.userSettings.preferredDistanceUnit).formatted(dp: 0)).bold() + Text(" day").foregroundColor(.gray)
                                 Spacer()
-                                Text("total ").foregroundColor(.gray) + Text(totalDistanceDescription).bold()
+                                Text("total ").foregroundColor(.gray) + Text(totalDistanceToDate.converted(to: auth.userSettings.preferredDistanceUnit).formatted(dp: 0)).bold()
                             }
-                            
-                            if checkIn.accommodation != LookupItem.noSelection() {
-                                VStack {
-                                    Image(systemName: checkIn.accommodation.imageName)
-                                    Text(checkIn.accommodation.name)
-                                }
-                            }
-                            
+                            Text(dayDescription)
+                                .font(.title3)
                         }
+                        
                     }
-                    //.frame(minHeight: 200)
-                    //.clipped()
                     
                     ScrollView {
                         VStack {
                             if checkIn.images.count > 0 {
                                 if let imageUrl = checkIn.images[0].storageUrl {
-                                    AsyncImage(url: URL(string: imageUrl)) { image in
-                                        image
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(height: 200)
-                                            .frame(maxWidth: geometry.size.width-30)
-                                            .clipped()
-                                            .cornerRadius(10)
-                                    } placeholder: {
-                                        ProgressView()
-                                            .scaleEffect(1.2)
-                                            .frame(height: 200)
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                            .background(Color.gray.opacity(0.1))
-                                            .tint(.accentColor)
-                                            .styleBorderLight(focused: true)
-                                        
+                                    LazyImage(source: imageUrl) { state in
+                                        if let image = state.image {
+                                            image
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(height: 200)
+                                                .frame(maxWidth: geometry.size.width-30)
+                                                .clipped()
+                                                .cornerRadius(10)
+                                                .onTapGesture {
+                                                    withAnimation(.spring()) {
+                                                        showImageFullScreen = true
+                                                    }
+                                                }
+                                        } else if state.error != nil {
+                                            Color.red // Error state
+                                        } else {
+                                            ProgressView()
+                                                .scaleEffect(1.2)
+                                                .frame(height: 200)
+                                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                                .background(Color.gray.opacity(0.1))
+                                                .tint(.accentColor)
+                                                .styleBorderLight(focused: true)
+                                        }
                                     }
-                                    .frame(maxWidth: .infinity)
                                 }
                             }
                             Text(checkIn.notes)
@@ -118,48 +136,65 @@ struct CheckInView: View {
                     }
                     .scrollBounceBehavior(.basedOnSize)
                     
+                    if let sourceId = checkIn.id {
+                        CommentStripView(source: .comment, sourceId: sourceId)
+                    }
                     Spacer()
                     
-                        .sheet(isPresented: $isPresentingEdit) {
-                            NavigationStack {
-                                EditCheckInView(checkIn: $checkIn)
-                                    .presentationDetents([.large])
-                                    .presentationDragIndicator(.hidden)
-                                    .interactiveDismissDisabled(true)
-                            }
-                        }
-                    
-                        .confirmationDialog("Options", isPresented: $showMenu, titleVisibility: .hidden) {
-                            Button("Share...") { /* edit */ }
-                            if checkIn.images.count > 0 {
-                                
-                                Button("Use Image for Journal Title") {
-                                    if let url = checkIn.images.first?.storageUrl {
-                                        self.onHeroImageUpdated?(url)
-                                    }
-                                }
-                            }
-                            Button("Delete Entry", role: .destructive) {
-                                showDeleteConfirmation = true
-                            }
-                            Button("Cancel", role: .cancel) { }
-                        }
-                    
-                        .alert("Delete Entry", isPresented: $showDeleteConfirmation) {
-                            Button("Cancel", role: .cancel) {
-                                dismiss()
-                            }
-                            Button("Delete", role: .destructive) {
-                                onDeleteRequest?(self.checkIn)
-                            }
-                        } message: {
-                            Text("Are you sure you want to delete this trail entry?")
-                        }
                 }
                 .padding()
+                
+                .sheet(isPresented: $isPresentingEdit) {
+                    NavigationStack {
+                        EditCheckInView(checkIn: $checkIn)
+                            .presentationDetents([.large])
+                            .presentationDragIndicator(.hidden)
+                            .interactiveDismissDisabled(true)
+                    }
+                }
+                
+                .sheet(isPresented: $showShareView) {
+                    ShareSheet(activityItems: shareItems)
+                }
+                
+                .confirmationDialog("Options", isPresented: $showMenu, titleVisibility: .hidden) {
+                    if checkIn.images.count > 0 {
+                        
+                        Button("Make Cover Image") {
+                            if let url = checkIn.images.first?.storageUrl {
+                                self.onHeroImageUpdated?(url)
+                            }
+                        }
+                    }
+                    Button("Delete Entry", role: .destructive) {
+                        showDeleteConfirmation = true
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
+                
+                .alert("Delete Entry", isPresented: $showDeleteConfirmation) {
+                    Button("Cancel", role: .cancel) {
+                        dismiss()
+                    }
+                    Button("Delete", role: .destructive) {
+                        onDeleteRequest?(self.checkIn)
+                    }
+                } message: {
+                    Text("Are you sure you want to delete this trail entry?")
+                }
+                
+                .fullScreenCover(isPresented: $showImageFullScreen) {
+                    if let imageUrl = checkIn.images[0].storageUrl {
+                        if let url = URL(string: imageUrl) {
+                            ZoomableImageViewer(url: url, isPresented: $showImageFullScreen)
+                                .ignoresSafeArea()
+                        }
+                    }
+                }
             }
         }
     }
+    
     func delete() {
         print("delete")
     }
@@ -184,7 +219,7 @@ struct CheckInView: View {
 
 
 #Preview {
-    @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", adventureId: "1", id: "111", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distance: DistanceUnit(20, .km), date: Date(), images: [StorageImage.sample])
-    CheckInView(checkIn: $checkIn, dayDescription: "Day 13", totalDistanceDescription: "1234")
-        .environmentObject(AuthenticationManager.forPreview())
+    @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", journalId: "1", id: "111", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distance: Measurement(value: 20, unit: UnitLength.kilometers), date: Date(), images: [StorageImage.sample])
+    CheckInView(checkIn: $checkIn, dayDescription: "Day 13", totalDistanceToDate: Measurement(value: 1234,  unit: .kilometers))
+        .environmentObject(AuthenticationManager.forPreview(metric: false))
 }

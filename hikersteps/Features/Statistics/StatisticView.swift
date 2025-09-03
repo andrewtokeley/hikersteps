@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct StatisticView: View {
-    var numberUnit: NumberUnitProtocol
-    var description: String
+
+    var statistic: String // e.g. 44km
+    var description: String // e.g. Longest Day
     
     var onInfoDetails: (() -> (String, String))?
     
     @State private var explainationDetails: String?
     @State private var explainationTitle: String?
     @State private var showExplaination: Bool = false
+    
     
     var body: some View {
         VStack {
@@ -26,7 +28,7 @@ struct StatisticView: View {
                     .truncationMode(.tail)
                     .padding(.horizontal, 10)
                 
-                Text(numberUnit.description)
+                Text(statistic)
                     .bold()
                     .foregroundStyle(.primary)
             }
@@ -38,8 +40,8 @@ struct StatisticView: View {
     VStack (spacing: 10) {
         HStack {
             Group {
-                StatisticView(numberUnit: DistanceUnit(25, .km), description: "Total Distance")
-                StatisticView(numberUnit: DistanceUnit(25, .km), description: "Total Distance")
+                StatisticView(statistic: "44km", description: "Total Distance")
+                StatisticView(statistic: "35km", description: "Total Distance")
             }
             .frame(width: 140)
             .background(.red)
@@ -47,9 +49,9 @@ struct StatisticView: View {
         
         HStack (alignment: .top) {
             Group {
-                StatisticView(numberUnit: WeightUnit(6.7, .kg), description: "Base Weight")
+                StatisticView(statistic: "21kg", description: "Base Weight")
+                StatisticView(statistic: "21 days", description: "Day")
                 
-                StatisticView(numberUnit: DistanceUnit(25, .km), description: "Long Title Long Title Title Long Title")
             }
             .frame(width: 140)
             .background(.blue)

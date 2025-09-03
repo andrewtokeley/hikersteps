@@ -13,10 +13,17 @@ struct RootView: View {
     var body: some View {
         Group {
             switch appState.phase {
-            case .loading:
-                LoadingView()
-            case .authenticated, .loadingComplete, .unauthenticated:
-                HomeView()
+            case .starting, .successfulLogin:
+                // essentially a holding screen until Firebase Auth catches up
+                LoadingView(authenticated: false)
+            case .unauthenticated:
+                LoginView()
+            case .authenticated:
+                LoadingView(authenticated: true)
+            case .loadingComplete:
+                MainView()
+            case .crash(let details):
+                CrashReport(details)
             }
         }
         .environmentObject(appState)

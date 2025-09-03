@@ -1,13 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+  
   	// Authenitcated users can read their own record, others only if adventure is public
   	// Authenitcated users can only write their own record
     match /adventures/{adventureId} {
-    	allow read: if (request.auth != null && request.auth.uid == resource.data.uid) || resource.data.public == true;
+    	allow read: if canReadJournal(resource.data);
   		allow create, update: if request.auth != null && request.auth.uid == request.resource.data.uid;
         allow delete: if request.auth != null && request.auth.uid == resource.data.uid;      
 	}
+    
     // Authenticated users can only read their own record
     // Authenticated users can only write their own record
 	match /users/{uid} {
@@ -33,12 +35,14 @@ service cloud.firestore {
   		allow delete, update: if request.auth != null && request.auth.uid == resource.data.uid;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
 		}
+        
     // Public can read all records
     // Private write - these are internal records that can only be updated via the console
 	match /map-layers/{maplayer} {
   		allow read: if true;
   		allow write: if false;
 		}
+        
     // Public	can read all records
     // Private write - these are internal records that can only be updated via the console (temporarily add write for admins)
 	match /trails/{trail} {
@@ -52,5 +56,43 @@ service cloud.firestore {
   		allow read: if true;
 		allow write: if request.auth.token.admin == true;
   	}
+   
+   // Friends subcollection
+    match /friends/{uidOwner}/userFriends/{uidFriend} {
+      // The owner can manage their friends list
+      allow read, write: if request.auth.uid == uidOwner;
+
+      // A friend can see their own friend record (e.g., for status updates)
+      allow read: if request.auth.uid == uidFriend;
+    }
+    
+    // Returns whether the requestor is an approved friend of the owner
+    function isFriend(uidOwner) {
+      return exists(
+        /databases/$(database)/documents/friends/$(uidOwner)/userFriends/$(request.auth.uid)
+      )
+      && get(
+        /databases/$(database)/documents/friends/$(uidOwner)/userFriends/$(request.auth.uid)
+      ).data.status == "approved";
+    }
+    
+    // Returns whether the requesting user can read a journal (adventure)
+    function canReadJournal(journal) {
+      return
+      // anyone can read public adventures (do not need to be logged in)
+      journal.visibility == "everyone" ||
+        (
+            // for logged in users
+            request.auth != null &&
+            
+            (
+                // Owner can always read their own journal
+                journal.uid == request.auth.uid ||
+
+                // Or friends if only visible to approved friends
+                (journal.visibility == "friendsOnly" && isFriend(journal.uid))
+            )
+        );
+    }
   }
 }	

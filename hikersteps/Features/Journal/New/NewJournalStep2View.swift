@@ -24,8 +24,8 @@ struct NewJournalStep2View: View {
     
     @State private var selectedStartLocation: RadioOption?
     @State private var isSaving: Bool = false
-    @State private var newHike: Journal?
-    @State private var navigateToHikeView: Bool = false
+    @State private var newJournal: Journal?
+    @State private var navigateToJournalView: Bool = false
     
     init(trail: Trail) {
         self.init(trail: trail, viewModel: ViewModel(journalService: JournalService(), checkInService: CheckInService()))
@@ -55,8 +55,8 @@ struct NewJournalStep2View: View {
                     if let checkInAnnotation = trail.startLocations.first(where: { $0.title == selectedStartLocation?.title }) {
                         Task {
                             do {
-                                self.newHike = try await viewModel.addHike(trail: trail, startLocation: checkInAnnotation)
-                                self.navigateToHikeView = true
+                                self.newJournal = try await viewModel.addJournal(trail: trail, startLocation: checkInAnnotation)
+                                self.navigateToJournalView = true
                             } catch {
                                 ErrorLogger.shared.log(error)
                             }
@@ -67,9 +67,9 @@ struct NewJournalStep2View: View {
                 .disabled(isSaving)
             }
             .padding(.horizontal, 20)
-            .navigationDestination(isPresented: $navigateToHikeView) {
-                if let hike = self.newHike {
-                    JournalView(journal: hike)
+            .navigationDestination(isPresented: $navigateToJournalView) {
+                if let journal = self.newJournal {
+                    JournalView(journal: journal)
                 }
             }
         }

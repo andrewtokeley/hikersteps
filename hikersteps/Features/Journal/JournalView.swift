@@ -13,6 +13,7 @@ import FirebaseAuth
  */
 struct JournalView: View {
     @EnvironmentObject var auth: AuthenticationManager
+    @Environment(\.dismiss) private var dismiss
     
     @State private var selectedDetent: PresentationDetent = .medium
     
@@ -29,10 +30,16 @@ struct JournalView: View {
     @State var navigateToStats: Bool = false
     @State var reOpenCheckInDetailsSheet: Bool = false
     
-    /// Private flag to control when to show checkin sheet
     @State private var showCheckInDetails = false
     @State private var showAddCheckInSheet = false
     @State private var showEditCheckIn = false
+    @State private var showDeleteConfirmation = false
+    @State private var showJournalMenu = false
+    
+    @State private var selectedCheckInSheetDetent: PresentationDetent = .fraction(0.6)
+    
+    /// Flag to let the view that an async process is running
+    @State private var isWorking = false
     
     /// The Journal that is being viewed
     var journal: Journal
@@ -41,7 +48,7 @@ struct JournalView: View {
      Constructs a new JournalView from a Journal instance and using the default ViewModel
      */
     init(journal: Journal) {
-        let viewModel = ViewModel(checkInService: CheckInService(), journalService: JournalService())
+        let viewModel = ViewModel(checkInService: CheckInService(), journalService: JournalService(), userSettingsService: UserSettingsService())
         self.init(journal: journal, viewModel: viewModel)
     }
     
@@ -71,22 +78,17 @@ struct JournalView: View {
                         droppedPinAnnotation: $checkInManager.droppedPinAnnotation
                     )
                     .onMapTap { location in
+                        print("map tapped")
                         self.checkInManager.clearSelectedCheckIn()
                         self.showCheckInDetails = false
                         self.showAddCheckInSheet = false
                         self.checkInManager.removeDropInAnnotation()
                     }
+                    .onPuckTap({ location in
+                        print("puck tapped")
+                    })
                     .onMapLongPress({ location in
-                        self.checkInManager.addDropInAnnotation(location: location.coordinate)
-                        
-                        // add a temporary checkIn to populate for the new entry
-                        if let hikeId = self.journal.id {
-                            self.newCheckIn = CheckIn(uid: auth.user.uid, adventureId: hikeId, location: location.coordinate, date: checkInManager.nextAvailableDate)
-                            showAddCheckInSheet = true
-                            showCheckInDetails = false
-                        } else {
-                            print("unaith")
-                        }
+                        self.dropPinForAdd(location: location.coordinate)
                     })
                     .onDidSelectAnnotation({ annotation in
                         if let checkInId = annotation.checkInId {
@@ -116,67 +118,47 @@ struct JournalView: View {
                             self.checkInManager.move(.latest)
                             self.showCheckInDetails = true
                         }
-                        self.hasLoaded = true
+                        
+                        // update the lastJournalId
+                        auth.userSettings.lastJournalId = journal.id
+                        try await viewModel.updateUserSettings(settings: auth.userSettings)
+
+                        
                     } catch {
                         print(error)
                     }
                 }
             }
         }
-        .sheet(isPresented: $showEditCheckIn) {
-            EditCheckInView(checkIn: $checkInManager.selectedCheckIn)
-                .onDisappear {
-                    if self.reOpenCheckInDetailsSheet {
-                        self.showCheckInDetails = true
-                    }
-                }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.hidden)
-                .interactiveDismissDisabled(true)
-                .presentationBackgroundInteraction(.disabled)
-        }
+//        .sheet(isPresented: $showEditCheckIn) {
+//            EditCheckInView(checkIn: $checkInManager.selectedCheckIn)
+//                .onDisappear {
+//                    if self.reOpenCheckInDetailsSheet {
+//                        self.showCheckInDetails = true
+//                    }
+//                }
+//                .presentationDetents([.large])
+//                .presentationDragIndicator(.hidden)
+//                .interactiveDismissDisabled(true)
+//                .presentationBackgroundInteraction(.disabled)
+//        }
         
         .sheet(isPresented: $showAddCheckInSheet) {
             EditCheckInView(checkIn: $newCheckIn)
-                .onSaved({
-                    self.checkInManager.addCheckIn(newCheckIn)
-                    checkInManager.move(.to(id: newCheckIn.id!))
+                .onSaved({ success in
+                    if success {
+                        self.checkInManager.addCheckIn(newCheckIn)
+                        checkInManager.move(.to(id: newCheckIn.id!))
+                        self.showCheckInDetails = true
+                    } else {
+                        // failed to save
+                    }
                     self.checkInManager.removeDropInAnnotation()
-                    
-                    // after we've edited we want to show the view sheet
-                    self.reOpenCheckInDetailsSheet = true
                 })
-                .onDisappear {
-                    self.showCheckInDetails = true
-                }
                 .presentationDetents([.fraction(0.5), .large])
                 .presentationDragIndicator(.visible)
                 .interactiveDismissDisabled(false)
                 .presentationBackgroundInteraction(.disabled)
-//            if let location = checkInManager.droppedPinAnnotation?.coordinate {
-//                NewCheckInDialog(journal: self.hike, proposedDate: checkInManager.nextAvailableDate, location: location)
-//                    .isDateAvailable({ date in
-//                        return checkInManager.isDateAvailable(date)
-//                    })
-//                    .onCancel {
-//                        self.checkInManager.removeDropInAnnotation()
-//                    }
-//                    // A new checkIn has been created
-//                    .onCreated() { newCheckIn in
-//                        self.checkInManager.addCheckIn(newCheckIn)
-//                        checkInManager.move(.to(id: newCheckIn.id!))
-//                        self.checkInManager.removeDropInAnnotation()
-//                        // after we've edited we want to show the view sheet
-//                        self.reOpenCheckInDetailsSheet = true
-//                        self.showEditCheckIn = true
-//                        
-//                    }
-//                .presentationDetents([.fraction(0.5), .large])
-//                .presentationDragIndicator(.visible)
-//                .interactiveDismissDisabled(true)
-//                .presentationBackgroundInteraction(.enabled)
-//            }
-                
         }
         
         // Show CheckIn Detail Sheet
@@ -184,7 +166,11 @@ struct JournalView: View {
             
             TabView(selection: $checkInManager.selectedIndex) {
                 ForEach(Array(checkInManager.checkIns.enumerated()), id: \.element.id) { index, checkIn in
-                    CheckInView(checkIn: $checkInManager.checkIns[index], dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]), totalDistanceDescription: journal.statistics.totalDistanceWalked.description)
+                    
+                    CheckInView(
+                        checkIn: $checkInManager.checkIns[index],
+                        dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]),
+                        totalDistanceToDate: checkInManager.distanceToDate(checkInManager.checkIns[index]))  /*journal.statistics.totalDistanceWalked(at: checkInManager.checkIns[index]))*/
                         .onNavigate({ direction in
                             self.checkInManager.move(direction)
                         })
@@ -220,38 +206,99 @@ struct JournalView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .presentationDetents([.height(255), .large])
+            .presentationDetents([.height(240), .fraction(0.6), .large], selection: $selectedCheckInSheetDetent)
             .presentationDragIndicator(.visible)
             .interactiveDismissDisabled(false)
             .presentationBackgroundInteraction(.enabled)
             
         }
+        
+        .confirmationDialog("Journal", isPresented: $showJournalMenu, titleVisibility: .hidden) {
+            
+            Button("Go to Start") {
+                self.checkInManager.move(.start)
+                self.showCheckInDetails = true
+            }
+            Button("Got to Latest") {
+                self.checkInManager.move(.latest)
+                self.showCheckInDetails = true
+            }
+            
+            Button("Edit Journal") {
+                //
+            }
+            Button("Delete Journal", role: .destructive) {
+                self.showDeleteConfirmation = true
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        
+        .alert("Delete Journal", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {
+                dismiss()
+            }
+            Button("Delete", role: .destructive) {
+                Task {
+                    do {
+                        self.isWorking = true
+                        try await viewModel.deleteJournal(journal: self.journal)
+                        self.isWorking = false
+                        dismiss()
+                    } catch {
+                        self.isWorking = false
+                        ErrorLogger.shared.log(error)
+                    }
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete this Journal, including all photos and journal entries? You can't undo this action!")
+        }
+        
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                AppBackButton()
-                    .willDismiss {
-                        self.showCheckInDetails = false
+            ToolbarItem(placement: .topBarTrailing) {
+                AppCircleButton(imageSystemName: "ellipsis", rotationAngle: .degrees(90))
+                    .style(.filledOnImage)
+                    .onClick {
+//                        if self.showCheckInDetails {
+//                            self.reOpenCheckInDetailsSheet = true
+//                        }
+//                        self.showCheckInDetails = false
+//                        self.navigateToStats = true
+                        self.showJournalMenu = true
                     }
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                AppCircleButton(imageSystemName: "chevron.right")
-                        .style(.filledOnImage)
-                        .onClick { 
-                            if self.showCheckInDetails {
-                                self.reOpenCheckInDetailsSheet = true
-                            }
-                            self.showCheckInDetails = false
-                            self.navigateToStats = true
-                        }
+            
+            ToolbarItem(placement: .topBarLeading) {
+                AppCircleButton(imageSystemName: "xmark")
+                    .style(.filledOnImage)
+                    .onClick {
+                        self.showCheckInDetails = false
+                        dismiss()
+                    }
             }
+            
+        }
+    }
+    
+    func dropPinForAdd(location: Coordinate) {
+        self.checkInManager.addDropInAnnotation(location: location)
+        
+        // add a temporary checkIn to populate for the new entry
+        if let journalId = self.journal.id {
+            self.newCheckIn = CheckIn(uid: auth.user.uid, journalId: journalId, location: location, date: checkInManager.nextAvailableDate)
+            showAddCheckInSheet = true
+            showCheckInDetails = false
+        } else {
+            // something went wrong
+            self.checkInManager.removeDropInAnnotation()
         }
     }
 }
 
 #Preview {
     JournalView(journal: Journal.sample,
-             viewModel: JournalView.ViewModel(checkInService: CheckInService.Mock(), journalService: JournalService.Mock())
+                viewModel: JournalView.ViewModel(checkInService: CheckInService.Mock(), journalService: JournalService.Mock(), userSettingsService: UserSettingsService.Mock())
         )
-    .environmentObject(AuthenticationManager.forPreview())
+    .environmentObject(AuthenticationManager.forPreview(metric: false))
 }

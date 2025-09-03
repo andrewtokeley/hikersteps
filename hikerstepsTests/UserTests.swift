@@ -18,7 +18,7 @@ struct UserTests {
     
     @Test func addUserSettings() async throws {
         guard let uid = Auth.auth().currentUser?.uid else {
-            throw ServiceError.unauthenticateUser
+            throw ServiceError.unauthenticatedUser
         }
         
         if let _ = try await userSettingsService.getUserSettings() {
@@ -38,7 +38,7 @@ struct UserTests {
     
     @Test func getUser() async throws {
         guard let _ = Auth.auth().currentUser?.uid else {
-            throw ServiceError.unauthenticateUser
+            throw ServiceError.unauthenticatedUser
         }
         
         if let user = try await userService.getUser() {

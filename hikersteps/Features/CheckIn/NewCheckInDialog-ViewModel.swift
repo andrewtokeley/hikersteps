@@ -23,10 +23,10 @@ extension NewCheckInDialog {
         
         func addCheckIn(title: String, date: Date, notes: String, journalId: String, location: Coordinate) async throws -> CheckIn {
             guard let uid = Auth.auth().currentUser?.uid else {
-                throw ServiceError.unauthenticateUser
+                throw ServiceError.unauthenticatedUser
             }
             
-            var new = CheckIn(uid: uid, adventureId: journalId, location: location)
+            var new = CheckIn(uid: uid, journalId: journalId, location: location)
             new.title = title
             new.notes = notes
             new.date = date

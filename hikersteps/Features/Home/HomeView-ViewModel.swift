@@ -13,7 +13,10 @@ extension HomeView {
     protocol ViewModelProtocol: ObservableObject {
         
         init(journalService: JournalServiceProtocol)
-        var journals: [Journal] { get }
+        var currentJournal: Journal? { get }
+        
+        func loadJournal(id: String) async throws
+        
         func loadJournals() async throws
         
         /**
@@ -25,6 +28,7 @@ extension HomeView {
     class ViewModel: ViewModelProtocol {
         private var journalService: JournalServiceProtocol
         
+        @Published var currentJournal: Journal?
         @Published var journals: [Journal] = []
         
         required init(journalService: JournalServiceProtocol) {
@@ -33,9 +37,17 @@ extension HomeView {
         
         func loadJournals() async throws {
             let result = try await journalService.getJournals()
-            
             await MainActor.run {
                 self.journals = result
+            }
+        }
+        
+        func loadJournal(id: String) async throws {
+            guard !id.isEmpty else { return }
+            
+            let result = try await journalService.getJournal(id: id)
+            await MainActor.run {
+                self.currentJournal = result
             }
         }
         

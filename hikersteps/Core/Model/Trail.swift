@@ -24,9 +24,9 @@ struct Trail: Identifiable, Codable, FirestoreEncodable, Hashable {
     var countryCode: String = ""
     
     private var lengthKm: Int = 0
-    var length: DistanceUnit {
-        get { DistanceUnit(lengthKm, .km) }
-        set { lengthKm = Int(newValue.convertTo(.km).number) }
+    var length: Measurement<UnitLength> {
+        get { Measurement(value: Double(lengthKm), unit: .kilometers) }
+        set { lengthKm = Int(newValue.converted(to: .kilometers).value) }
     }
     
     private var northernTerminus_GeoPoint: GeoPoint = GeoPoint(latitude: 0, longitude: 0)
@@ -52,12 +52,12 @@ struct Trail: Identifiable, Codable, FirestoreEncodable, Hashable {
         case startLocations
     }
     
-    init(key: String = "", name: String = "", country: String = "", countryCode: String = "", length: DistanceUnit = DistanceUnit.zero(.km), startLocations: [CheckInAnnotation] = [] ) {
+    init(key: String = "", name: String = "", country: String = "", countryCode: String = "", length: Measurement<UnitLength> = Measurement(value: 0, unit: .kilometers), startLocations: [CheckInAnnotation] = [] ) {
         self.key = key
         self.name = name
         self.country = country
         self.countryCode = countryCode
-        self.lengthKm = Int(length.convertTo(.km).number)
+        self.lengthKm = Int(length.converted(to: .kilometers).value)
         self.startLocations = startLocations
     }
     

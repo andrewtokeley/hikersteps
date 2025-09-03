@@ -84,7 +84,7 @@ extension EditCheckInView {
          Assuming it's successful, the checkIn's state will be copied back to the bound checkIn so that the parent view will update.
          */
         func save() async throws {
-            guard let _ = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
+            guard let _ = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
             
             // Delete existing image if we've removed it
             if self.deleteImageOnSave {

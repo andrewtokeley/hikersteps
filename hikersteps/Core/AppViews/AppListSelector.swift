@@ -37,7 +37,7 @@ struct SelectableItem: Identifiable {
     
 }
 
-struct AppListSelector<T: Identifiable>: View {
+struct AppListSelector<T: Equatable>: View {
     @Environment(\.dismiss) private var dismiss
     
     /**
@@ -74,6 +74,8 @@ struct AppListSelector<T: Identifiable>: View {
         // create internal representation of items using converter
         self._items = items.map { itemsConverter($0) }
         
+        // add noSelection
+        //
         // order by the internal representation and keep the order of the raw items in sync
         let combined = zip(self.items, self._items).sorted { $0.1.order < $1.1.order }
         
@@ -85,7 +87,7 @@ struct AppListSelector<T: Identifiable>: View {
         self.noSelection = noSelection
         _selectedItem = selectedItem
         
-        if let initialIndex = items.firstIndex(where: { $0.id == selectedItem.id }) {
+        if let initialIndex = items.firstIndex(where: { $0 == selectedItem.wrappedValue }) {
             self._selectedIndex = State(initialValue: initialIndex)
         }
     }
@@ -205,17 +207,17 @@ struct AppListSelector<T: Identifiable>: View {
 //    }
 //    
 
-    @Previewable @State var selectedItem: DistanceUnit = DistanceUnit(20, .km)
-    @Previewable @State var items: [DistanceUnit] = [
-        DistanceUnit(20, .km),
-        DistanceUnit(30, .km),
-        DistanceUnit(40, .km),
-        DistanceUnit(50, .km)
+    @Previewable @State var selectedItem: Measurement<UnitLength> = .init(value: 20, unit: .kilometers)
+    @Previewable @State var items: [Measurement<UnitLength>] = [
+        .init(value: 20, unit: .kilometers),
+        .init(value: 30, unit: .kilometers),
+        .init(value: 40, unit: .kilometers),
+        .init(value: 50, unit: .kilometers),
     ]
     
     VStack {
         Text(selectedItem.description)
-        AppListSelector<DistanceUnit>(
+        AppListSelector<Measurement<UnitLength>>(
             items: items,
             selectedItem: $selectedItem,
             title: "Select a Disance",

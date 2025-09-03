@@ -54,11 +54,11 @@ struct HikeTests {
         let checkInService = CheckInService()
         
         // create a hike
-        let hike = Journal(uid: uid, name: "new", description: "testing")
-        let newHikeId = try await service.addJournal(journal: hike)
+        let journal = Journal(uid: uid, name: "new", description: "testing")
+        let newJournalId = try await service.addJournal(journal: journal)
         
         // add a checkIn with an image
-        let checkIn = CheckIn(uid: uid, adventureId: newHikeId)
+        let checkIn = CheckIn(uid: uid, journalId: newJournalId)
         let newCheckInId = try await checkInService.addCheckIn(checkIn: checkIn)
         #expect(!newCheckInId.isEmpty)
         
@@ -75,14 +75,14 @@ struct HikeTests {
                     #expect(exists)
                     
                     // cascade delete Hike - this should remove everything
-                    try await service.deleteJournal(journal: hike, cascade: true)
+                    try await service.deleteJournal(journal: journal, cascade: true)
                     
                     // check there's no image anymore
                     exists = await urlExists(url)
                     #expect(!exists)
                     
                     // check there is no checkin
-                    let checkIns = try await checkInService.getCheckIns(uid: uid, adventureId: hike.id!)
+                    let checkIns = try await checkInService.getCheckIns(uid: uid, journalId: journal.id!)
                     #expect(checkIns.isEmpty)
                 }
             }
