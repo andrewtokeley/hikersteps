@@ -14,31 +14,60 @@ import SwiftUI
 enum ReactionType: String, Codable, Identifiable {
     case like
     case love
+    case celebrate
+    case fire
     case none
     
     var id: String { return rawValue }
+    
+    static var all: [ReactionType] {
+        return [.like, .love, .celebrate, .fire]
+    }
+    
+    var order: Int {
+        switch self {
+        case .like: return 0
+        case .love: return 1
+        case .celebrate: return 2
+        case .fire: return 3
+        case .none: return 4
+        }
+    }
     
     var systemImageName: String {
         switch self {
         case .like: return "hand.thumbsup"
         case .love: return "heart"
+        case .celebrate: return "party.popper"
+        case .fire: return "flame"
         case .none: return ""
         }
     }
     
-    var colour: Color {
+    var title: String {
+        switch self {
+        case .like: return "Like"
+        case .love: return "Love"
+        case .celebrate: return "Celebrate"
+        case .fire: return "Yes!"
+        case .none: return ""
+        }
+    }
+    
+    var highlightColour: Color {
         switch self {
         case .like: return .blue
         case .love: return .red
-        case .none: return .white
+        case .celebrate: return .green
+        case .fire: return .orange
+        case .none: return .clear
         }
     }
     
     var systemImageNameFilled: String {
         switch self {
-        case .like: return "hand.thumbsup.fill"
-        case .love: return "heart.fill"
         case .none: return ""
+        default: return systemImageName + ".fill"
         }
     }
 }
@@ -91,6 +120,13 @@ struct Reaction: Identifiable, Codable, FirestoreEncodable {
         case username
         case _reactionType = "reactionType"
         case createdDate
+    }
+    
+    static var nilValue: Reaction {
+        return Reaction(uid: "", source: .none, sourceId: "", username: "", reactionType: .none)
+    }
+    var isNil: Bool {
+        return self.reactionType == .none
     }
     
     init(uid: String, source: SourceType, sourceId: String, username: String, reactionType: ReactionType) {

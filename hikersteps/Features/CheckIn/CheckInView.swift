@@ -137,7 +137,7 @@ struct CheckInView: View {
                     .scrollBounceBehavior(.basedOnSize)
                     
                     if let sourceId = checkIn.id {
-                        CommentStripView(source: .comment, sourceId: sourceId)
+                        CommentStripView(source: .checkIn, sourceId: sourceId)
                     }
                     Spacer()
                     
