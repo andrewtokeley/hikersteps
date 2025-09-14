@@ -8,15 +8,18 @@ struct StorageImageEditorView: View {
     @State private var isLoadingImage = false
     @State private var isReadingDataFromURL = true
     @State private var image: Image?
+//    @State private var caption: String
     
-    var imageURL: String?
+    @Binding var storageImage: StorageImage
+    
+    //var imageURL: String?
     
     private var onImageDataChanged: ((Data, String?) -> Void)? = nil
     private var onRemove: (() -> Void)? = nil
     
-    init(imageURL: String?) {
-        self.imageURL = imageURL
-        if imageURL == nil {
+    init(storageImage: Binding<StorageImage>) {
+        _storageImage = storageImage
+        if _storageImage.storageUrl.wrappedValue.isEmpty {
             _isReadingDataFromURL = State(initialValue: false)
         }
     }
@@ -24,47 +27,57 @@ struct StorageImageEditorView: View {
     var body: some View {
         VStack(spacing: 16) {
             
-            // we're loading the image from url
-            if isReadingDataFromURL {
-                ProgressView()
-                    .progressViewStyle(.circular)
-                
-            // we have an image preview to display
-            } else if let image = self.image {
-                HStack {
-                    ZStack (alignment: .topTrailing) {
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .cornerRadius(8)
-                            .frame(height: 120)
-                        
-                        AppCircleButton(size: 10, imageSystemName: "xmark") {
-                            self.image = nil
-                            self.onRemove?()
+            Group {
+                // we're loading the image from url
+                if isReadingDataFromURL {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                    
+                    // we have an image preview to display
+                } else if let image = self.image {
+                    HStack {
+                        ZStack (alignment: .topTrailing) {
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .cornerRadius(8)
+                                .frame(height: 120)
+                            
+                            AppCircleButton(size: 20, imageSystemName: "xmark", style: .filledOnImage) {
+                                self.image = nil
+                                self.onRemove?()
+                            }
+                            .style(.filledOnImage)
+                            .padding(4)
                         }
-                        .style(.filledOnImage)
-                        .padding(4)
                     }
-                }
-            // there is no image to display
-            } else {
-                Button {
-                    isLoadingImage = true
-                } label: {
-                    VStack {
-                        Image(systemName: "photo.badge.plus")
-                            .font(.largeTitle)
-                        Text("Add Photo")
-                            .bold()
-                        Text("Tap to add a photo")
-                            .foregroundStyle(.secondary)
+                    // there is no image to display
+                } else {
+                    Button {
+                        isLoadingImage = true
+                    } label: {
+                        VStack {
+                            Image(systemName: "photo.badge.plus")
+                                .font(.largeTitle)
+                            Text("Add Photo")
+                                .bold()
+                            Text("Tap to add a photo")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
+            .frame(maxWidth: .infinity, minHeight: 120)
+            .styleBorderLight(focused: true)
+            
+            if let _ = self.image {
+                TextField("Caption", text: $storageImage.caption)
+                    .padding()
+                    .styleBorderLight()
+                    .padding(.vertical)
+            }
         }
-        .frame(maxWidth: .infinity, minHeight: 120)
-        .styleBorderLight(focused: true)
+        
         .photosPicker(isPresented: $isLoadingImage, selection: $selectedItem, matching: .images)
         .onChange(of: selectedItem) {
             Task {
@@ -81,9 +94,7 @@ struct StorageImageEditorView: View {
         .task {
             do {
                 // initial load of the image supplied by url
-                if let urlString = imageURL {
-                    try await loadImageFromURLString(urlString)
-                }
+                try await loadImageFromURLString(storageImage.storageUrl)
             } catch {
                 ErrorLogger.shared.log(error)
             }
@@ -91,7 +102,7 @@ struct StorageImageEditorView: View {
     }
     
     func loadImageFromURLString(_ urlString: String) async throws {
-        if let urlString = imageURL {
+        if !storageImage.storageUrl.isEmpty {
             if let url = URL(string: urlString) {
                 let (data, _) = try await URLSession.shared.data(from: url)
                 if let uiImage = UIImage(data: data) {
@@ -134,11 +145,11 @@ struct StorageImageEditorView: View {
 }
 
 #Preview {
-    @Previewable @State var imageUrl1: String? = StorageImage.sample.storageUrl
-    @Previewable @State var imageUrl2: String? = nil
-    StorageImageEditorView(imageURL: imageUrl1)
+    @Previewable @State var image1: StorageImage = StorageImage.empty
+    @Previewable @State var image2: StorageImage = StorageImage.sample
+    StorageImageEditorView(storageImage: $image1)
         .onImageDataChanged { data, contentType in
             print("received image data - \(contentType ?? "unknow")")
         }
-    StorageImageEditorView(imageURL: imageUrl2)
+    StorageImageEditorView(storageImage: $image2)
 }

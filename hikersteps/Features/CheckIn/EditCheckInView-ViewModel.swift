@@ -32,6 +32,8 @@ extension EditCheckInView {
         
         var newImageData: Data? { get set }
         var newImageContentType: String? { get set }
+        var newImageCaption: String { get set }
+        
         var deleteImageOnSave: Bool { get set }
         
         /**
@@ -57,6 +59,7 @@ extension EditCheckInView {
         
         var newImageData: Data?
         var newImageContentType: String?
+        var newImageCaption: String = ""
         var deleteImageOnSave: Bool = false
         
         /**
@@ -88,9 +91,9 @@ extension EditCheckInView {
             
             // Delete existing image if we've removed it
             if self.deleteImageOnSave {
-                if let path = checkIn.images.first?.storagePath {
-                    try await storageService.deleteImageFromStorage(path)
-                    checkIn.images.remove(at: 0)
+                if checkIn.image.hasImage {
+                    try await storageService.deleteImageFromStorage(checkIn.image.storagePath)
+                    checkIn.image = StorageImage.empty
                 }
             }
             

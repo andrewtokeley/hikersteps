@@ -44,22 +44,7 @@ struct SettingsView: View {
                     
                     Spacer()
                     
-                    if let profileUrl = auth.user.profileUrl {
-                        LazyImage(source: profileUrl) { state in
-                            if let image = state.image {
-                                image
-                                    .resizingMode(.aspectFill)
-                                    .frame(width: 50, height: 50)
-                                    .clipShape(Circle())
-                            } else {
-                                Image(systemName: "person.circle")
-                                    .font(.system(size: 50, weight: .thin))
-                            }
-                        }
-                    } else {
-                        Image(systemName: "person.circle")
-                            .font(.system(size: 50, weight: .thin))
-                    }
+                    ProfileImage()
                 }
                 
                 Divider()

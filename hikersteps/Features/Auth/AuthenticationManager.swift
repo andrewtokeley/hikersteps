@@ -75,13 +75,15 @@ class AuthenticationManager: AuthenticationManagerProtocol {
         var user: User?
         user = try await userService.getUser()
         
-        // in case we haven't added this before now
-        if user?.profileUrl == nil {
-            user?.profileUrl = authProvider.photoUrl
-        }
-        
-        // if no document exists, this is the first time the user has signed in - create a User document
-        if user == nil {
+        //For users who have already got a user record...
+        if let _ = user {
+            // check if their profileUrl is uptodate
+            if user!.profileUrl != authProvider.photoUrl {
+                user!.profileUrl = authProvider.photoUrl
+                try await userService.updateUser(user!)
+            }
+        } else {
+            // This is the first time the user has signed in - create a User document in firestore
             if let uid = authProvider.uid, let displayName = authProvider.displayName {
                 user = User(uid: uid, username: "", displayName: displayName, isActive: true)
                 user?.profileUrl = authProvider.photoUrl
@@ -167,7 +169,6 @@ extension AuthenticationManager {
         Task {
             do {
                 try await manager.loadUserAndSettings()
-                print("loadedd settings")
             } catch {
                 print(error)
             }

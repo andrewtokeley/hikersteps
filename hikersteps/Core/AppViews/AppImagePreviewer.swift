@@ -52,14 +52,17 @@ struct ZoomableImageViewer: UIViewRepresentable {
         let closeButton = UIButton(type: .system)
         closeButton.setImage(UIImage(systemName: "xmark")?.withTintColor(.white, renderingMode: .alwaysOriginal), for: .normal)
         closeButton.translatesAutoresizingMaskIntoConstraints = false
+        closeButton.backgroundColor = UIColor.gray.withAlphaComponent(0.7)
+        closeButton.layer.cornerRadius = 18 // half of width/height
+        closeButton.clipsToBounds = true
         closeButton.addTarget(context.coordinator, action: #selector(Coordinator.closeTapped), for: .touchUpInside)
         container.addSubview(closeButton)
         
         NSLayoutConstraint.activate([
             closeButton.topAnchor.constraint(equalTo: container.safeAreaLayoutGuide.topAnchor, constant: 16),
             closeButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            closeButton.widthAnchor.constraint(equalToConstant: 30),
-            closeButton.heightAnchor.constraint(equalToConstant: 30)
+            closeButton.widthAnchor.constraint(equalToConstant: 36),
+            closeButton.heightAnchor.constraint(equalToConstant: 36)
         ])
         
         // Double-tap to zoom

@@ -28,7 +28,7 @@ class ShareActivities {
         }
         
         // IMAGE
-        if let imageUrl = checkIn?.images.first?.storageUrl {
+        if let imageUrl = checkIn?.image.storageUrl {
             if let url = URL(string: imageUrl) {
                 let request = URLRequest(url: url)
                 if let result = try? await URLSession.shared.data(for: request) {

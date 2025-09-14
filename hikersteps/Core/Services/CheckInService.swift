@@ -51,8 +51,6 @@ class CheckInService: CheckInServiceProtocol {
     let db = Firestore.firestore()
     let storage = Storage.storage()
     
-    let collectionName = "check-ins"
-    
     func deleteCheckIn(checkIn: CheckIn) async throws {
         guard let id = checkIn.id else { throw ServiceError.generalError("CheckIn must have an id") }
         
@@ -60,7 +58,7 @@ class CheckInService: CheckInServiceProtocol {
         try await self.deleteAllImages(from: checkIn)
 
         // delete the checkin document
-        let docRef = db.collection(collectionName).document(id)
+        let docRef = db.collection(FirestoreCollection.checkIns).document(id)
         try await docRef.delete()
     }
     
@@ -81,7 +79,7 @@ class CheckInService: CheckInServiceProtocol {
         
         // clear image from checkin
         var copy = checkIn
-        copy.images = []
+        copy.image = StorageImage.empty
         try await updateCheckIn(checkIn: copy)
     }
     
@@ -99,7 +97,7 @@ class CheckInService: CheckInServiceProtocol {
         let newStorageImage = StorageImage(caption: caption, storagePath: path, storageUrl: downloadURL.absoluteString)
         
         var copy = checkIn
-        copy.images = [newStorageImage]
+        copy.image = newStorageImage
         try await updateCheckIn(checkIn: copy)
         
     }
@@ -108,7 +106,7 @@ class CheckInService: CheckInServiceProtocol {
         guard !checkIn.journalId.isEmpty else { throw ServiceError.missingField("journalId") }
         guard !checkIn.uid.isEmpty else { throw ServiceError.missingField("uid") }
         
-        let newDocRef = db.collection(collectionName).document()
+        let newDocRef = db.collection(FirestoreCollection.checkIns).document()
         try await newDocRef.setData(checkIn.toDictionary(), merge: false)
         return newDocRef.documentID
     }
@@ -116,7 +114,7 @@ class CheckInService: CheckInServiceProtocol {
     func updateCheckIn (checkIn: CheckIn) async throws {
         guard let id = checkIn.id else { throw ServiceError.missingField("id") }
         
-        try await db.collection(collectionName).document(id)
+        try await db.collection(FirestoreCollection.checkIns).document(id)
             .setData(checkIn.toDictionary(), merge: true)
     }
     
@@ -128,7 +126,7 @@ class CheckInService: CheckInServiceProtocol {
         let checkIns = try await getCheckIns(uid: uid, journalId: id)
         for checkIn in checkIns {
             guard let id = checkIn.id else { continue }
-            let docRef = db.collection(collectionName).document(id)
+            let docRef = db.collection(FirestoreCollection.checkIns).document(id)
             batch.deleteDocument(docRef)
         }
     }
@@ -141,25 +139,29 @@ class CheckInService: CheckInServiceProtocol {
         
         // Add new CheckIns
         for checkIn in changes.added {
-            let newDocRef = db.collection(collectionName).document()
+            let newDocRef = db.collection(FirestoreCollection.checkIns).document()
             if let dictionary = try? checkIn.toDictionary() {
                 batch.setData(dictionary, forDocument: newDocRef)
+            } else {
+                throw ServiceError.generalError("Could not convert CheckIn to dictionary")
             }
         }
         
         // Update existing CheckIns
         for checkIn in changes.modified {
             guard let id = checkIn.id else { continue }
-            let docRef = db.collection(collectionName).document(id)
+            let docRef = db.collection(FirestoreCollection.checkIns).document(id)
             if let dictionary = try? checkIn.toDictionary() {
                 batch.setData(dictionary, forDocument: docRef, merge: true)
+            } else {
+                throw ServiceError.generalError("Could not convert CheckIn to dictionary")
             }
         }
         
         // Delete removed CheckIns
         for checkIn in changes.removed {
             guard let id = checkIn.id else { continue }
-            let docRef = db.collection(collectionName).document(id)
+            let docRef = db.collection(FirestoreCollection.checkIns).document(id)
             batch.deleteDocument(docRef)
         }
         
@@ -169,7 +171,7 @@ class CheckInService: CheckInServiceProtocol {
     
     func getCheckIns(uid: String, journalId: String) async throws -> [CheckIn] {
         
-        let snapshot = try await db.collection(collectionName)
+        let snapshot = try await db.collection(FirestoreCollection.checkIns)
             .whereField("uid", isEqualTo: uid)
             .whereField("adventureId", isEqualTo: journalId)
             .order(by: "date", descending: false)

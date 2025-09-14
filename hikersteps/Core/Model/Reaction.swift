@@ -48,7 +48,7 @@ enum ReactionType: String, Codable, Identifiable {
         switch self {
         case .like: return "Like"
         case .love: return "Love"
-        case .celebrate: return "Celebrate"
+        case .celebrate: return "Congrats!"
         case .fire: return "Yes!"
         case .none: return ""
         }
@@ -70,16 +70,6 @@ enum ReactionType: String, Codable, Identifiable {
         default: return systemImageName + ".fill"
         }
     }
-}
-
-/**
- The source type against which a comment or reaction is made.
- */
-enum SourceType: String, Hashable, Codable {
-    case journal
-    case checkIn
-    case comment
-    case none
 }
 
 /**

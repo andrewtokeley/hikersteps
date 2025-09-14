@@ -93,7 +93,6 @@ protocol JournalServiceProtocol {
  */
 class JournalService: JournalServiceProtocol {
     let db = Firestore.firestore()
-    let collectionName = "adventures"
     
     func getCurrentJournal() async throws -> Journal? {
         let journals = try await getJournals()
@@ -102,7 +101,7 @@ class JournalService: JournalServiceProtocol {
     }
     
     func getJournal(id: String) async throws -> Journal? {
-        let docRef = db.collection(collectionName).document(id)
+        let docRef = db.collection(FirestoreCollection.journals).document(id)
         do {
             let snapshot = try await docRef.getDocument()
             if snapshot.exists {
@@ -121,19 +120,16 @@ class JournalService: JournalServiceProtocol {
     func updateHeroImage(journalId: String, urlString: String) async throws {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         
-        let docRef = db.collection("adventures").document(journalId)
-        
-        try await docRef.setData(["heroImageUrl": urlString], merge: true)
+        let docRef = db.collection(FirestoreCollection.journals).document(journalId)
+        try await docRef.setData([Journal.CodingKeys.heroImageUrl.rawValue: urlString], merge: true)
     }
     
     func updateStatistics(journalId: String, statistics: JournalStatistics) async throws {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         
-        let docRef = db.collection(collectionName).document(journalId)
+        let docRef = db.collection(FirestoreCollection.journals).document(journalId)
         
-        try await docRef.setData ([
-            "statistics": statistics.toDictionary()],
-                                  merge: true)
+        try await docRef.setData ([Journal.CodingKeys.statistics.rawValue: statistics.toDictionary()], merge: true)
     }
     
     func getJournals() async throws -> [Journal] {
@@ -141,7 +137,7 @@ class JournalService: JournalServiceProtocol {
             return []
         }
         
-        let snapshot = try await db.collection(collectionName)
+        let snapshot = try await db.collection(FirestoreCollection.journals)
             .whereField("uid", isEqualTo: uid)
             .getDocuments()
         
@@ -155,7 +151,7 @@ class JournalService: JournalServiceProtocol {
 
     func addJournal(journal: Journal) async throws -> String {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
-        let docRef = db.collection(collectionName).document()
+        let docRef = db.collection(FirestoreCollection.journals).document()
         try await docRef.setData(journal.toDictionary())
         return docRef.documentID
     }
@@ -164,7 +160,7 @@ class JournalService: JournalServiceProtocol {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         guard let id = journal.id else { throw ServiceError.missingField("id") }
         
-        try await db.collection(collectionName)
+        try await db.collection(FirestoreCollection.journals)
             .document(id)
             .setData(journal.toDictionary(), merge: true)
     }
@@ -184,12 +180,12 @@ class JournalService: JournalServiceProtocol {
                 try await checkInService.deleteAllImages(from: checkIn)
             }
             
-            // add the hike's checkin deletes to the batch
+            // add the journals's checkin deletes to the batch
             try await checkInService.addCheckInDeletes(to: batch, for: journal)
         }
         
-        // Delete the hike document itself
-        let docRef = db.collection(collectionName).document(id)
+        // Delete the journal itself
+        let docRef = db.collection(FirestoreCollection.journals).document(id)
         batch.deleteDocument(docRef)
         
         try await batch.commit()

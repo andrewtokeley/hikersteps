@@ -20,18 +20,14 @@ protocol FriendServiceProtocol {
 
 class FriendService: FriendServiceProtocol {
     private let db = Firestore.firestore()
-    
-    private let collectionFriends = "friends"
-    private let collectionUserFriends = "userFriends"
-    private let collectionJournal = "journal"
-    
+        
     // MARK: - Get Friends (Approved Only)
     func getFriends(status: FriendStatus? = nil) async throws -> [Friend] {
         guard let uid = Auth.auth().currentUser?.uid else {
             throw ServiceError.unauthenticatedUser
         }
         
-        let collRef = db.collection(collectionFriends).document(uid).collection(collectionUserFriends)
+        let collRef = db.collection(FirestoreCollection.friends).document(uid).collection(FirestoreCollection.friends_userFriends)
         var snapshot: QuerySnapshot
         if let status = status?.rawValue {
             snapshot = try await collRef
@@ -56,9 +52,9 @@ class FriendService: FriendServiceProtocol {
             throw ServiceError.unauthenticatedUser
         }
         
-        let ref = db.collection(collectionFriends)
+        let ref = db.collection(FirestoreCollection.friends)
             .document(uid)
-            .collection(collectionUserFriends)
+            .collection(FirestoreCollection.friends_userFriends)
             .document(uidFriend)
         
         let data = Friend(id: uidFriend, username: username, status: .pending)
@@ -71,9 +67,9 @@ class FriendService: FriendServiceProtocol {
             throw ServiceError.unauthenticatedUser
         }
         
-        let ref = db.collection(collectionFriends)
+        let ref = db.collection(FirestoreCollection.friends)
             .document(uid)
-            .collection(collectionUserFriends)
+            .collection(FirestoreCollection.friends_userFriends)
             .document(uidFriend)
         
         try await ref.delete()
@@ -85,9 +81,9 @@ class FriendService: FriendServiceProtocol {
             throw ServiceError.unauthenticatedUser
         }
         
-        let ref = db.collection(collectionFriends)
+        let ref = db.collection(FirestoreCollection.friends)
             .document(uid)
-            .collection(collectionUserFriends)
+            .collection(FirestoreCollection.friends_userFriends)
             .document(friendUid)
         
         try await ref.updateData(["status": status.rawValue])
@@ -110,7 +106,7 @@ class FriendService: FriendServiceProtocol {
         try await withThrowingTaskGroup(of: [Journal].self) { group in
             for chunk in chunks {
                 group.addTask {
-                    let snapshot = try await self.db.collection(self.collectionJournal)
+                    let snapshot = try await self.db.collection(FirestoreCollection.journals)
                         .whereField("uid", in: chunk)
                         .whereField("visibility", in: ["friends", "public"])
                         .getDocuments()

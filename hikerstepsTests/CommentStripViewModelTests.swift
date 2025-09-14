@@ -10,13 +10,13 @@ import Testing
 @testable import hikersteps
 
 @MainActor
-struct CommentsViewModelTests {
+struct CommentStripViewModelTests {
 
     var viewModel: CommentStripView.ViewModel
     
     init() {
         viewModel = CommentStripView.ViewModel(commentService: CommentService.Mock(), reactionService: ReactionService.Mock(sampleData: true))
-        viewModel.setContext(CommentStripView.ViewModelContext(uid: "abs", username: "tokes", source: .checkIn, sourceId: "212"))
+        viewModel.setContext(SocialContext(source: .checkIn, sourceId: "212", auth: AuthenticationManager.forPreview()))
     }
     
     @Test func initialLoadTest() async throws {

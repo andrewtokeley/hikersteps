@@ -57,10 +57,39 @@ service cloud.firestore {
 		allow write: if request.auth.token.admin == true;
   	}
    
+   // Comments
+  	match /comments/{id} {
+    	// Can write your own comments (TODO - only on friend or public stuff)
+    	allow create, update: if (request.auth != null) && request.resource.data.uid == request.auth.uid
+      
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      // Anyone can read (TODO - only friend/public stuff)
+      allow read: if (request.auth != null)
+    }
+    
+   // Friends
+  	match /reactions/{id} {
+    	// Can write your own reaction (TODO - only on friend or public stuff)
+    	allow create, update: if (request.auth != null) && request.resource.data.uid == request.auth.uid
+      
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      // Anyone can read (TODO - only friend/public stuff)
+      allow read: if (request.auth != null)
+    }
+    
+   // Friends
+  	match /friends/{uidOwner} {
+    	// Users can read/write their own friend lists
+  		allow read, write: if (request.auth != null && request.auth.uid == uidOwner);
+      
+      // All authenticated users to request to be a friend of anyone
+      allow write: if (request.auth != null) && request.resource.data.status == "pending"
+		}
+    
    // Friends subcollection
     match /friends/{uidOwner}/userFriends/{uidFriend} {
       // The owner can manage their friends list
-      allow read, write: if request.auth.uid == uidOwner;
+      allow read, write: if (request.auth != null && request.auth.uid == uidOwner);
 
       // A friend can see their own friend record (e.g., for status updates)
       allow read: if request.auth.uid == uidFriend;

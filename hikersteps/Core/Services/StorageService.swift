@@ -38,7 +38,6 @@ protocol StorageServiceProtocol {
 class StorageService: StorageServiceProtocol {
     
     func addImage(_ path: String, data: Data, contentType: String?) async throws -> URL {
-        print("saveing image to \(path) with contentType \(contentType ?? "unknown")...")
         
         let storageRef = Storage.storage().reference(withPath: path)
         let metadata = StorageMetadata()
@@ -46,7 +45,6 @@ class StorageService: StorageServiceProtocol {
         
         _ = try await storageRef.putDataAsync(data, metadata: metadata)
         let downloadURL = try await storageRef.downloadURL()
-        print("saved, url = \(downloadURL.absoluteString)")
         return downloadURL
     }
     
@@ -71,16 +69,14 @@ extension StorageService {
             // do nothing
         }
         
-        func deleteImages(for hike: Journal) async throws {
-            guard let id = hike.id else { return }
+        func deleteImages(for journal: Journal) async throws {
+            guard let id = journal.id else { return }
             
             let service = CheckInService()
-            let checkIns = try await service.getCheckIns(uid: hike.uid, journalId: id)
+            let checkIns = try await service.getCheckIns(uid: journal.uid, journalId: id)
             for checkIn in checkIns {
-                for image in checkIn.images {
-                    if let path = image.storagePath {
-                        try await deleteImageFromStorage(path)
-                    }
+                if checkIn.image.hasImage {
+                    try await deleteImageFromStorage(checkIn.image.storagePath)
                 }
             }
         }

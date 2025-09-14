@@ -32,8 +32,8 @@ struct EditCheckInView: View {
     private var onSaved: ((Bool) -> Void)? = nil
     
     private var image: Image? {
-        if let url = viewModel.checkIn.images.first?.storageUrl {
-            return Image(url)
+        if viewModel.checkIn.image.hasImage {
+            return Image(viewModel.checkIn.image.storageUrl)
         }
         return nil
     }
@@ -118,18 +118,16 @@ struct EditCheckInView: View {
                     .padding(.bottom)
                     
                     // We aren't binding to anything here since the image we browse to needs to be persisted to Storage only if we save.
-                    StorageImageEditorView(imageURL: viewModel.checkIn.images.first?.storageUrl)
+                    StorageImageEditorView(storageImage: $viewModel.checkIn.image)
                         .onImageDataChanged { data, contentType in
                             // store this data on the viewModel so we know to replace/add a new image
-                            print("new image data returned")
                             // when this checkin is saved we're going to redefine these properties
                             viewModel.newImageData = data
                             viewModel.newImageContentType = contentType
                         }
                         .onRemove {
-                            print("removed image from StorageImageEditor")
-                            if (!checkIn.images.isEmpty) {
-                                // let the know to delete the existing image on save
+                            if (!checkIn.image.hasImage) {
+                                // let the viewModel know to delete the existing image on save
                                 viewModel.deleteImageOnSave = true
                             }
                             

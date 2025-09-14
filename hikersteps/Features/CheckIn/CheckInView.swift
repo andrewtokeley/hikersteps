@@ -14,13 +14,16 @@ struct CheckInView: View {
 
     @Binding var checkIn: CheckIn
     
-    @State var isPresentingEdit = false
-    @State var showEditCheckIn = false
-    @State var showDeleteConfirmation = false
-    @State var showMenu = false
-    @State var showShareView = false
-    @State var shareItems: [Any] = []
-    @State var showImageFullScreen: Bool = false
+    @State private var isPresentingEdit = false
+    @State private var showEditCheckIn = false
+    @State private var showDeleteConfirmation = false
+    @State private var showMenu = false
+    @State private var showShareView = false
+    @State private var shareItems: [Any] = []
+    @State private var showImageFullScreen: Bool = false
+    
+    @State private var socialContext: SocialContext?
+    
     @Namespace private var animationNamespace
     
     private var onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil
@@ -42,108 +45,112 @@ struct CheckInView: View {
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
-                VStack(alignment: .center) {
-                    VStack {
-                        ZStack {
-                            HStack {
-                                AppCircleButton(size: 30, imageSystemName: "ellipsis", rotationAngle: .degrees(90)) {
-                                    showMenu = true
-                                }
-                                .style(.filled)
-                                
-                                Spacer()
-                                
-                                AppCircleButton(size: 30, imageSystemName: "square.and.arrow.up",bottomNudge: 3) {
-                                    Task {
-                                        let options = ShareOptions(
-                                            viewportCentre: .checkIn,
-                                            zoomLevel: 10,
-                                            isShare: true)
-                                        let share = await ShareActivities.createForJournal(username: auth.user.username, journalId: checkIn.journalId, checkIn: checkIn, shareOptions: options)
-                                        self.shareItems = share.items
-                                        self.showShareView = true
+                ZStack {
+                    VStack(alignment: .center) {
+                        VStack {
+                            ZStack {
+                                HStack {
+                                    AppCircleButton(size: 30, imageSystemName: "ellipsis", rotationAngle: .degrees(90)) {
+                                        showMenu = true
                                     }
+                                    .style(.filled)
+                                    
+                                    Spacer()
+                                    
+//                                    AppCircleButton(size: 30, imageSystemName: "square.and.arrow.up",bottomNudge: 3) {
+//                                        Task {
+//                                            let options = ShareOptions(
+//                                                viewportCentre: .checkIn,
+//                                                zoomLevel: 10,
+//                                                isShare: true)
+//                                            let share = await ShareActivities.createForJournal(username: auth.user.username, journalId: checkIn.journalId, checkIn: checkIn, shareOptions: options)
+//                                            self.shareItems = share.items
+//                                            self.showShareView = true
+//                                        }
+//                                    }
+//                                    .style(.filled)
+                                    
+                                    AppCircleButton(size: 30,imageSystemName: "applepencil.gen1") {
+                                        isPresentingEdit = true
+                                    }
+                                    .style(.filled)
+                                    .padding(.leading, 5)
                                 }
-                                .style(.filled)
+                                // centred in ZStack
+                                Text(checkIn.date.formatted(.dateTime.weekday().day().month().year()))
+                                    .font(.title3)
                                 
-                                AppCircleButton(size: 30,imageSystemName: "applepencil.gen1") {
-                                    isPresentingEdit = true
-                                }
-                                .style(.filled)
-                                .padding(.leading, 5)
                             }
-                            // centred in ZStack
-                            Text(checkIn.date.formatted(.dateTime.weekday().day().month().year()))
-                                .font(.title3)
+                            
+                            Text(checkIn.title)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .padding(.bottom, 2)
+                            
+                            
+                            ZStack {
+                                HStack(alignment: .center) {
+                                    Text(checkIn.distanceWalked.converted(to: auth.userSettings.preferredDistanceUnit).formatted(dp: 0)).bold() + Text(" day").foregroundColor(.gray)
+                                    Spacer()
+                                    Text("total ").foregroundColor(.gray) + Text(totalDistanceToDate.converted(to: auth.userSettings.preferredDistanceUnit).formatted(dp: 0)).bold()
+                                }
+                                Text(dayDescription)
+                                    .font(.title3)
+                            }
                             
                         }
                         
-                        Text(checkIn.title)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .padding(.bottom, 2)
-                        
-                        
-                        ZStack {
-                            HStack(alignment: .center) {
-                                Text(checkIn.distanceWalked.converted(to: auth.userSettings.preferredDistanceUnit).formatted(dp: 0)).bold() + Text(" day").foregroundColor(.gray)
-                                Spacer()
-                                Text("total ").foregroundColor(.gray) + Text(totalDistanceToDate.converted(to: auth.userSettings.preferredDistanceUnit).formatted(dp: 0)).bold()
-                            }
-                            Text(dayDescription)
-                                .font(.title3)
-                        }
-                        
-                    }
-                    
-                    ScrollView {
-                        VStack {
-                            if checkIn.images.count > 0 {
-                                if let imageUrl = checkIn.images[0].storageUrl {
-                                    LazyImage(source: imageUrl) { state in
-                                        if let image = state.image {
-                                            image
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(height: 200)
-                                                .frame(maxWidth: geometry.size.width-30)
-                                                .clipped()
-                                                .cornerRadius(10)
-                                                .onTapGesture {
-                                                    withAnimation(.spring()) {
-                                                        showImageFullScreen = true
+                        ScrollView {
+                            VStack {
+                                if !checkIn.image.storageUrl.isEmpty {
+                                    VStack {
+                                        LazyImage(source: checkIn.image.storageUrl) { state in
+                                            if let image = state.image {
+                                                image
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(height: 200)
+                                                    .frame(maxWidth: geometry.size.width-30)
+                                                    .clipped()
+                                                    .cornerRadius(10)
+                                                    .onTapGesture {
+                                                        withAnimation(.spring()) {
+                                                            showImageFullScreen = true
+                                                        }
                                                     }
-                                                }
-                                        } else if state.error != nil {
-                                            Color.red // Error state
-                                        } else {
-                                            ProgressView()
-                                                .scaleEffect(1.2)
-                                                .frame(height: 200)
-                                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                                .background(Color.gray.opacity(0.1))
-                                                .tint(.accentColor)
-                                                .styleBorderLight(focused: true)
+                                            } else if state.error != nil {
+                                                Color.red // Error state
+                                            } else {
+                                                ProgressView()
+                                                    .scaleEffect(1.2)
+                                                    .frame(height: 200)
+                                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                                    .background(Color.gray.opacity(0.1))
+                                                    .tint(.accentColor)
+                                                    .styleBorderLight(focused: true)
+                                            }
                                         }
+                                        Text(checkIn.image.caption)
+                                            .font(.caption)
+                                            .padding(.bottom)
                                     }
                                 }
+                                Text(checkIn.notes)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top)
                             }
-                            Text(checkIn.notes)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top)
+                        }
+                        .scrollBounceBehavior(.basedOnSize)
+                        
+                        HStack {
+                            if let context = self.socialContext {
+                                CommentStripView(socialContext: context)
+                            }
                         }
                     }
-                    .scrollBounceBehavior(.basedOnSize)
-                    
-                    if let sourceId = checkIn.id {
-                        CommentStripView(source: .checkIn, sourceId: sourceId)
-                    }
-                    Spacer()
-                    
+                    .padding()
                 }
-                .padding()
-                
                 .sheet(isPresented: $isPresentingEdit) {
                     NavigationStack {
                         EditCheckInView(checkIn: $checkIn)
@@ -158,12 +165,10 @@ struct CheckInView: View {
                 }
                 
                 .confirmationDialog("Options", isPresented: $showMenu, titleVisibility: .hidden) {
-                    if checkIn.images.count > 0 {
+                    if checkIn.image.hasImage {
                         
                         Button("Make Cover Image") {
-                            if let url = checkIn.images.first?.storageUrl {
-                                self.onHeroImageUpdated?(url)
-                            }
+                            self.onHeroImageUpdated?(checkIn.image.storageUrl)
                         }
                     }
                     Button("Delete Entry", role: .destructive) {
@@ -184,12 +189,15 @@ struct CheckInView: View {
                 }
                 
                 .fullScreenCover(isPresented: $showImageFullScreen) {
-                    if let imageUrl = checkIn.images[0].storageUrl {
-                        if let url = URL(string: imageUrl) {
+                    if checkIn.image.hasImage {
+                        if let url = URL(string: checkIn.image.storageUrl) {
                             ZoomableImageViewer(url: url, isPresented: $showImageFullScreen)
                                 .ignoresSafeArea()
                         }
                     }
+                }
+                .onAppear {
+                    self.socialContext = SocialContext(source: .checkIn, sourceId: checkIn.id!, auth: auth)
                 }
             }
         }

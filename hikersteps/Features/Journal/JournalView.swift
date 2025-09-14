@@ -210,7 +210,7 @@ struct JournalView: View {
             .presentationDragIndicator(.visible)
             .interactiveDismissDisabled(false)
             .presentationBackgroundInteraction(.enabled)
-            
+            .presentationBackground(Color.adaptive(light: .white, dark: .black))
         }
         
         .confirmationDialog("Journal", isPresented: $showJournalMenu, titleVisibility: .hidden) {

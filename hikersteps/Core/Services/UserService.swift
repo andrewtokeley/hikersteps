@@ -48,13 +48,11 @@ protocol UserServiceProtocol {
 class UserService: UserServiceProtocol {
 
     private let db = Firestore.firestore()
-    private let collectionName = "users"
-    private let privateSubCollectionName = "private"
 
     func updateUser(_ user: User) async throws {
         guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
         
-        try await db.collection(collectionName)
+        try await db.collection(FirestoreCollection.users)
             .document(uid)
             .setData(user.toDictionary(), merge: true)
     }
@@ -63,7 +61,7 @@ class UserService: UserServiceProtocol {
         guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
         guard uid == user.id else { throw ServiceError.generalError("Can't add user with different ID than current user's uid") }
         
-        let docRef = db.collection(collectionName).document(uid)
+        let docRef = db.collection(FirestoreCollection.users).document(uid)
         try await docRef.setData(user.toDictionary())
         return docRef.documentID
     }
@@ -71,8 +69,8 @@ class UserService: UserServiceProtocol {
     func getUser(username: String) async throws -> User? {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         
-        let snapshot = try await db.collection(collectionName)
-            .whereField("username", isEqualTo: username)
+        let snapshot = try await db.collection(FirestoreCollection.users)
+            .whereField(User.CodingKeys.username.rawValue, isEqualTo: username)
             .getDocuments()
         
         let users = try snapshot.documents.compactMap { doc -> User? in
@@ -88,9 +86,9 @@ class UserService: UserServiceProtocol {
         
         let endPrefix = prefix + "\u{f8ff}" // Highest possible UTF-8 character
         
-        let snapshot = try await db.collection(collectionName)
-            .whereField("username", isGreaterThanOrEqualTo: prefix)
-            .whereField("username", isLessThanOrEqualTo: endPrefix)
+        let snapshot = try await db.collection(FirestoreCollection.users)
+            .whereField(User.CodingKeys.username.rawValue, isGreaterThanOrEqualTo: prefix)
+            .whereField(User.CodingKeys.username.rawValue, isLessThanOrEqualTo: endPrefix)
             .getDocuments()
         
         let users = try snapshot.documents.compactMap { doc -> User? in
@@ -106,7 +104,7 @@ class UserService: UserServiceProtocol {
             throw ServiceError.unauthenticatedUser
         }
         
-        let docRef = db.collection(collectionName).document(authUser.uid)
+        let docRef = db.collection(FirestoreCollection.users).document(authUser.uid)
         let document = try await docRef.getDocument()
         if document.exists {
             var user = try document.data(as: User.self)

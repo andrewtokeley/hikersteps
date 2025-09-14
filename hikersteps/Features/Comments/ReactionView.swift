@@ -7,13 +7,30 @@
 
 import SwiftUI
 
+/**
+ View binds to a reaction (love, fire, like...) and optionally a label. If tapped the visible reaction is either selected or deselected. And if LongPressed it allows a new reaction to be selected from a fullscreen display.
+ */
 struct ReactionView: View {
     
     @Binding var selection: ReactionType
-    @State private var showReactions: Bool = false
+    @State private var showReactionSelector: Bool = false
     @State private var visibleReactionType = ReactionType.like
+    @State private var yOffSet: CGFloat
+    @State private var frame: CGRect
+    @State private var disableTap: Bool = false
+    @State private var dragLocation: CGPoint = .zero
+    
+    init(selection: Binding<ReactionType>, yOffSet: CGFloat = 0, frame: CGRect = .zero) {
+        _selection = selection
+        self.yOffSet = yOffSet
+        self.frame = frame
+    }
+    
+    var showLabel: Bool = true
+    var onLongPressGesture: ((CGRect) -> Void)?
     
     var body: some View {
+        
         HStack {
             Group {
                 if selection == .none {
@@ -22,60 +39,80 @@ struct ReactionView: View {
                     Image(systemName: selection.systemImageNameFilled)
                         .foregroundStyle(selection.highlightColour)
                 }
-                
-                Text(selection == .none ? visibleReactionType.title : selection.title)
+                if (showLabel) {
+                    Text(selection == .none ? visibleReactionType.title : selection.title)
+                }
             }
             .foregroundColor(.secondary)
-            .onLongPressGesture {
-                self.showReactions = true
-            }
-            .onTapGesture {
-                if self.selection == .none {
-                    self.selection = visibleReactionType
-                } else {
-                    self.selection = .none
+        }
+        .background(
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear {
+                        frame = geo.frame(in: .global)
+                    }
+                    .onChange(of: geo.frame(in: .global)) { old, newFrame in
+                        frame = newFrame
+                    }
+            })
+        .simultaneousGesture(LongPressGesture(minimumDuration: 0.4)
+            .onEnded { _ in
+                print("long press end")
+                disableTap = true
+                self.yOffSet = self.frame.origin.y + 40.0
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+                withoutAnimation{
+                    showReactionSelector = true
+                    print("long press end - enable tap")
+                    disableTap = false
                 }
             }
-        }
-        .fullScreenCover(isPresented: $showReactions) {
-            ZStack {
-                Color.black.opacity(0.01)
-                    .ignoresSafeArea()
-                
-                HStack (spacing: 5) {
-                    ForEach(ReactionType.all) { r in
-                        VStack {
-                            
-                            Image(systemName: r.systemImageNameFilled)
-                                .foregroundColor(r.highlightColour)
-                                .padding(10)
-                                .background(Circle().fill(r == self.selection ? Color(.appLightGray) : .clear))
-                        }
-                        .frame(width: 60,height: 40)
-                        .onTapGesture {
-                            if r == self.selection {
-                                self.selection = .none
-                            } else {
-                                self.selection = r
-                            }
-                            self.visibleReactionType = r
-                            self.showReactions = false
+        )
+
+        .simultaneousGesture( TapGesture()
+                .onEnded {_ in
+                    if !disableTap {
+                        print("tap end")
+                        if self.selection == .none {
+                            self.selection = visibleReactionType
+                        } else {
+                            self.selection = .none
                         }
                     }
+            })
+        
+        // high priority prevents the underlying tabview to take over the drag
+        .highPriorityGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    dragLocation = value.location
                 }
-                .padding()
-                .background(.white)
-                .frame(height:50)
-                .cornerRadius(25)
-                .shadow(radius: 3)
-            }
-            .onTapGesture {
-                self.showReactions = false
-            }
+                .onEnded { value in
+                    print("drag end")
+                    dragLocation = .zero
+                }
+        )
+        .fullScreenCover(isPresented: $showReactionSelector) {
+            ReactionSelectorView(selection: $selection, yOffSet: $yOffSet, dragLocation: $dragLocation)
+                .presentationBackground(.clear)
+                .interactiveDismissDisabled(false)
+                .onChange(of: selection) {
+                    withoutAnimation{
+                        showReactionSelector = false
+//                        disableTap = false
+                    }
+                }
         }
         
-
     }
+    
+    func onLongPressGesture(_ handler: ((CGRect) -> Void)?) -> ReactionView {
+        var copy = self
+        copy.onLongPressGesture = handler
+        return copy
+    }
+    
 }
 
 #Preview {

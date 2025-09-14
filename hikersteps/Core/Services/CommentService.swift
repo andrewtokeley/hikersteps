@@ -59,12 +59,11 @@ protocol CommentServiceProtocol {
  */
 class CommentService: CommentServiceProtocol {
     let db = Firestore.firestore()
-    let collectionName = "comments"
     
     func addComment(_ comment: Comment) async throws -> String {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         
-        let docRef = db.collection(collectionName).document()
+        let docRef = db.collection(FirestoreCollection.comments).document()
         var newComment = comment
         newComment.id = docRef.documentID
         
@@ -76,25 +75,25 @@ class CommentService: CommentServiceProtocol {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         guard !comment.id.isEmpty else { throw ServiceError.missingField("Comment id") }
         
-        let docRef = db.collection(collectionName).document(comment.id)
+        let docRef = db.collection(FirestoreCollection.comments).document(comment.id)
         try await docRef.delete()
     }
     
     func getComments(source: SourceType, sourceId: String) async throws -> [Comment] {
         guard let _ = Auth.auth().currentUser else { throw ServiceError.unauthenticatedUser }
         
-        let snapshot = try await db.collection(collectionName)
+        let snapshot = try await db.collection(FirestoreCollection.comments)
             .whereField("source", isEqualTo: source.rawValue)
             .whereField("sourceId", isEqualTo: sourceId)
-            .order(by: "createdAt", descending: false)
+            .order(by: "createdDate", descending: false)
             .getDocuments()
-        
+            
         let comments = try snapshot.documents.compactMap { doc -> Comment? in
             var item = try doc.data(as: Comment.self)
             item.id = doc.documentID
             return item
         }
-        return comments
+        return comments.sorted(by: {$0.createdDate > $1.createdDate })
     }
 }
 
@@ -105,9 +104,9 @@ extension CommentService {
         
         init(sampleData: Bool = true) {
             if sampleData {
-                var c1 = Comment(uid: "abc", source: .journal, sourceId: "1", username: "1", comment: "Love this entry!")
+                var c1 = Comment(uid: "abc", source: .checkIn, sourceId: "1", username: "tokes", profileUrlString: "", comment: "Love this entry!", reactionCount: 1)
                 c1.id = "c1"
-                var c2 = Comment(uid: "abc", source: .journal, sourceId: "1", username: "1", comment: "Let me say it again")
+                var c2 = Comment(uid: "abc", source: .checkIn, sourceId: "1", username: "nicolevanruler",profileUrlString: "", comment: "Let me say it again")
                 c2.id = "c2"
                 self.items = [c1, c2]
             } else {

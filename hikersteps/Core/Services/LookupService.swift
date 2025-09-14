@@ -21,8 +21,8 @@ class LookupService: LookupServiceProtocol {
     
     private func getLookups(documentKey: String) async throws -> [LookupItem] {
         let db = Firestore.firestore()
-        let snapshot = try await db.collection("lookups")
-            .document(documentKey).collection("keys")
+        let snapshot = try await db.collection(FirestoreCollection.lookups)
+            .document(documentKey).collection(FirestoreCollection.lookups_keys)
             .getDocuments()
         do {
             let lookups = try snapshot.documents.compactMap { doc in

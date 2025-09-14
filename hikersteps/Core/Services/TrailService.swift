@@ -21,8 +21,7 @@ protocol TrailServiceProtocol {
  */
 class TrailService: TrailServiceProtocol {
     private let db = Firestore.firestore()
-    private let collection = "trails"
-
+    
     // Temporary way to get the trails into firestore - this list is the master list and can be set by admin from settings.
     static let allTrails: [Trail] = [
         Trail(
@@ -145,7 +144,7 @@ class TrailService: TrailServiceProtocol {
         let batch = db.batch()
         
         for trail in trails {
-            let docRef = db.collection(collection).document(trail.id)
+            let docRef = db.collection(FirestoreCollection.trails).document(trail.id)
             if let dict = try? trail.toDictionary() {
                 batch.setData(dict, forDocument: docRef, merge: true)
             }
@@ -155,7 +154,7 @@ class TrailService: TrailServiceProtocol {
     }
     
     func getTrails() async throws -> [Trail] {
-        let snapshot = try await db.collection(collection)
+        let snapshot = try await db.collection(FirestoreCollection.trails)
             .getDocuments()
         do {
             let trails = try snapshot.documents.compactMap { doc -> Trail? in

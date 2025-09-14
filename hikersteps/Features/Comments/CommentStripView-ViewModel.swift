@@ -9,16 +9,6 @@ import Foundation
 
 extension CommentStripView {
     
-    /**
-     Requiired data to describe the context of the comment strip.
-     */
-    struct ViewModelContext {
-        let uid: String
-        let username: String
-        let source: SourceType
-        let sourceId: String
-    }
-    
     @MainActor
     protocol ViewModelProtocol: ObservableObject {
         
@@ -37,7 +27,7 @@ extension CommentStripView {
         /**
          The context against which a reaction or comment is made
          */
-        func setContext(_ context: ViewModelContext)
+        func setContext(_ context: SocialContext)
         
         /**
          The reaction the current user has made (or not) on a source
@@ -67,7 +57,7 @@ extension CommentStripView {
     final class ViewModel: ViewModelProtocol {
         let commentService: CommentServiceProtocol
         let reactionService: ReactionServiceProtocol
-        var context: ViewModelContext?
+        var context: SocialContext?
         
         @Published var reactions: [Reaction] = []
         @Published var comments: [Comment] = []
@@ -79,19 +69,16 @@ extension CommentStripView {
             self.reactionService = reactionService
         }
         
-        func setContext(_ context: ViewModelContext) {
+        func setContext(_ context: SocialContext) {
             self.context = context
         }
-        
         
         /**
          You can only have one reaction per source/id so reselecting a reaction replaces anything that was there before
          */
         func selectedReaction(_ reactionType: ReactionType) async throws {
             guard let context = context else { throw ServiceError.generalError("Context not set") }
-            
-            
-            
+            print("selected")
             if reactionType == .none {
                 // remove anything that was there before
                 if !currentReaction.isNil {
@@ -134,10 +121,10 @@ extension CommentStripView {
         }
         
         func loadComments() async throws {
-//            guard let context = context else { throw ServiceError.generalError("Context not set") }
-//            let comments = try await commentService.getComments(source: context.source, sourceId: context.sourceId)
-//            self.comments = comments
-            self.comments = []
+            guard let context = context else { throw ServiceError.generalError("Context not set") }
+            let comments = try await commentService.getComments(source: context.source, sourceId: context.sourceId)
+            self.comments = comments
+            //self.comments = []
         }
         
         func loadReactions() async throws {

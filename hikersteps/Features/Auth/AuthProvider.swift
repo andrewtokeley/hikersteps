@@ -61,7 +61,7 @@ extension AuthProvider {
         
         var isLoggedIn: Bool = true
         
-        var uid: String? = "abs"
+        var uid: String? = "1OZ0zM1OHac848DLo9oyifKFEg13"
         
         var displayName: String? = "Andrew Tokeley (display)"
         

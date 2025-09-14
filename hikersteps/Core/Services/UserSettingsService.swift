@@ -40,7 +40,7 @@ protocol UserSettingsServiceProtocol {
 class UserSettingsService: UserSettingsServiceProtocol {
     
     private let db = Firestore.firestore()
-    private let collectionName = "user-settings"
+//    private let collectionName = "user-settings"
     
 //    func updateLastViewedJournal(journalId: String) async throws {
 //        guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticateUser }
@@ -50,14 +50,14 @@ class UserSettingsService: UserSettingsServiceProtocol {
         guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
         guard uid == settings.id else { throw ServiceError.missingField("Can't update someone else's settings") }
         
-        let docRef = db.collection(collectionName).document(uid)
+        let docRef = db.collection(FirestoreCollection.userSettings).document(uid)
         try await docRef.setData(settings.toDictionary(), merge: true)
     }
     
     func addUserSettings(_ settings: UserSettings) async throws -> String {
         guard let uid = Auth.auth().currentUser?.uid else { throw ServiceError.unauthenticatedUser }
 
-        let docRef = db.collection(collectionName).document(uid)
+        let docRef = db.collection(FirestoreCollection.userSettings).document(uid)
         try await docRef.setData(settings.toDictionary())
         
         return docRef.documentID
@@ -68,7 +68,7 @@ class UserSettingsService: UserSettingsServiceProtocol {
             throw ServiceError.unauthenticatedUser
         }
         
-        let docRef = db.collection(collectionName).document(uid)
+        let docRef = db.collection(FirestoreCollection.userSettings).document(uid)
         let document = try await docRef.getDocument()
         if document.exists {
             var settings = try document.data(as: UserSettings.self)

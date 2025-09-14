@@ -47,7 +47,20 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
     var numberOfRestDays: Int = 0
     var numberOfOffTrailDays: Int = 0
     
-    var images: [StorageImage] = []
+    /**
+     Firestore actually stores an array of image definitions, but the web/app sites only handle 1 at the moment.
+     */
+    private var images: [StorageImage] = []
+    
+    var image: StorageImage {
+        get {
+            return images.first ?? StorageImage.empty
+        }
+        set {
+            images.count > 0 ? images[0] = newValue : images.append(newValue)
+        }
+    }
+    
     var journalId: String = ""
     var customLinks: [CustomLink] = []
     var resupply: Bool = false

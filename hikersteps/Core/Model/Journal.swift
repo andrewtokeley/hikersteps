@@ -128,7 +128,7 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
         journal.id = "23"
         journal.description = "Amazing trip!"
         journal.statistics = JournalStatistics.sample
-        journal.heroImageUrl = StorageImage.sample.storageUrl ?? ""
+        journal.heroImageUrl = StorageImage.sample.storageUrl
         journal.visibility = .justMe
         return journal
     }
