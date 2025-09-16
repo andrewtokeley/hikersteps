@@ -55,43 +55,29 @@ struct ReactionView: View {
                         frame = newFrame
                     }
             })
-        .simultaneousGesture(LongPressGesture(minimumDuration: 0.4)
+        .gesture( TapGesture()
+            .onEnded {_ in
+                if !disableTap {
+                    print("tap end")
+                    if self.selection == .none {
+                        self.selection = visibleReactionType
+                    } else {
+                        self.selection = .none
+                    }
+                }
+            })
+        .highPriorityGesture(LongPressGesture(minimumDuration: 0.4)
             .onEnded { _ in
                 print("long press end")
                 disableTap = true
-                self.yOffSet = self.frame.origin.y + 40.0
+                self.yOffSet = self.frame.origin.y
                 let generator = UIImpactFeedbackGenerator(style: .medium)
                 generator.impactOccurred()
                 withoutAnimation{
                     showReactionSelector = true
-                    print("long press end - enable tap")
                     disableTap = false
                 }
             }
-        )
-
-        .simultaneousGesture( TapGesture()
-                .onEnded {_ in
-                    if !disableTap {
-                        print("tap end")
-                        if self.selection == .none {
-                            self.selection = visibleReactionType
-                        } else {
-                            self.selection = .none
-                        }
-                    }
-            })
-        
-        // high priority prevents the underlying tabview to take over the drag
-        .highPriorityGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    dragLocation = value.location
-                }
-                .onEnded { value in
-                    print("drag end")
-                    dragLocation = .zero
-                }
         )
         .fullScreenCover(isPresented: $showReactionSelector) {
             ReactionSelectorView(selection: $selection, yOffSet: $yOffSet, dragLocation: $dragLocation)

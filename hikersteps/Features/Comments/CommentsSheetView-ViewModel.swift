@@ -12,7 +12,7 @@ extension CommentsSheetView {
     
     @MainActor
     protocol ViewModelProtocol: ObservableObject {
-        init(context: SocialContext, commentService: any CommentServiceProtocol, reactionService: any ReactionServiceProtocol)
+        init(context: SocialContext, commentService: any SocialServiceProtocol)
         func addComment(_ comment: String) async throws
         func delete(_ comment: Comment) async throws
         func loadComments() async throws
@@ -21,17 +21,15 @@ extension CommentsSheetView {
     
     final class ViewModel: ViewModelProtocol {
         
-        let commentService: CommentServiceProtocol
-        let reactionService: ReactionServiceProtocol
+        let commentService: SocialServiceProtocol
         
         var context: SocialContext
         
         @Published var commentReactions: [String: [Reaction]] = [:]
         @Published var comments: [Comment] = []
         
-        init(context: SocialContext, commentService: any CommentServiceProtocol, reactionService: any ReactionServiceProtocol) {
+        init(context: SocialContext, commentService: any SocialServiceProtocol) {
             self.context = context
-            self.reactionService = reactionService
             self.commentService = commentService
         }
         
@@ -58,7 +56,7 @@ extension CommentsSheetView {
         
         func delete(_ comment: Comment) async throws {
             if let index = comments.firstIndex(where: { $0.id == comment.id }) {
-                try await commentService.deleteComment(comment)
+                try await commentService.deleteComment(comment, batch: nil)
                 self.comments.remove(at: index)
                 self.comments = self.comments
             }
@@ -80,7 +78,7 @@ extension CommentsSheetView {
             // if current user has already liked comment, then delete the like
             if let reaction = usersReactionToComment(comment) {
                 // current user has already reacted, so delete
-                try await reactionService.deleteReaction(reaction)
+                try await commentService.deleteReaction(reaction)
                     
                 // remove user's recations from dictionary
                 if var reactions = commentReactions[comment.id] {
@@ -101,32 +99,37 @@ extension CommentsSheetView {
             
             if add {
                 var reaction = Reaction(uid: context.uid, source: .comment, sourceId: comment.id, username: context.username, reactionType: .love)
-                let id = try await reactionService.addReaction(reaction)
+                let id = try await commentService.addReaction(reaction)
                 reaction.id = id
-                if var reactions = commentReactions[comment.id] {
-                    reactions.append(reaction)
-                    commentReactions[comment.id] = reactions
-                    commentReactions = commentReactions
-                }
+                var reactions = commentReactions[comment.id] ?? []
+                reactions.append(reaction)
+                commentReactions[comment.id] = reactions
+                commentReactions = commentReactions
                 
                 // increment reactionCount (this is for display purposes only)
                 if let index = comments.firstIndex(where: {$0.id == comment.id}) {
                     comments[index].reactionCount += 1
                     comments[index] = comments[index]
                 }
-                
-                     
             }
         }
         
         func loadCommentReactions(_ comments: [Comment]) async throws {
             let commentIds = comments.map { $0.id }
-            let reactions = try await reactionService.getReactions(source: .comment, sourceIds: commentIds)
+            let reactions = try await commentService.getReactions(source: .comment, sourceIds: commentIds)
             
             var result: [String: [Reaction]] = [:]
-            for id in commentIds {
+            for comment in comments {
+                let id = comment.id
                 result[id] = reactions.filter { $0.sourceId == id }
+                
+                // check whether the reationCounts are right (shouldn't happen unless we manually delete/add reactions on the server
+                let count = result[comment.id]?.count ?? 0
+                if comment.reactionCount != count {
+                    try await commentService.updateReactionCount(comment, to: count)
+                }
             }
+            
             commentReactions = result
         }
     }

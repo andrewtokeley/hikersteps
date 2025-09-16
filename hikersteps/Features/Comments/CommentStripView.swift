@@ -37,7 +37,7 @@ struct CommentStripView: View {
     }
     
     init(socialContext: SocialContext) {
-        self.init(socialContext: socialContext, viewModel: ViewModel(commentService: CommentService(), reactionService: ReactionService()))
+        self.init(socialContext: socialContext, viewModel: ViewModel(commentService: SocialService()))
     }
     
     var body: some View {
@@ -127,12 +127,12 @@ struct CommentStripView: View {
         }
         .sheet(isPresented: $showComments) {
             CommentsSheetView(comments: $viewModel.comments, context: socialContext)
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showReactions) {
             ReactionsSheetView(reactions: viewModel.reactions)
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         
@@ -152,6 +152,6 @@ struct CommentStripView: View {
 }
 
 #Preview {
-    CommentStripView(socialContext: SocialContext(source: .journal, sourceId: "1", auth: AuthenticationManager.forPreview()), viewModel: CommentStripView.ViewModel(commentService: CommentService.Mock(), reactionService: ReactionService.Mock()))
+    CommentStripView(socialContext: SocialContext(source: .journal, sourceId: "1", auth: AuthenticationManager.forPreview()), viewModel: CommentStripView.ViewModel(commentService: SocialService.Mock()))
             .environmentObject(AuthenticationManager.forPreview(metric: false))
 }

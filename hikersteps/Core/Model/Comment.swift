@@ -81,7 +81,9 @@ struct Comment: Identifiable, Codable, FirestoreEncodable {
         self.profileUrlString = try container.decodeIfPresent(String.self, forKey: .profileUrlString) ?? ""
         self.reactionCount = try container.decodeIfPresent(Int.self, forKey: .reactionCount) ?? 0
     }
-    
+    static var sample: Comment {
+        return Comment(uid: "abc", source: .checkIn, sourceId: "1", username: "nicole-v", profileUrlString: "", comment: "That was an epic day Tokes!", reactionCount: 1)
+    }
     static var nilValue: Comment {
         return Comment(uid: "", source: .none, sourceId: "", username: "", profileUrlString: "", comment: "")
     }

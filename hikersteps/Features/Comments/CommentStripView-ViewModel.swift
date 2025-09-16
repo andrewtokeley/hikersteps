@@ -12,7 +12,7 @@ extension CommentStripView {
     @MainActor
     protocol ViewModelProtocol: ObservableObject {
         
-        init(commentService: CommentServiceProtocol, reactionService: ReactionServiceProtocol)
+        init(commentService: SocialServiceProtocol)
         
         /**
          All reactions (from all users) against this source
@@ -55,8 +55,8 @@ extension CommentStripView {
     
     @MainActor
     final class ViewModel: ViewModelProtocol {
-        let commentService: CommentServiceProtocol
-        let reactionService: ReactionServiceProtocol
+        let commentService: SocialServiceProtocol
+        
         var context: SocialContext?
         
         @Published var reactions: [Reaction] = []
@@ -64,9 +64,8 @@ extension CommentStripView {
         
         @Published var currentReaction: Reaction = Reaction.nilValue
         
-        init(commentService: any CommentServiceProtocol, reactionService: any ReactionServiceProtocol) {
+        init(commentService: any SocialServiceProtocol) {
             self.commentService = commentService
-            self.reactionService = reactionService
         }
         
         func setContext(_ context: SocialContext) {
@@ -85,7 +84,7 @@ extension CommentStripView {
                     print("delete")
                     
                     // delete from firestore
-                    try await reactionService.deleteReaction(currentReaction)
+                    try await commentService.deleteReaction(currentReaction)
                     
                     // remove local list
                     reactions.removeAll { $0.id == currentReaction.id }
@@ -99,7 +98,7 @@ extension CommentStripView {
                 // there's an existing reaction to change
                 print("update")
                 self.currentReaction.reactionType = reactionType
-                try await reactionService.updateReaction(currentReaction)
+                try await commentService.updateReaction(currentReaction)
                 
                 // update the local copy
                 if let index = reactions.firstIndex(where: {$0.id == currentReaction.id}) {
@@ -109,14 +108,14 @@ extension CommentStripView {
                 // add a new reaction
                 print("add")
                 self.currentReaction = Reaction(uid: context.uid, source: context.source, sourceId: context.sourceId, username: context.username, reactionType: reactionType)
-                let id = try await reactionService.addReaction(self.currentReaction)
+                let id = try await commentService.addReaction(self.currentReaction)
                 self.currentReaction.id = id
                 self.reactions.append(self.currentReaction)
             }
         }
         
         func addReaction(_ reaction: Reaction) async throws -> String {
-            let id = try await reactionService.addReaction(reaction)
+            let id = try await commentService.addReaction(reaction)
             return id
         }
         
@@ -129,7 +128,7 @@ extension CommentStripView {
         
         func loadReactions() async throws {
             guard let context = context else { throw ServiceError.generalError("Context not set") }
-            let reactions = try await reactionService.getReactions(source: context.source, sourceId: context.sourceId)
+            let reactions = try await commentService.getReactions(source: context.source, sourceId: context.sourceId)
             
             // set the currentReaction if the current user has a reaction in here
             if let index = reactions.firstIndex(where:{$0.uid == context.uid}) {

@@ -50,16 +50,25 @@ protocol CheckInServiceProtocol {
 class CheckInService: CheckInServiceProtocol {
     let db = Firestore.firestore()
     let storage = Storage.storage()
+    let commentService: SocialService = SocialService()
     
     func deleteCheckIn(checkIn: CheckIn) async throws {
         guard let id = checkIn.id else { throw ServiceError.generalError("CheckIn must have an id") }
         
-        // first delete the images from storage
+        // first delete the images from storage (can't do this in a batch)
         try await self.deleteAllImages(from: checkIn)
 
-        // delete the checkin document
+        // batch up all the delete across the checkin, it's comments and their reactions.
+        let batch = db.batch()
+        
+        // delete the checkin document itself
         let docRef = db.collection(FirestoreCollection.checkIns).document(id)
-        try await docRef.delete()
+        batch.deleteDocument(docRef)
+        
+        // add the comment deletes to the checkIn. This will also delete reactions
+        try await commentService.deleteComments(source: .checkIn, sourceId: id, batch: batch)
+        
+        try await batch.commit()
     }
     
     func deleteAllImages(from checkIn: CheckIn) async throws {

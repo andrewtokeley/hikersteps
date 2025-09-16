@@ -17,15 +17,12 @@ struct CommentsSheetView: View {
     
     @State private var newComment: String = ""
     @State private var newReaction: ReactionType = ReactionType.none
-//    @State private var commentReactions: [Reaction] = []
     @State private var isLoading: Bool = true
-    
     @State private var showReactionsForId: CommentIdentifier?
-//    @State private var showReactions: Bool = false
     
     @Binding var comments: [Comment]
-    
     @StateObject private var viewModel: ViewModel
+
     @FocusState private var isFocused: Bool
     
     /**
@@ -41,7 +38,7 @@ struct CommentsSheetView: View {
      Main constructor
      */
     init(comments: Binding<[Comment]>, context: SocialContext) {
-        self.init(comments: comments, viewModel: ViewModel(context: context, commentService: CommentService(), reactionService: ReactionService()))
+        self.init(comments: comments, viewModel: ViewModel(context: context, commentService: SocialService()))
     }
     
     var body: some View {
@@ -54,44 +51,18 @@ struct CommentsSheetView: View {
                                 HStack(alignment: .top) {
                                     
                                     ProfileImage(.small)
-                                    
-                                    VStack(alignment: .leading) {
                                         
-                                        // Comment
-                                        VStack(alignment: .leading) {
-                                            Text(comment.username)
-                                                .font(.caption)
-                                                .bold()
-                                            Text(comment.comment)
-                                        }
-                                        .padding(.vertical, 8)
-                                        .padding(.horizontal, 15)
-                                        .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(15)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        
-                                        // Actions
-                                        HStack {
-                                            Text(comment.createdDate.localisedTimeAgoDescription())
-                                                .font(.caption)
-                                                .padding(.leading)
-                                            if (comment.uid == auth.user.uid) {
-                                                Text("Delete")
-                                                    .underline()
-                                                    .font(.caption)
-                                                    .onTapGesture {
-                                                        Task {
-                                                            do {
-                                                                try await viewModel.delete(comment)
-                                                            } catch {
-                                                                ErrorLogger.shared.log(error)
-                                                            }
-                                                        }
-                                                    }
+                                    CommentView(comment: comment)
+                                    .onDeleteRequest {
+                                        Task {
+                                            do {
+                                                try await viewModel.delete(comment)
+                                            } catch {
+                                                ErrorLogger.shared.log(error)
                                             }
                                         }
-                                        
                                     }
+                                    
                                     Spacer()
                                     
                                     // Reactions
@@ -118,9 +89,6 @@ struct CommentsSheetView: View {
                                                 .padding(.top, 5)
                                                 .onTapGesture {
                                                     showReactionsForId = CommentIdentifier(id: comment.id)
-//                                                    DispatchQueue.main.async {
-//                                                        showReactions = true
-//                                                    }
                                                 }
                                         }
                                     }
@@ -143,39 +111,43 @@ struct CommentsSheetView: View {
                     Spacer()
                 }
             }
+            .padding(.bottom, 5)
             .navigationTitle("Comments")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: $showReactionsForId) { commentId in
                 if let reactions = viewModel.commentReactions[commentId.id] {
                     ReactionsSheetView(reactions: reactions)
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
                 }
             }
-        }
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                ProfileImage()
-                TextField("Add a comment...", text: $newComment)
-                    .padding(.all, 10)
-                    .styleBorderLight(focused: true)
-                    .focused($isFocused, equals: true)
-                    .padding(.vertical)
-                Button(action: {
-                    Task {
-                        do {
-                            try await viewModel.addComment(newComment)
-                        } catch {
-                            ErrorLogger.shared.log(error)
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    ProfileImage()
+                    TextField("Add a comment...", text: $newComment)
+                        .padding(.all, 10)
+                        .styleBorderLight(focused: true)
+                        .focused($isFocused, equals: true)
+                        .padding(.vertical)
+                    Button(action: {
+                        Task {
+                            do {
+                                try await viewModel.addComment(newComment)
+                            } catch {
+                                ErrorLogger.shared.log(error)
+                            }
+                            newComment = ""
                         }
-                        newComment = ""
-                    }
-                }) {
-                    Image(systemName: "paperplane.fill")
-                        .rotationEffect(.degrees(45))
-                        .frame(width: 25, height: 25)
+                    }, label: {
+                        Image(systemName: "paperplane.fill")
+                            .rotationEffect(.degrees(45))
+                            .frame(width: 25, height: 25)
+                    })
+                    .disabled(newComment.isEmpty)
+                    
                 }
-                
+                .padding()
             }
-            .padding()
         }
         .task {
             do {
@@ -206,7 +178,6 @@ struct CommentsSheetView: View {
     ]
     CommentsSheetView(comments: $comments, viewModel: CommentsSheetView.ViewModel(
         context: SocialContext(source: .checkIn, sourceId: "1", auth: AuthenticationManager.forPreview()),
-        commentService: CommentService.Mock(sampleData: true),
-        reactionService: ReactionService.Mock()))
+        commentService: SocialService.Mock()))
     .environmentObject(AuthenticationManager.forPreview(metric: false))
 }

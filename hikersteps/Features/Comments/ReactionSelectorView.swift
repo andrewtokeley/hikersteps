@@ -56,8 +56,8 @@ struct ReactionSelectorView: View {
                     Image(systemName: r.systemImageNameFilled)
                         .frame(width: reactionImageWidth) //, height: 30)
                         .font(.system(size:22))
-                        .scaleEffect(dragAlignedToReaction(r) ? 1.5 : 1.0)
-                        .foregroundColor(dragAlignedToReaction(r) || (r == self.selection) ? r.highlightColour : .black)
+                        .scaleEffect((r == self.selection) ? 1.5 : 1.0)
+                        .foregroundColor(r.highlightColour)
                         .padding(padding)
                         .onTapGesture {
                             handleSelection(r)
@@ -67,48 +67,20 @@ struct ReactionSelectorView: View {
             .background(Color.adaptive(light: .white, dark: .black))
             .frame(height:50)
             .cornerRadius(25)
-            .shadow(color: .gray, radius: 1, x:1, y:1)
-            .position(x: UIScreen.main.bounds.width / 2, y: yOffSet - 180)
+            .shadow(color: Color.adaptive(light: .gray, dark: .white), radius: 2, x:1, y:1)
+            .position(x: UIScreen.main.bounds.width / 2, y: yOffSet - 150)
             
             HStack {
-                Color(.white.opacity(0.8))
-                    .frame(height: 70)
-                    .position(x: UIScreen.main.bounds.width / 2, y: yOffSet - 180 + 70)
-                    .onTapGesture {
-                        handleSelection(nil)
-                    }
-            }
-            
-        }
-        .onChange(of: dragLocation) {
-            if dragLocation == .zero {
-                if hoverReaction != .none {
-                    print("initial state?")
-                    handleSelection(hoverReaction)
-                } else {
-                    // don't change the selection
-                    print("user hovered over nothing (deselected)")
-                    handleSelection(nil)
-                }
-            } else {
-                print("hoverng over something")
-                // work out which reaction aligns to the x location
-                // of the drag
-                if dragLocation.y < -130 {
-                    print("clear hover reaction - too far away")
-                    hoverReaction = .none
-                } else {
-                    let index = Int((dragLocation.x - leftEdgeOfCapsule) / (reactionImageWidth + spacing))
-                    if index < ReactionType.all.count && index >= 0 {
-                        print("hovering over new reaction")
-                        hoverReaction = ReactionType.all[index]
-                    } else {
-                        print("hovering over nothing")
-                        hoverReaction = .none
-                    }
-                    print("hoverReaction = \(hoverReaction)")
+                ZStack {
+                    Color(Color.adaptive(light: .white, dark: .black))
+                        .onTapGesture {
+                            handleSelection(nil)
+                        }
+                    Text("Select an emoji reaction")
                 }
             }
+            .frame(height: 90)
+            .position(x: UIScreen.main.bounds.width / 2, y: yOffSet - 150 + 75)
         }
     }
     

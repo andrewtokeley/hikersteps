@@ -15,7 +15,7 @@ struct CommentStripViewModelTests {
     var viewModel: CommentStripView.ViewModel
     
     init() {
-        viewModel = CommentStripView.ViewModel(commentService: CommentService.Mock(), reactionService: ReactionService.Mock(sampleData: true))
+        viewModel = CommentStripView.ViewModel(commentService: SocialService.Mock(), reactionService: ReactionService.Mock(sampleData: true))
         viewModel.setContext(SocialContext(source: .checkIn, sourceId: "212", auth: AuthenticationManager.forPreview()))
     }
     
