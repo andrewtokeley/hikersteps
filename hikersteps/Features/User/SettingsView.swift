@@ -44,7 +44,7 @@ struct SettingsView: View {
                     
                     Spacer()
                     
-                    ProfileImage()
+                    ProfileImage(username: auth.user.username)
                 }
                 
                 Divider()

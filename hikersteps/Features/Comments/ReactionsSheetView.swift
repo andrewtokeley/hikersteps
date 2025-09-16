@@ -8,12 +8,18 @@
 import SwiftUI
 
 struct ReactionsSheetView: View {
+    @EnvironmentObject var auth: AuthenticationManager
+    
     var reactions: [Reaction]
     
     @State private var typeFilter: ReactionType? = nil
     
     var uniqueReactionTypes: [ReactionType] {
         return Array(Set(reactions.map { $0.reactionType })).sorted(by: {$0.order < $1.order})
+    }
+    
+    var singleReaction: Bool {
+        return uniqueReactionTypes.count == 1
     }
     
     var filteredReactions: [Reaction] {
@@ -32,14 +38,20 @@ struct ReactionsSheetView: View {
     }
     
     var body: some View {
+        
         VStack {
+            
             HStack {
-                Group {
-                    Text("All")
-                    Text("\(count())").padding(.trailing)
-                }
-                .onTapGesture {
-                    self.typeFilter = nil
+                if singleReaction {
+                     
+                } else {
+                    Group {
+                        Text("All")
+                        Text("\(count())").padding(.trailing)
+                    }
+                    .onTapGesture {
+                        self.typeFilter = nil
+                    }
                 }
                 ForEach(uniqueReactionTypes) { type in
                     Group {
@@ -56,13 +68,17 @@ struct ReactionsSheetView: View {
             .padding(.vertical)
             
             Divider()
+        
             
             VStack(alignment: .leading) {
                 ForEach(filteredReactions.indices, id: \.self) { index in
                     HStack {
+                        ProfileImage(.small, username: filteredReactions[index].username)
+                        Text(filteredReactions[index].username)
+                        Spacer()
+                        
                         Image(systemName: filteredReactions[index].reactionType.systemImageNameFilled)
                             .foregroundStyle(filteredReactions[index].reactionType.highlightColour)
-                        Text(filteredReactions[index].username)
                     }
                     Divider()
                 }
@@ -70,6 +86,7 @@ struct ReactionsSheetView: View {
             Spacer()
         }
         .padding()
+        
     }
 }
 
@@ -80,4 +97,5 @@ struct ReactionsSheetView: View {
         Reaction(uid: "3", source: .checkIn, sourceId: "1", username: "skittles", reactionType: .like),
         Reaction(uid: "4", source: .checkIn, sourceId: "1", username: "gonzales", reactionType: .love),
     ])
+    .environmentObject(AuthenticationManager.forPreview())
 }

@@ -50,7 +50,7 @@ struct CommentsSheetView: View {
                             ForEach(Array(viewModel.comments.enumerated()), id: \.element.id) { index, comment in
                                 HStack(alignment: .top) {
                                     
-                                    ProfileImage(.small)
+                                    ProfileImage(.small, username: comment.username)
                                         
                                     CommentView(comment: comment)
                                     .onDeleteRequest {
@@ -123,7 +123,7 @@ struct CommentsSheetView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 HStack {
-                    ProfileImage()
+                    ProfileImage(username: auth.user.username)
                     TextField("Add a comment...", text: $newComment)
                         .padding(.all, 10)
                         .styleBorderLight(focused: true)
