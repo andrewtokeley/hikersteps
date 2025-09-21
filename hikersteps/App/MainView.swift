@@ -16,9 +16,9 @@ struct MainView: View {
                 .tabItem {
                     Label("Journal", systemImage: "house")
                 }.tag(1)
-            Text("Follow")
+            FriendsView()
                 .tabItem {
-                    Label("Follow", systemImage: "person.3")
+                    Label("Friends", systemImage: "person.3")
                 }.tag(0)
             
         }

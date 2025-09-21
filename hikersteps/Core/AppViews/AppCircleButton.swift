@@ -39,7 +39,7 @@ struct AppCircleButton: View {
                 border: false)
         case .plain:
             return (
-                foreground: Color.adaptive(light: .black, dark: .white),
+                foreground: Color.adaptive(light: Color(.appPrimary), dark: .white),
                 background: Color(.clear),
                 border: false)
         case .white:
@@ -77,7 +77,7 @@ struct AppCircleButton: View {
     private var image: some View {
         Image(systemName: imageSystemName)
             .foregroundColor(_style.foreground)
-            .font(.system(size: 0.6 * size, weight: .medium))
+            .font(.system(size: 0.6 * size, weight: .light))
             .frame(width: size, height: size)
             .padding(.all, 4)
             .padding(.bottom, bottonNudge)

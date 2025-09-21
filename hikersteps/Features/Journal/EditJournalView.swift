@@ -16,6 +16,7 @@ struct EditJournalView: View {
 
     @StateObject var viewModel: ViewModel
     @State private var showDateSelector = false
+    @State private var showShareView = false
     @State private var isSaving: Bool = false
     @State private var topSectionHeight: CGFloat = 260
     private var onSaved: (() -> Void)? = nil
@@ -67,6 +68,25 @@ struct EditJournalView: View {
                         }
                         .padding(.bottom)
                         
+                        Button {
+                            showShareView = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "eye")
+                                    .frame(width: 30)
+                                Text("Visibility")
+                                Spacer()
+                                Text(viewModel.journal.visibility.name)
+                                    .foregroundStyle(.secondary)
+                                Image(systemName: "chevron.down")
+                            }
+                            .padding()
+                            .styleBorderLight()
+                            
+                        }
+                        .padding(.bottom)
+                        .buttonStyle(.plain)
+                        
                         AppTextEditor(text: $viewModel.journal.description, placeholder: "Summary of your journal")
                             .frame(height: 300)
                             .padding(.bottom)
@@ -115,7 +135,11 @@ struct EditJournalView: View {
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.medium])
             }
-            .presentationDetents([.medium])
+            
+            .sheet(isPresented: $showShareView) {
+                ShareView(visibility: $viewModel.journal.visibility)
+                    .presentationDetents([.fraction(0.6)])
+            }
         }
         
     }

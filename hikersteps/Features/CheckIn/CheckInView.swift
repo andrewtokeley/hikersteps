@@ -31,7 +31,6 @@ struct CheckInView: View {
     
     private var onHeroImageUpdated: ((String) -> Void)? = nil
     
-    
     var dayDescription: String
     var totalDistanceToDate: Measurement<UnitLength>
     
@@ -57,19 +56,6 @@ struct CheckInView: View {
                                     
                                     Spacer()
                                     
-//                                    AppCircleButton(size: 30, imageSystemName: "square.and.arrow.up",bottomNudge: 3) {
-//                                        Task {
-//                                            let options = ShareOptions(
-//                                                viewportCentre: .checkIn,
-//                                                zoomLevel: 10,
-//                                                isShare: true)
-//                                            let share = await ShareActivities.createForJournal(username: auth.user.username, journalId: checkIn.journalId, checkIn: checkIn, shareOptions: options)
-//                                            self.shareItems = share.items
-//                                            self.showShareView = true
-//                                        }
-//                                    }
-//                                    .style(.filled)
-                                    
                                     AppCircleButton(size: 30,imageSystemName: "applepencil.gen1") {
                                         isPresentingEdit = true
                                     }
@@ -79,7 +65,6 @@ struct CheckInView: View {
                                 // centred in ZStack
                                 Text(checkIn.date.formatted(.dateTime.weekday().day().month().year()))
                                     .font(.title3)
-                                
                             }
                             
                             Text(checkIn.title)
@@ -99,12 +84,11 @@ struct CheckInView: View {
                                 Text(dayDescription)
                                     .font(.title3)
                             }
-                            
                         }
                         
                         ScrollView {
                             VStack {
-                                if !checkIn.image.storageUrl.isEmpty {
+                                if checkIn.hasImage {
                                     VStack {
                                         LazyImage(source: checkIn.image.storageUrl) { state in
                                             if let image = state.image {
@@ -139,9 +123,13 @@ struct CheckInView: View {
                                 Text(checkIn.notes)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.top)
+                                
                             }
+                            .opacity(contentOpacity(geometry))
+                            
                         }
                         .scrollBounceBehavior(.basedOnSize)
+                        
                         
                         HStack {
                             if let context = self.socialContext {
@@ -203,6 +191,12 @@ struct CheckInView: View {
         }
     }
     
+    func contentOpacity(_ geometry: GeometryProxy) -> Double {
+        guard geometry.size.height < 400 else { return 1 }
+        let min = 250.0, max = 400.0
+        return  (geometry.size.height - min) / (max - min)
+    }
+    
     func delete() {
         print("delete")
     }
@@ -228,6 +222,7 @@ struct CheckInView: View {
 
 #Preview {
     @Previewable @State var checkIn: CheckIn = CheckIn(uid: "123", journalId: "1", id: "111", location: Coordinate.wellington, title: "Cap Reinga", notes: "Hello there, great spot Hello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spotHello there, great spot", distance: Measurement(value: 20, unit: UnitLength.kilometers), date: Date(), images: [StorageImage.sample])
+    
     CheckInView(checkIn: $checkIn, dayDescription: "Day 13", totalDistanceToDate: Measurement(value: 1234,  unit: .kilometers))
         .environmentObject(AuthenticationManager.forPreview(metric: false))
 }

@@ -97,7 +97,6 @@ class AuthenticationManager: AuthenticationManagerProtocol {
     }
     
     private func loadUserSettings() async throws {
-        print("loadUserSettings")
         var settings: UserSettings?
         settings = try await userSettingsService.getUserSettings()
         if settings == nil {

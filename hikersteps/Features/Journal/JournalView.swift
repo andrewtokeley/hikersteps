@@ -8,6 +8,11 @@
 import SwiftUI
 import FirebaseAuth
 
+enum JournalViewMode {
+    case map
+    case tiles
+}
+
 /**
  The JournalView is the root view that shows the users checkins on a map with their trail.
  */
@@ -35,15 +40,19 @@ struct JournalView: View {
     @State private var showEditCheckIn = false
     @State private var showDeleteConfirmation = false
     @State private var showJournalMenu = false
+    @State private var showEditJournal = false
     
-    @State private var selectedCheckInSheetDetent: PresentationDetent = .fraction(0.6)
     
     /// Flag to let the view that an async process is running
     @State private var isWorking = false
     
     /// The Journal that is being viewed
-    var journal: Journal
+    @State private var journal: Journal
 
+    @State private var viewMode: JournalViewMode = .map
+    @State private var defaultCheckInSheetHeight: PresentationDetent
+    @State var checkInSheetHeight: CGFloat
+    
     /**
      Constructs a new JournalView from a Journal instance and using the default ViewModel
      */
@@ -53,11 +62,14 @@ struct JournalView: View {
     }
     
     /**
-     Construct a new JournalView, and pass in a ViewModel - used by previewer to inject a mock service.
+     Construct a new JournalView, and pass in a ViewModel - used by previewer to inject mock services.
      */
     init(journal: Journal, viewModel: ViewModel) {
         self.journal = journal
         _viewModel = StateObject(wrappedValue: viewModel)
+//        _defaultCheckInSheetHeight = State(wrappedValue: .fraction(0.6))
+        _defaultCheckInSheetHeight = State(wrappedValue: .height(240))
+        _checkInSheetHeight = State(wrappedValue: 240)
     }
     
     /**
@@ -71,6 +83,7 @@ struct JournalView: View {
                 let width = geometry.size.width
             
                 ZStack {
+                    
                     MapView(
                         annotations: $checkInManager.annotations,
                         selectedAnnotationIndex: $checkInManager.selectedIndex,
@@ -78,14 +91,14 @@ struct JournalView: View {
                         droppedPinAnnotation: $checkInManager.droppedPinAnnotation
                     )
                     .onMapTap { location in
-                        print("map tapped")
+                        
                         self.checkInManager.clearSelectedCheckIn()
                         self.showCheckInDetails = false
                         self.showAddCheckInSheet = false
                         self.checkInManager.removeDropInAnnotation()
                     }
                     .onPuckTap({ location in
-                        print("puck tapped")
+                        //
                     })
                     .onMapLongPress({ location in
                         self.dropPinForAdd(location: location.coordinate)
@@ -97,7 +110,21 @@ struct JournalView: View {
                         }
                     })
                     .ignoresSafeArea()
+                    .opacity( viewMode == .map ? 1 : 0)
+                
+                    VStack {
+                        DayGrid(checkIns: $checkInManager.checkIns, selectedIndex: $checkInManager.selectedIndex)
+                            .onSelected { checkIn in
+                                if let id = checkIn.id {
+                                    self.checkInManager.move(.to(id: id))
+                                    self.showCheckInDetails = true
+                                }
+                            }
+                    }
+                    .opacity( viewMode == .tiles ? 1 : 0)
+                
                 }
+                .padding(.bottom, checkInSheetHeight)
             }
         }
         .navigationDestination(isPresented: $navigateToStats) {
@@ -130,18 +157,14 @@ struct JournalView: View {
                 }
             }
         }
-//        .sheet(isPresented: $showEditCheckIn) {
-//            EditCheckInView(checkIn: $checkInManager.selectedCheckIn)
-//                .onDisappear {
-//                    if self.reOpenCheckInDetailsSheet {
-//                        self.showCheckInDetails = true
-//                    }
-//                }
-//                .presentationDetents([.large])
-//                .presentationDragIndicator(.hidden)
-//                .interactiveDismissDisabled(true)
-//                .presentationBackgroundInteraction(.disabled)
-//        }
+        .sheet(isPresented: $showEditJournal) {
+            EditJournalView(journal: $journal)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled(true)
+                .presentationBackgroundInteraction(.disabled)
+            
+        }
         
         .sheet(isPresented: $showAddCheckInSheet) {
             EditCheckInView(checkIn: $newCheckIn)
@@ -163,14 +186,14 @@ struct JournalView: View {
         
         // Show CheckIn Detail Sheet
         .sheet(isPresented: $showCheckInDetails) {
-            
-            TabView(selection: $checkInManager.selectedIndex) {
-                ForEach(Array(checkInManager.checkIns.enumerated()), id: \.element.id) { index, checkIn in
-                    
-                    CheckInView(
-                        checkIn: $checkInManager.checkIns[index],
-                        dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]),
-                        totalDistanceToDate: checkInManager.distanceToDate(checkInManager.checkIns[index]))  /*journal.statistics.totalDistanceWalked(at: checkInManager.checkIns[index]))*/
+            GeometryReader { proxy in
+                TabView(selection: $checkInManager.selectedIndex) {
+                    ForEach(Array(checkInManager.checkIns.enumerated()), id: \.element.id) { index, checkIn in
+                        
+                        CheckInView(
+                            checkIn: $checkInManager.checkIns[index],
+                            dayDescription: checkInManager.dayDescription(checkInManager.checkIns[index]),
+                            totalDistanceToDate: checkInManager.distanceToDate(checkInManager.checkIns[index]))  /*journal.statistics.totalDistanceWalked(at: checkInManager.checkIns[index]))*/
                         .onNavigate({ direction in
                             self.checkInManager.move(direction)
                         })
@@ -179,7 +202,7 @@ struct JournalView: View {
                                 self.checkInManager.removeCheckIn(id: id)
                                 Task {
                                     do {
-                                      try await self.viewModel.deleteCheckIn(checkIn)
+                                        try await self.viewModel.deleteCheckIn(checkIn)
                                     } catch {
                                         ErrorLogger.shared.log(error)
                                     }
@@ -201,16 +224,24 @@ struct JournalView: View {
                             self.reOpenCheckInDetailsSheet = false
                         }
                         .tag(index)
-                    
-                    
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .presentationDetents([.height(240), .fraction(0.6), .large], selection: $defaultCheckInSheetHeight)
+                .presentationDragIndicator(.visible)
+                .interactiveDismissDisabled(false)
+                .presentationBackgroundInteraction(.enabled)
+                .presentationBackground(Color.adaptive(light: .white, dark: .black))
+                .onDisappear {
+                    withAnimation {
+                        checkInSheetHeight = 0
+                    }
+                }
+                .onChange(of: proxy.size.height) { old, new in
+                    checkInSheetHeight = new
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .presentationDetents([.height(240), .fraction(0.6), .large], selection: $selectedCheckInSheetDetent)
-            .presentationDragIndicator(.visible)
-            .interactiveDismissDisabled(false)
-            .presentationBackgroundInteraction(.enabled)
-            .presentationBackground(Color.adaptive(light: .white, dark: .black))
+            
         }
         
         .confirmationDialog("Journal", isPresented: $showJournalMenu, titleVisibility: .hidden) {
@@ -225,8 +256,9 @@ struct JournalView: View {
             }
             
             Button("Edit Journal") {
-                //
+                self.showEditJournal = true
             }
+            
             Button("Delete Journal", role: .destructive) {
                 self.showDeleteConfirmation = true
             }
@@ -256,22 +288,32 @@ struct JournalView: View {
         
         .navigationBarBackButtonHidden(true)
         .toolbar {
+            if (viewMode == .map ) {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    AppCircleButton(imageSystemName: "square.grid.2x2") {
+                        self.viewMode = .tiles
+                    }
+                    .style(.filledOnImage)
+                }
+            } else {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    AppCircleButton(imageSystemName: "map") {
+                        self.viewMode = .map
+                    }
+                    .style(.plain)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 AppCircleButton(imageSystemName: "ellipsis", rotationAngle: .degrees(90))
-                    .style(.filledOnImage)
+                    .style(self.viewMode == .map ? .filledOnImage : .plain)
                     .onClick {
-//                        if self.showCheckInDetails {
-//                            self.reOpenCheckInDetailsSheet = true
-//                        }
-//                        self.showCheckInDetails = false
-//                        self.navigateToStats = true
                         self.showJournalMenu = true
                     }
             }
             
             ToolbarItem(placement: .topBarLeading) {
                 AppCircleButton(imageSystemName: "xmark")
-                    .style(.filledOnImage)
+                    .style(self.viewMode == .map ? .filledOnImage : .plain)
                     .onClick {
                         self.showCheckInDetails = false
                         dismiss()
@@ -297,8 +339,10 @@ struct JournalView: View {
 }
 
 #Preview {
-    JournalView(journal: Journal.sample,
-                viewModel: JournalView.ViewModel(checkInService: CheckInService.Mock(), journalService: JournalService.Mock(), userSettingsService: UserSettingsService.Mock())
+    NavigationStack {
+        JournalView(journal: Journal.sample,
+                    viewModel: JournalView.ViewModel(checkInService: CheckInService.Mock(), journalService: JournalService.Mock(), userSettingsService: UserSettingsService.Mock())
         )
-    .environmentObject(AuthenticationManager.forPreview(metric: false))
+        .environmentObject(AuthenticationManager.forPreview(metric: false))
+    }
 }

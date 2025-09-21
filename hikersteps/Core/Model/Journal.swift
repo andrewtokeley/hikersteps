@@ -12,6 +12,14 @@ enum JournalVisibility: String {
     case justMe
     case friendsOnly
     case everyone
+    
+    var name: String {
+        switch self {
+        case .justMe: return "Private"
+        case .everyone: return "Public"
+        case .friendsOnly: return "Friends Only"
+        }
+    }
 }
 
 /**
@@ -29,8 +37,8 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
     var name: String = ""
     var description: String = ""
     var userName: String = ""
-    var createdDate: Date = Date.distantPast
-    var lastReadByOwnerDate: Date = Date.distantPast
+    var createdDate: Date
+    var lastReadByOwnerDate: Date
     var trail: Trail = Trail()
     var statistics: JournalStatistics = JournalStatistics()
     var heroImageUrl: String = ""
@@ -39,7 +47,7 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
     private var isPublic: Bool = false
     
     /// Not used by the application directly. Set by firestore service calls and app uses `visibility` instead
-    private var _visibility: String = "justMe"
+    private var _visibility: String = JournalVisibility.justMe.rawValue
     
     // ...but in the rest of our code we get/set via an enum
     var visibility: JournalVisibility {
@@ -84,8 +92,9 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
         self.name = name
         self.startDate = startDate
         self.isPublic = false
-        self.visibility = .justMe
         self.createdDate = Date()
+        self.lastReadByOwnerDate = Date()
+        self.visibility = .justMe
     }
         
     /**
@@ -99,8 +108,8 @@ struct Journal: Codable, Identifiable, FirestoreEncodable  {
         self.name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
         self.description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
         self.startDate = try container.decodeIfPresent(Date.self, forKey: .startDate) ?? Date()
-        self.createdDate = try container.decodeIfPresent(Date.self, forKey: .createdDate) ?? Date.distantPast
-        self.lastReadByOwnerDate = try container.decodeIfPresent(Date.self, forKey: .lastReadByOwnerDate) ?? Date.distantPast
+        self.createdDate = try container.decodeIfPresent(Date.self, forKey: .createdDate) ?? Date()
+        self.lastReadByOwnerDate = try container.decodeIfPresent(Date.self, forKey: .lastReadByOwnerDate) ?? Date()
         self.uid = try container.decodeIfPresent(String.self, forKey: .uid) ?? ""
         self.userName = try container.decodeIfPresent(String.self, forKey: .userName) ?? ""
         self.trail = try container.decodeIfPresent(Trail.self, forKey: .trail) ?? Trail()

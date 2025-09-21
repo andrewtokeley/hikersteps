@@ -76,7 +76,7 @@ struct StorageImage:Codable, Equatable, FirestoreEncodable  {
         return .init(
             caption: "This is a sample image",
             storagePath: "images/HJDIBR65ZjR3BaRFXLf8c5DrxJ93/SYZ3RpPyO4tkiLfxllqo/0Z859sAJcWeFendu5yfW/1",
-            storageUrl: "https://firebasestorage.googleapis.com/v0/b/istayedhere-dev.appspot.com/o/images%2F1OZ0zM1OHac848DLo9oyifKFEg13%2F3yJiqgUPlqeEnyhdQsr8%2FtMDKXsm9pDOmGIfVNtP1%2F2?alt=media&token=6c58dcf2-3510-4d63-abae-f74946449326"
+            storageUrl: "https://hikewithgravity.com/sites/default/files/styles/horiz_md_2x/public/blog-images/body-images/2021-02/day154-bull-lake.jpeg?itok=QTR1M2lD"
         )
     }
     

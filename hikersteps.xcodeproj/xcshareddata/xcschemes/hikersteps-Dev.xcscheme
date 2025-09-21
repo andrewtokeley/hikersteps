@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D88DB5332E0CBA47009FC991"
-               BuildableName = "hikersteps.app"
+               BuildableName = ".app"
                BlueprintName = "hikersteps"
                ReferencedContainer = "container:hikersteps.xcodeproj">
             </BuildableReference>
@@ -69,7 +69,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D88DB5332E0CBA47009FC991"
-            BuildableName = "hikersteps.app"
+            BuildableName = ".app"
             BlueprintName = "hikersteps"
             ReferencedContainer = "container:hikersteps.xcodeproj">
          </BuildableReference>
@@ -86,7 +86,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D88DB5332E0CBA47009FC991"
-            BuildableName = "hikersteps.app"
+            BuildableName = ".app"
             BlueprintName = "hikersteps"
             ReferencedContainer = "container:hikersteps.xcodeproj">
          </BuildableReference>

@@ -60,7 +60,9 @@
 		D814D80C2E5115670001EBAE /* .firebaserc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .firebaserc; sourceTree = "<group>"; };
 		D814D80D2E5116390001EBAE /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D829B7002E1358E00055B789 /* GoogleService-Info-Dev.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Dev.plist"; sourceTree = "<group>"; };
-		D88DB5342E0CBA47009FC991 /* hikersteps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hikersteps.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D862E3742E7F3BBF008D619D /* dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = dev.xcconfig; sourceTree = "<group>"; };
+		D862E3762E7F3BD3008D619D /* prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = prod.xcconfig; sourceTree = "<group>"; };
+		D88DB5342E0CBA47009FC991 /* .app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = .app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88DB53E2E0CBA49009FC991 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D88DB5452E0CBA49009FC991 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D88DB54A2E0CBA4A009FC991 /* hikerstepsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hikerstepsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,7 +141,7 @@
 		D88DB5352E0CBA47009FC991 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D88DB5342E0CBA47009FC991 /* hikersteps.app */,
+				D88DB5342E0CBA47009FC991 /* .app */,
 				D88DB54A2E0CBA4A009FC991 /* hikerstepsTests.xctest */,
 				D88DB5542E0CBA4A009FC991 /* hikerstepsUITests.xctest */,
 			);
@@ -156,6 +158,8 @@
 				D88DB5452E0CBA49009FC991 /* Info.plist */,
 				D88DB53D2E0CBA49009FC991 /* Preview Content */,
 				D813C45B2E15E88D00264C01 /* LaunchScreen.storyboard */,
+				D862E3742E7F3BBF008D619D /* dev.xcconfig */,
+				D862E3762E7F3BD3008D619D /* prod.xcconfig */,
 			);
 			path = hikersteps;
 			sourceTree = "<group>";
@@ -225,7 +229,7 @@
 			);
 			name = hikersteps;
 			productName = hikersteps;
-			productReference = D88DB5342E0CBA47009FC991 /* hikersteps.app */;
+			productReference = D88DB5342E0CBA47009FC991 /* .app */;
 			productType = "com.apple.product-type.application";
 		};
 		D88DB5492E0CBA4A009FC991 /* hikerstepsTests */ = {
@@ -466,6 +470,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
@@ -525,6 +530,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
@@ -547,7 +553,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"hikersteps/Preview Content\"";
 				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = hikersteps/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
@@ -564,8 +570,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikersteps;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -582,7 +586,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"hikersteps/Preview Content\"";
 				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = hikersteps/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
@@ -599,8 +603,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikersteps;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -616,7 +618,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -634,7 +635,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -650,7 +650,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -666,7 +665,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -677,6 +675,7 @@
 		};
 		D8E6C6382E5CDE50001FD7BB /* Dev */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -728,6 +727,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
@@ -742,6 +742,7 @@
 		};
 		D8E6C6392E5CDE50001FD7BB /* Dev */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -750,7 +751,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"hikersteps/Preview Content\"";
 				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = hikersteps/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
@@ -767,8 +768,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikersteps;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -777,6 +776,7 @@
 		};
 		D8E6C63A2E5CDE50001FD7BB /* Dev */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -784,7 +784,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -795,12 +794,12 @@
 		};
 		D8E6C63B2E5CDE50001FD7BB /* Dev */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -811,6 +810,7 @@
 		};
 		D8E6C63C2E5CDE5E001FD7BB /* Prod */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -856,6 +856,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
@@ -870,6 +871,7 @@
 		};
 		D8E6C63D2E5CDE5E001FD7BB /* Prod */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -878,7 +880,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"hikersteps/Preview Content\"";
 				DEVELOPMENT_TEAM = 2DTZ6ESMX9;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = hikersteps/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
@@ -895,8 +897,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikersteps;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -905,6 +905,7 @@
 		};
 		D8E6C63E2E5CDE5E001FD7BB /* Prod */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -912,7 +913,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -923,12 +923,12 @@
 		};
 		D8E6C63F2E5CDE5E001FD7BB /* Prod */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = andrewtokeley.hikerstepsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;

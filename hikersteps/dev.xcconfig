@@ -1,0 +1,14 @@
+//
+//  dev.xcconfig
+//  hikersteps
+//
+//  Created by Andrew Tokeley on 21/09/2025.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+APP_DISPLAY_NAME = Trail Journal (Dev)
+PRODUCT_NAME = TrailJournalDev
+PRODUCT_BUNDLE_IDENTIFIER = com.andrewtokeley.istayedhere.dev
+
+SWIFT_OPTIMIZATION_LEVEL = -Onone

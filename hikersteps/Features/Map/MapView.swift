@@ -169,7 +169,7 @@ struct MapView: View {
         if let map = proxy.map {
             let point = map.point(for: coordinate.clLocationCoordinate2D)
             if !annotationSafeArea.contains(point) {
-                animateToCoordinate(proxy, coordinate, offset: CGPoint(x: 0, y: 200))
+                animateToCoordinate(proxy, coordinate)
             }
         }
     }
@@ -181,8 +181,7 @@ struct MapView: View {
         
         let centre = coordinate.clLocationCoordinate2D
         
-        let cameraOptions = CameraOptions(center: centre,
-                                          padding: UIEdgeInsets(top: 0, left: 0, bottom: offset.y, right: 0))
+        let cameraOptions = CameraOptions(center: centre)
         proxy.camera?.ease(to: cameraOptions, duration: 0.1)        
     }
     

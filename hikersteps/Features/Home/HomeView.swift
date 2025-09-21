@@ -20,9 +20,6 @@ struct HomeView: View {
     
     @State private var selectedTrailForNewJournal: Trail?
     
-    // The State managed by this view
-    @State private var hasLoaded = false
-    
     init() {
         self.init(viewModel: ViewModel(journalService: JournalService()))
     }
@@ -91,18 +88,13 @@ struct HomeView: View {
             }
         }
         .task {
-            if (!hasLoaded) {
-                do {
-                    try await viewModel.loadJournals()
-                    if let lastJournalIndex = auth.userSettings.lastJournalId {
-                        selectedJournalIndex = lastJournalIndex
-                    }
-                    hasLoaded = true
-                } catch {
-                    ErrorLogger.shared.log(error)
+            do {
+                try await viewModel.loadJournals()
+                if let lastJournalIndex = auth.userSettings.lastJournalId {
+                    selectedJournalIndex = lastJournalIndex
                 }
-            } else {
-                print("didn't reload")
+            } catch {
+                ErrorLogger.shared.log(error)
             }
         }
         .sheet(isPresented: $showNewHike) {

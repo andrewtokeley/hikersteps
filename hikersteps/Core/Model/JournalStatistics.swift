@@ -82,7 +82,6 @@ class JournalStatistics: Codable, FirestoreEncodable  {
     }
     
     init(checkIns: [CheckIn]) {
-        print("init stats")
         self.checkIns = checkIns
         updateFrom(checkIns)
     }

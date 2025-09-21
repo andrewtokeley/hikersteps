@@ -60,6 +60,9 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
             images.count > 0 ? images[0] = newValue : images.append(newValue)
         }
     }
+    var hasImage: Bool {
+        return image != StorageImage.empty
+    }
     
     var journalId: String = ""
     var customLinks: [CustomLink] = []
@@ -230,11 +233,13 @@ struct CheckIn: Codable, Identifiable, Equatable, FirestoreEncodable {
     /**
      This func is only to be used for Previews and Testing, where you need to set an id (which you wouldn't normally have to). In either case the sample should not (and can't) be saved to firestore.
      */
-    static func sample(id: String = "1", distance: Measurement<UnitLength> = Measurement(value: 20, unit: .kilometers), numberOfRestDays: Int = 0) -> CheckIn {
+    static func sample(id: String = "1", date: Date = Date(), distance: Measurement<UnitLength> = Measurement(value: 20, unit: .kilometers), numberOfRestDays: Int = 0, image: StorageImage = StorageImage.sample) -> CheckIn {
         let uid = Auth.auth().currentUser?.uid ?? UUID().uuidString
         let journalId = "123"
         var checkIn = CheckIn(uid: uid, journalId: journalId, id: id, location: Coordinate.wellington, title: "Hotel \(id)", notes: "I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something I want to say something ", distance: distance, numberOfRestDays: numberOfRestDays, numberOfOffTrailDays: 0)
         checkIn.id = UUID().uuidString
+        checkIn.image = image
+        checkIn.date = date
         return checkIn
     }
     

@@ -43,6 +43,7 @@ struct CommentStripView: View {
     var body: some View {
         NavigationStack {
             VStack {
+                Divider()
                 HStack {
                     Group {
                         if viewModel.reactions.count > 0 {
