@@ -13,6 +13,30 @@ enum JournalViewMode {
     case tiles
 }
 
+enum CheckInSheetHeight {
+    case small
+    case medium
+    case large
+    
+    var detent: PresentationDetent {
+        switch self {
+        case .small:
+            return .height(240)
+        case .medium:
+            return .height(460)
+        case .large:
+            return .large
+        }
+    }
+    
+    var height: CGFloat? {
+        switch self {
+        case .small: return 240
+        case .medium: return 460
+        case .large: return nil
+        }
+    }
+}
 /**
  The JournalView is the root view that shows the users checkins on a map with their trail.
  */
@@ -76,57 +100,57 @@ struct JournalView: View {
      Main View body
      */
     var body: some View {
-        
         NavigationStack {
-            GeometryReader { geometry in
-                let height = geometry.size.height
-                let width = geometry.size.width
-            
-                ZStack {
+            ZStack {
+                MapView(
+                    annotations: $checkInManager.annotations,
+                    selectedAnnotationIndex: $checkInManager.selectedIndex,
+                    bottomPadding: $checkInSheetHeight,
+                    droppedPinAnnotation: $checkInManager.droppedPinAnnotation
+                )
+                .onMapTap { location in
                     
-                    MapView(
-                        annotations: $checkInManager.annotations,
-                        selectedAnnotationIndex: $checkInManager.selectedIndex,
-                        annotationSafeArea: CGRect(origin: CGPoint.zero, size: CGSize(width: width, height: 0.7 * height) ),
-                        droppedPinAnnotation: $checkInManager.droppedPinAnnotation
-                    )
-                    .onMapTap { location in
-                        
-                        self.checkInManager.clearSelectedCheckIn()
-                        self.showCheckInDetails = false
-                        self.showAddCheckInSheet = false
-                        self.checkInManager.removeDropInAnnotation()
-                    }
-                    .onPuckTap({ location in
-                        //
-                    })
-                    .onMapLongPress({ location in
-                        self.dropPinForAdd(location: location.coordinate)
-                    })
-                    .onDidSelectAnnotation({ annotation in
-                        if let checkInId = annotation.checkInId {
-                            self.checkInManager.move(.to(id: checkInId))
-                            self.showCheckInDetails = true
-                        }
-                    })
-                    .ignoresSafeArea()
-                    .opacity( viewMode == .map ? 1 : 0)
-                
-                    VStack {
-                        DayGrid(checkIns: $checkInManager.checkIns, selectedIndex: $checkInManager.selectedIndex)
-                            .onSelected { checkIn in
-                                if let id = checkIn.id {
-                                    self.checkInManager.move(.to(id: id))
-                                    self.showCheckInDetails = true
-                                }
-                            }
-                    }
-                    .opacity( viewMode == .tiles ? 1 : 0)
-                
+                    self.checkInManager.clearSelectedCheckIn()
+
+                    self.showCheckInDetails = false
+                    self.checkInSheetHeight = 0
+                    
+                    self.showAddCheckInSheet = false
+                    self.checkInManager.removeDropInAnnotation()
                 }
-                .padding(.bottom, checkInSheetHeight)
+                .onPuckTap({ location in
+                    //
+                })
+                .onMapLongPress({ location in
+                    self.dropPinForAdd(location: location.coordinate)
+                })
+                .onDidSelectAnnotation({ annotation in
+                    if let checkInId = annotation.checkInId {
+                        self.checkInManager.move(.to(id: checkInId))
+                        if !self.showCheckInDetails {
+                            defaultCheckInSheetHeight = CheckInSheetHeight.medium.detent
+                            checkInSheetHeight = CheckInSheetHeight.medium.height!
+                        }
+                        self.showCheckInDetails = true
+                    }
+                })
+                .ignoresSafeArea()
+                .opacity( viewMode == .map ? 1 : 0)
+                
+                VStack {
+                    DayGrid(checkIns: $checkInManager.checkIns, selectedIndex: $checkInManager.selectedIndex)
+                        .onSelected { checkIn in
+                            if let id = checkIn.id {
+                                self.checkInManager.move(.to(id: id))
+                                self.showCheckInDetails = true
+                            }
+                        }
+                }
+                .opacity( viewMode == .tiles ? 1 : 0)
+                
             }
         }
+    
         .navigationDestination(isPresented: $navigateToStats) {
             JournalDetailsView(journal: journal)
                 .onDisappear {
@@ -197,6 +221,9 @@ struct JournalView: View {
                         .onNavigate({ direction in
                             self.checkInManager.move(direction)
                         })
+                        .onEditRequest( { checkIn in
+                            self.showEditCheckIn = true
+                        })
                         .onDeleteRequest({ checkIn in
                             if let id = checkIn.id {
                                 self.checkInManager.removeCheckIn(id: id)
@@ -227,9 +254,13 @@ struct JournalView: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .presentationDetents([.height(240), .fraction(0.6), .large], selection: $defaultCheckInSheetHeight)
+                .presentationDetents([
+                    CheckInSheetHeight.small.detent,
+                    CheckInSheetHeight.medium.detent,
+                    CheckInSheetHeight.large.detent]
+                    ,selection: $defaultCheckInSheetHeight)
                 .presentationDragIndicator(.visible)
-                .interactiveDismissDisabled(false)
+                .interactiveDismissDisabled(true)
                 .presentationBackgroundInteraction(.enabled)
                 .presentationBackground(Color.adaptive(light: .white, dark: .black))
                 .onDisappear {
@@ -237,13 +268,21 @@ struct JournalView: View {
                         checkInSheetHeight = 0
                     }
                 }
-                .onChange(of: proxy.size.height) { old, new in
-                    checkInSheetHeight = new
+                .onChange(of: defaultCheckInSheetHeight) { old, new in
+                    withAnimation {
+                        if new == CheckInSheetHeight.small.detent {
+                            checkInSheetHeight = CheckInSheetHeight.small.height!
+                        } else if new == CheckInSheetHeight.medium.detent {
+                            checkInSheetHeight = CheckInSheetHeight.medium.height!
+                        }
+                    }
                 }
             }
-            
         }
         
+        .fullScreenCover(isPresented: $showEditCheckIn) {
+            EditCheckInView(checkIn: $checkInManager.selectedCheckIn)
+        }
         .confirmationDialog("Journal", isPresented: $showJournalMenu, titleVisibility: .hidden) {
             
             Button("Go to Start") {

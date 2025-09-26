@@ -27,7 +27,8 @@ struct MapView: View {
     // Annotation that describes where to render a dropped pin
     @Binding var droppedPinAnnotation: CheckInAnnotation?
     
-    var annotationSafeArea: CGRect
+    //var annotationSafeArea: CGRect
+    @Binding var bottomPadding: CGFloat
     
     // Private event handlers
     private var onDidSelectAnnotation: ((CheckInAnnotation) -> Void)?
@@ -37,15 +38,15 @@ struct MapView: View {
     /**
      Default constructor
      */
-    init(annotations: Binding<[CheckInAnnotation]>, selectedAnnotationIndex: Binding<Int> = .constant(-1), annotationSafeArea: CGRect = CGRect.zero, droppedPinAnnotation: Binding<CheckInAnnotation?> = .constant(nil) ) {
+    init(annotations: Binding<[CheckInAnnotation]>, selectedAnnotationIndex: Binding<Int> = .constant(-1), bottomPadding: Binding<CGFloat> = .constant(0), droppedPinAnnotation: Binding<CheckInAnnotation?> = .constant(nil) ) {
         
         _annotations = annotations
         _selectedAnnotationIndex = selectedAnnotationIndex
         _droppedPinAnnotation = droppedPinAnnotation
         
         _isTapNavigation = State(initialValue: false)
-        
-        self.annotationSafeArea = annotationSafeArea
+        _bottomPadding = bottomPadding
+        //self.annotationSafeArea = annotationSafeArea
     }
 
     private func pinState(_ annotation: CheckInAnnotation, _ index: Int) -> PinViewState {
@@ -64,77 +65,92 @@ struct MapView: View {
     
     var body: some View {
         MapReader { proxy in
-                Map(viewport: $viewport) {
-                    Puck2D(bearing: .heading)
-                    
-                    // Display checkins
-                    ForEvery(Array(annotations.enumerated()), id: \.element.id) { index, annotation in
-                        MapViewAnnotation(coordinate: annotation.coordinate.clLocationCoordinate2D) {
-                            PinView(label: annotation.title ?? "", state: pinState(annotation, index), showLabel: false)
-                                .onTapGesture {
-                                    
-                                    // if we've tapped on a new annotation, mark this as a tapNavigation, otherwise clear the flag so that when we programmatically navigate away from the re-selected annotation, we follow it!
-                                    if (selectedAnnotationIndex != index) {
-                                        isTapNavigation = true
-                                    } else {
-                                        isTapNavigation = false
-                                    }
-                                    
-                                    ensureAnnotationVisible(proxy: proxy, coordinate: annotation.coordinate)
+            Map(viewport: $viewport) {
+                Puck2D(bearing: .heading)
+                
+                // Display checkins
+                ForEvery(Array(annotations.enumerated()), id: \.element.id) { index, annotation in
+                    MapViewAnnotation(coordinate: annotation.coordinate.clLocationCoordinate2D) {
+                        PinView(label: annotation.title ?? "", state: pinState(annotation, index), showLabel: false)
+                            .onTapGesture {
                                 
-                                    selectedAnnotationIndex = (selectedAnnotationIndex == index) ? -1 : index
-                                    
-                                    onDidSelectAnnotation?(annotation)
+                                // if we've tapped on a new annotation, mark this as a tapNavigation, otherwise clear the flag so that when we programmatically navigate away from the re-selected annotation, we follow it!
+                                if (selectedAnnotationIndex != index) {
+                                    isTapNavigation = true
+                                } else {
+                                    isTapNavigation = false
                                 }
-                        }
-                    }
-                    // Display dropped pin
-                    if let drop = droppedPinAnnotation {
-                        MapViewAnnotation(coordinate: drop.coordinate.clLocationCoordinate2D) {
-                            PinView(label: drop.title ?? "f", state: .dropped)
-                        }
-                    }
-                    
-                    LongPressInteraction { interaction in
-                        ensureAnnotationVisible(proxy: proxy, coordinate: interaction.coordinate.coordinate)
-                        onMapLongPress?(interaction.coordinate)
-                        return true
-                    }
-                    
-                    TapInteraction { interaction in
-                        
-                        // work out if the tap was on the puck
-//                        if let userLocation = locationManager.coordinate {
-//                            if let puckPoint = proxy.map?.point(for: userLocation) {
-//                                let puckFrame = CGRect(x: puckPoint.x - 22, y: puckPoint.y - 22, width: 44, height: 44)
-//                                
-//                                if puckFrame.contains(interaction.point) {
-//                                    onPuckTap?(interaction.coordinate)
-//                                    return true
-//                                }
-//                            }
-//                        }
-                        onMapTap?(interaction.coordinate)
-                        return true
+                                
+                                ensureAnnotationVisible(proxy, annotation.coordinate)
+                                
+                                selectedAnnotationIndex = (selectedAnnotationIndex == index) ? -1 : index
+                                
+                                onDidSelectAnnotation?(annotation)
+                            }
                     }
                 }
-                .ignoresSafeArea()
-                .overlay(alignment: .topTrailing) {
-                    LocateMeButton(viewport: $viewport)
-                        .padding(.top, 140)
-                        .padding(.trailing)
-                }
-                .onChange(of: self.selectedAnnotationIndex, { oldValue, newValue in
-                    guard !self.annotations.isEmpty else { return }
-                    
-                    // unless the user has tapped on an annotation make sure the selected annotation is visible.
-                    if !isTapNavigation && newValue >= 0 {
-                        
-                        let annotation = self.annotations[newValue]
-                        animateToCoordinate(proxy, annotation.coordinate, offset: CGPoint(x: 0, y: 300))
+                // Display dropped pin
+                if let drop = droppedPinAnnotation {
+                    MapViewAnnotation(coordinate: drop.coordinate.clLocationCoordinate2D) {
+                        PinView(label: drop.title ?? "f", state: .dropped)
                     }
-                    isTapNavigation = false
-                })
+                }
+                
+                LongPressInteraction { interaction in
+                    ensureAnnotationVisible(proxy, interaction.coordinate.coordinate)
+                    onMapLongPress?(interaction.coordinate)
+                    return true
+                }
+                
+                TapInteraction { interaction in
+                    onMapTap?(interaction.coordinate)
+                    return true
+                }
+            }
+            .ornamentOptions(
+                OrnamentOptions(
+                    logo:LogoViewOptions(
+                        position: .bottomLeading,
+                        margins: CGPoint(x:10, y: bottomPadding + 10 )
+                    ),
+                    attributionButton: AttributionButtonOptions(
+                        position: .bottomTrailing,
+                        margins: CGPoint(x:10, y: bottomPadding + 10)
+                    )
+                )
+            )
+            .animation(.easeInOut(duration: 0.5), value: bottomPadding)
+            
+            .onChange(of: bottomPadding) { old, new in
+                if old != new {
+                    // recentre the selected annotation
+                    if selectedAnnotationIndex >= 0 {
+                        let coordinate = annotations[selectedAnnotationIndex].coordinate
+                        ensureAnnotationVisible(proxy, coordinate)
+                    } else {
+                        // just update the viewport to reflect the new padding
+                        let cameraOptions = CameraOptions(padding: UIEdgeInsets(top: 0, left: 0, bottom: bottomPadding, right: 0))
+                        proxy.camera?.ease(to: cameraOptions, duration: 0.1)
+                    }
+                }
+            }
+            .ignoresSafeArea()
+            .overlay(alignment: .topTrailing) {
+                LocateMeButton(viewport: $viewport)
+                    .padding(.top, 140)
+                    .padding(.trailing)
+            }
+            .onChange(of: self.selectedAnnotationIndex, { oldValue, newValue in
+                guard !self.annotations.isEmpty else { return }
+                
+                // unless the user has tapped on an annotation make sure the selected annotation is visible.
+                if !isTapNavigation && newValue >= 0 {
+                    
+                    let annotation = self.annotations[newValue]
+                    animateToCoordinate(proxy, annotation.coordinate)
+                }
+                isTapNavigation = false
+            })
         }
     }
     
@@ -163,12 +179,12 @@ struct MapView: View {
     }
     
     /**
-     Positions the annotation in the centre of the top half of the view, away from any sheets that might be there.
+     If tapping the annotation results in it being below the bottomPadding then re-centre
      */
-    func ensureAnnotationVisible(proxy: MapProxy, coordinate: Coordinate) {
+    func ensureAnnotationVisible(_ proxy: MapProxy, _ coordinate: Coordinate) {
         if let map = proxy.map {
             let point = map.point(for: coordinate.clLocationCoordinate2D)
-            if !annotationSafeArea.contains(point) {
+            if point.y < bottomPadding {
                 animateToCoordinate(proxy, coordinate)
             }
         }
@@ -177,11 +193,11 @@ struct MapView: View {
     /**
      Animates the viewport to centre on the annotation, with a given offset
      */
-    func animateToCoordinate(_ proxy: MapProxy, _ coordinate: Coordinate, offset: CGPoint = .zero) {
+    func animateToCoordinate(_ proxy: MapProxy, _ coordinate: Coordinate) {
         
         let centre = coordinate.clLocationCoordinate2D
         
-        let cameraOptions = CameraOptions(center: centre)
+        let cameraOptions = CameraOptions(center: centre, padding: UIEdgeInsets(top: 0, left: 0, bottom: bottomPadding, right: 0))
         proxy.camera?.ease(to: cameraOptions, duration: 0.1)        
     }
     

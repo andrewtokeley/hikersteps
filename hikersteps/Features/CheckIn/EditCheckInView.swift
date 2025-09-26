@@ -118,25 +118,25 @@ struct EditCheckInView: View {
                     .padding(.bottom)
                     
                     // We aren't binding to anything here since the image we browse to needs to be persisted to Storage only if we save.
-                    StorageImageEditorView(storageImage: $viewModel.checkIn.image)
-                        .onImageDataChanged { data, contentType in
-                            // store this data on the viewModel so we know to replace/add a new image
-                            // when this checkin is saved we're going to redefine these properties
-                            viewModel.newImageData = data
-                            viewModel.newImageContentType = contentType
-                        }
-                        .onRemove {
-                            if (!checkIn.image.hasImage) {
-                                // let the viewModel know to delete the existing image on save
-                                viewModel.deleteImageOnSave = true
-                            }
-                            
-                            // clear new image data so we don't add any images
-                            viewModel.newImageData = nil
-                            viewModel.newImageContentType = nil
-                        }
-                        .padding(.bottom)
-                    
+//                    StorageImageEditorView(storageImage: $viewModel.checkIn.image)
+//                        .onImageDataChanged { data, contentType in
+//                            // store this data on the viewModel so we know to replace/add a new image
+//                            // when this checkin is saved we're going to redefine these properties
+//                            viewModel.newImageData = data
+//                            viewModel.newImageContentType = contentType
+//                        }
+//                        .onRemove {
+//                            if (!checkIn.image.hasImage) {
+//                                // let the viewModel know to delete the existing image on save
+//                                viewModel.deleteImageOnSave = true
+//                            }
+//                            
+//                            // clear new image data so we don't add any images
+//                            viewModel.newImageData = nil
+//                            viewModel.newImageContentType = nil
+//                        }
+//                        .padding(.bottom)
+//                    
                     Divider()
                     
                     Text("Are you taking a few days off?")

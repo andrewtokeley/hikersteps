@@ -66,7 +66,7 @@ struct ReactionView: View {
                     }
                 }
             })
-        .highPriorityGesture(LongPressGesture(minimumDuration: 0.4)
+        .highPriorityGesture(LongPressGesture(minimumDuration: 0.3)
             .onEnded { _ in
                 print("long press end")
                 disableTap = true

@@ -62,7 +62,7 @@
 		D829B7002E1358E00055B789 /* GoogleService-Info-Dev.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Dev.plist"; sourceTree = "<group>"; };
 		D862E3742E7F3BBF008D619D /* dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = dev.xcconfig; sourceTree = "<group>"; };
 		D862E3762E7F3BD3008D619D /* prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = prod.xcconfig; sourceTree = "<group>"; };
-		D88DB5342E0CBA47009FC991 /* .app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = .app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D88DB5342E0CBA47009FC991 /* TrailJournalDev.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrailJournalDev.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88DB53E2E0CBA49009FC991 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D88DB5452E0CBA49009FC991 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D88DB54A2E0CBA4A009FC991 /* hikerstepsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hikerstepsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -141,7 +141,7 @@
 		D88DB5352E0CBA47009FC991 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D88DB5342E0CBA47009FC991 /* .app */,
+				D88DB5342E0CBA47009FC991 /* TrailJournalDev.app */,
 				D88DB54A2E0CBA4A009FC991 /* hikerstepsTests.xctest */,
 				D88DB5542E0CBA4A009FC991 /* hikerstepsUITests.xctest */,
 			);
@@ -229,7 +229,7 @@
 			);
 			name = hikersteps;
 			productName = hikersteps;
-			productReference = D88DB5342E0CBA47009FC991 /* .app */;
+			productReference = D88DB5342E0CBA47009FC991 /* TrailJournalDev.app */;
 			productType = "com.apple.product-type.application";
 		};
 		D88DB5492E0CBA4A009FC991 /* hikerstepsTests */ = {
@@ -419,6 +419,7 @@
 /* Begin XCBuildConfiguration section */
 		D88DB55C2E0CBA4A009FC991 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -485,6 +486,7 @@
 		};
 		D88DB55D2E0CBA4A009FC991 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -545,6 +547,7 @@
 		};
 		D88DB55F2E0CBA4A009FC991 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -578,6 +581,7 @@
 		};
 		D88DB5602E0CBA4A009FC991 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -611,6 +615,7 @@
 		};
 		D88DB5622E0CBA4A009FC991 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -628,6 +633,7 @@
 		};
 		D88DB5632E0CBA4A009FC991 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -645,6 +651,7 @@
 		};
 		D88DB5652E0CBA4A009FC991 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3742E7F3BBF008D619D /* dev.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -660,6 +667,7 @@
 		};
 		D88DB5662E0CBA4A009FC991 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D862E3762E7F3BD3008D619D /* prod.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

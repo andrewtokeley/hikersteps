@@ -12,3 +12,4 @@ PRODUCT_NAME = TrailJournalDev
 PRODUCT_BUNDLE_IDENTIFIER = com.andrewtokeley.istayedhere.dev
 
 SWIFT_OPTIMIZATION_LEVEL = -Onone
+

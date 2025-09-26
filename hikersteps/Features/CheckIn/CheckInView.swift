@@ -28,6 +28,7 @@ struct CheckInView: View {
     
     private var onNavigate: ((_ direction: NavigationDirection) -> Void)? = nil
     private var onDeleteRequest: ((CheckIn) -> Void )? = nil
+    private var onEditRequest: ((CheckIn) -> Void )? = nil
     
     private var onHeroImageUpdated: ((String) -> Void)? = nil
     
@@ -50,7 +51,7 @@ struct CheckInView: View {
                             ZStack {
                                 HStack {
                                     AppCircleButton(size: 30, imageSystemName: "ellipsis", rotationAngle: .degrees(90)) {
-                                        showMenu = true
+                                        onEditRequest?(checkIn)
                                     }
                                     .style(.filled)
                                     
@@ -88,6 +89,7 @@ struct CheckInView: View {
                         
                         ScrollView {
                             VStack {
+                                
                                 if checkIn.hasImage {
                                     VStack {
                                         LazyImage(source: checkIn.image.storageUrl) { state in
@@ -129,7 +131,9 @@ struct CheckInView: View {
                             
                         }
                         .scrollBounceBehavior(.basedOnSize)
-                        
+                        // this number just needs to be bigger than the medium sized sheet
+                        // we only want scrolling in full height sheet
+                        .scrollDisabled(geometry.size.height < 500)
                         
                         HStack {
                             if let context = self.socialContext {
@@ -139,7 +143,8 @@ struct CheckInView: View {
                     }
                     .padding()
                 }
-                .sheet(isPresented: $isPresentingEdit) {
+                
+                .fullScreenCover(isPresented: $isPresentingEdit) {
                     NavigationStack {
                         EditCheckInView(checkIn: $checkIn)
                             .presentationDetents([.large])
@@ -199,6 +204,12 @@ struct CheckInView: View {
     
     func delete() {
         print("delete")
+    }
+    
+    func onEditRequest(_ handler: ((CheckIn) -> Void)?) -> CheckInView {
+        var copy = self
+        copy.onEditRequest = handler
+        return copy
     }
     
     func onDeleteRequest(_ handler: ((CheckIn) -> Void)?) -> CheckInView {
